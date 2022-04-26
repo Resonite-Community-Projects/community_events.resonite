@@ -1,0 +1,6 @@
+Flask
+requests
+gunicorn
+apscheduler
+toml
+discord.py
