@@ -30,7 +30,7 @@ class DiscordEvents:
                     return response_list
             except Exception as e:
                 if '429' in str(e):
-                    print(f"Rate limit exceeded. Try again in {self.headers['X-RateLimit-Reset-After']} seconds.")
+                    print(f"Rate limit exceeded. Try again in {response.headers['X-RateLimit-Reset-After']} seconds.")
                 print(f'EXCEPTION: {e}')
             finally:
                 session.close()
@@ -58,27 +58,15 @@ class GetData:
                     text_data += '\n\r'
         self.text_data = text_data
 
-
-
 getData = GetData()
+getData.get()
 
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(getData.get,'interval',minutes=5)
 sched.start()
 
-
-class MyFlaskApp(Flask):
-  def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-    getData.get()
-    super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
-
-
-app = MyFlaskApp(__name__)
-app.run()
+app = Flask(__name__)
 
 @app.route("/v1/events")
 def get_data():
    return getData.text_data
-
-if __name__ == "__main__":
-    app.run()
