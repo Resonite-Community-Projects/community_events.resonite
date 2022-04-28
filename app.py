@@ -41,21 +41,22 @@ with open('config.toml', 'r') as f:
 
 DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
-
 class GetData:
     guild_ids = ['819234726404816907']
     text_data = ""
     discordEvent = DiscordEvents(DISCORD_BOT_TOKEN)
 
     def get(self):
+        events = []
         text_data = ''
         guild_ids = self.guild_ids
         for guild_id in guild_ids:
-            events = self.discordEvent.list_guild_events(guild_id)
-            for index, event in enumerate(events):
-                text_data += f"{event['name']}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}"
-                if index != len(events)-1:
-                    text_data += '\n\r'
+            events.extend(self.discordEvent.list_guild_events(guild_id))
+        events = sorted(events, key=lambda d: d['scheduled_start_time'])
+        for index, event in enumerate(events):
+            text_data += f"{event['name']}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}"
+            if index != len(events)-1:
+                text_data += '\n\r'
         self.text_data = text_data
 
 getData = GetData()
