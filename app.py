@@ -23,6 +23,7 @@ class DiscordEvents:
         event_retrieve_url = f'{self.base_api_url}/guilds/{guild_id}/scheduled-events'
         with self.session as session:
             try:
+                print(f'Retrieving events for guild {guild_id}')
                 with session.get(event_retrieve_url, headers=self.auth_headers) as response:
                     response.raise_for_status()
                     assert response.status_code == 200
@@ -30,7 +31,10 @@ class DiscordEvents:
                     return response_list
             except Exception as e:
                 if '429' in str(e):
-                    print(f"Rate limit exceeded. Try again in {response.headers['X-RateLimit-Reset-After']} seconds.")
+                    print(f"Rate limit exceeded when requesting event for guild {guild_id}")
+                    print(f"Try again in {response.headers['X-RateLimit-Reset-After']} seconds")
+                    time.sleep(float(response.headers['X-RateLimit-Reset-After']) +1 )
+                    return self.list_guild_events(guild_id)
                 print(f'EXCEPTION: {e}')
             finally:
                 session.close()
