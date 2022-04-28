@@ -65,7 +65,7 @@ class GetData:
             events.extend(self.discord.list_guild_events(guild_id))
         events = sorted(events, key=lambda d: d['scheduled_start_time'])
         for index, event in enumerate(events):
-            text_data += f"{event['name']}`{event['entity_metadata']['location']}`{event['scheduled_start_timeiiii']}`{event['scheduled_end_time']}`{self.guilds[event['guild_id']]}"
+            text_data += f"{event['name']}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{self.guilds[event['guild_id']]}"
             if index != len(events)-1:
                 text_data += '\n\r'
         self.text_data = text_data
