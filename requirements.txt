@@ -3,4 +3,3 @@ requests
 gunicorn
 apscheduler
 toml
-discord.py
