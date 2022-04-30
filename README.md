@@ -18,3 +18,8 @@ gunicorn -w 1 -b 0.0.0.0:5003 app:app
 ```
 
 Note: For now you need to use only one worker since the requests to the API need to be start in only one thread for avoid rate limit problems
+
+# Endpoints
+
+- `/v1/events`: return the list of the event in an easy readable format for NeosVR: ```name`location`start_time`end_time`discord_name\n\r```
+  Note: The last line don't have `\n\r`
