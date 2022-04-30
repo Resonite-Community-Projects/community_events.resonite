@@ -50,3 +50,7 @@ app = Flask(__name__)
 @app.route("/v1/events")
 def get_data():
    return getData.text_data
+
+@app.route("/")
+def index():
+    return "This API provide a list of events of NeosVR groups agragated by the USFN group. If you want to have your group listed or have any question please contact us at the USFN discord group (<a href='https://discord.gg/V3bXqm9j'>https://discord.gg/V3bXqm9j</a>). Source code available at <a href='https://github.com/brodokk/community_events.neos'>https://github.com/brodokk/community_events.neos</a>"

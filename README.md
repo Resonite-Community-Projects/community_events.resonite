@@ -23,3 +23,4 @@ Note: For now you need to use only one worker since the requests to the API need
 
 - `/v1/events`: return the list of the event in an easy readable format for NeosVR: ```name`location`start_time`end_time`discord_name\n\r```
   Note: The last line don't have `\n\r`
+- `/`: return a simple explanation of the utility of this API
