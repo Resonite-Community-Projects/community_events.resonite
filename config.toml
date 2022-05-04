@@ -1,1 +1,4 @@
+# Neos Events Dev bot
 DISCORD_BOT_TOKEN = ''
+# Neos events to aggrerate, in the format of 'scheme://host:port'
+SERVERS_EVENT = []

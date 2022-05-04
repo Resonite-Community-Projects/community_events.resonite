@@ -23,6 +23,7 @@ Note: For now you need to use only one worker since the requests to the API need
 
 - `/v1/events`: return the list of the event in an easy readable format for NeosVR: ```name`description`location`start_time`end_time`discord_name\n\r```
   Note: The last line don't have `\n\r`
+- `/v1/aggregated_events`: same format as `/v1/events` but return the list of aggragated events from this instance with the ones from the instance listed in the config variable `SERVER_EVENTS`
 - `/`: return a simple explanation of the utility of this API
 
 # Utilities

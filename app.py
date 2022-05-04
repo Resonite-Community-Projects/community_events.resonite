@@ -17,19 +17,12 @@ DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
 class GetData:
     guilds = {}
-    text_data = ""
+    events = ''
+    aggregated_events = ''
     discord = Discord(DISCORD_BOT_TOKEN)
 
-    def get_guilds(self):
-        for guild in self.discord.get_guilds():
-            self.guilds[guild['id']] = guild['name']
-
-    def get(self):
-        events = []
-        text_data = ''
-        for guild_id in self.guilds.keys():
-            events.extend(self.discord.list_guild_events(guild_id))
-        events = sorted(events, key=lambda d: d['scheduled_start_time'])
+    def _format(self, events):
+        text_data = ""
         for index, event in enumerate(events):
             description = event['description']
             if description:
@@ -38,10 +31,46 @@ class GetData:
                 description = description.replace('\r', ' ')
             else:
                 description = ''
-            text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{self.guilds[event['guild_id']]}"
+
+            if event['guild_id'].isdigit():
+                guild_id = self.guilds[event['guild_id']]
+            else:
+                guild_id = event['guild_id']
+            text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{guild_id}"
             if index != len(events)-1:
                 text_data += '\n\r'
-        self.text_data = text_data
+        return text_data
+
+    def get_guilds(self):
+        self.guilds = {}
+        for guild in self.discord.get_guilds():
+            self.guilds[guild['id']] = guild['name']
+
+    def get(self):
+        events = []
+        aggregated_events = []
+        text_data = ''
+        for guild_id in self.guilds.keys():
+            events.extend(self.discord.list_guild_events(guild_id))
+        for server in config['SERVERS_EVENT']:
+            r = requests.get(server + '/v1/events')
+            if r.status_code != 200:
+                print(f'Error {r.status_code}: {r.text}')
+                continue
+            if not r.text:
+                continue
+            _server_events = r.text.split('\n\r')
+            server_events = [event.split('`') for event in _server_events]
+            print(repr(server_events))
+            aggregated_events.extend(
+                [{'name': event[0], 'description': event[1], 'entity_metadata': {'location': event[2]}, 'scheduled_start_time': event[3], 'scheduled_end_time': event[4], 'guild_id': event[5]} for event in server_events]
+            )
+        aggregated_events.extend(events)
+        aggregated_events.sort(key=lambda x: x['scheduled_start_time'])
+        self.aggregated_events = self._format(aggregated_events)
+
+        events = sorted(events, key=lambda d: d['scheduled_start_time'])
+        self.events = self._format(events)
 
 getData = GetData()
 
@@ -56,7 +85,11 @@ app = Flask(__name__)
 
 @app.route("/v1/events")
 def get_data():
-   return getData.text_data
+   return getData.events
+
+@app.route("/v1/aggregated_events")
+def get_aggregated_data():
+    return getData.aggregated_events
 
 @app.route("/")
 def index():
