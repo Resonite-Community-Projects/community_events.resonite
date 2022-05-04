@@ -51,7 +51,6 @@ class GetData:
     def get(self):
         events = []
         aggregated_events = []
-        text_data = ''
         self.get_guilds()
         for guild_id in self.guilds.keys():
             try:
@@ -67,7 +66,6 @@ class GetData:
                 continue
             _server_events = r.text.split('\n\r')
             server_events = [event.split('`') for event in _server_events]
-            print(repr(server_events))
             aggregated_events.extend(
                 [{'name': event[0], 'description': event[1], 'entity_metadata': {'location': event[2]}, 'scheduled_start_time': event[3], 'scheduled_end_time': event[4], 'guild_id': event[5]} for event in server_events]
             )
