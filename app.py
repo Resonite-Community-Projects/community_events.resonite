@@ -27,6 +27,8 @@ class GetData:
             description = event['description']
             if description:
                 description = description.replace('`', ' ')
+                description = description.replace('\n\n', ' ')
+                description = description.replace('\n\r', ' ')
                 description = description.replace('\n', ' ')
                 description = description.replace('\r', ' ')
             else:
