@@ -1,4 +1,5 @@
 import json
+import time
 
 import requests
 
@@ -29,6 +30,7 @@ class Discord:
                     time.sleep(float(response.headers['X-RateLimit-Reset-After']) + 1 )
                     return self._request(method, url, headers=headers, data=data)
                 print(f'EXCEPTION: {e}')
+                raise e
             finally:
                 session.close()
 

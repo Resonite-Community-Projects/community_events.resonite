@@ -52,8 +52,12 @@ class GetData:
         events = []
         aggregated_events = []
         text_data = ''
+        self.get_guilds()
         for guild_id in self.guilds.keys():
-            events.extend(self.discord.list_guild_events(guild_id))
+            try:
+                events.extend(self.discord.list_guild_events(guild_id))
+            except Exception as e:
+                pass
         for server in config['SERVERS_EVENT']:
             r = requests.get(server + '/v1/events')
             if r.status_code != 200:
@@ -76,7 +80,6 @@ class GetData:
 
 getData = GetData()
 
-getData.get_guilds()
 getData.get()
 
 sched = BackgroundScheduler(daemon=True)
