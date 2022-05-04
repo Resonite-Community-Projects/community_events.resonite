@@ -34,6 +34,8 @@ class GetData:
             description = event['description']
             if description:
                 description = description.replace('`', ' ')
+                description = description.replace('\n', ' ')
+                description = description.replace('\r', ' ')
             else:
                 description = ''
             text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{self.guilds[event['guild_id']]}"
