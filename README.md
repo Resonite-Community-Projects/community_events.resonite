@@ -26,6 +26,10 @@ Note: For now you need to use only one worker since the requests to the API need
 - `/v1/aggregated_events`: same format as `/v1/events` but return the list of aggragated events from this instance with the ones from the instance listed in the config variable `SERVER_EVENTS`
 - `/`: return a simple explanation of the utility of this API
 
+Both endpoints `events` and `aggregated_events` have the possibility to have only some community
+listed with the querystring `communities` who take as a parameters a list of community name
+separated by a coma.
+
 # Utilities
 
 The script `get_discord_server_list.py` return the list where the bot is present.

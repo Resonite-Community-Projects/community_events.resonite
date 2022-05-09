@@ -7,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from flask import Flask
 from flask import jsonify
+from flask import request
 
 from discord import Discord
 
@@ -17,12 +18,14 @@ DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
 class GetData:
     guilds = {}
-    events = ''
-    aggregated_events = ''
+    str_events = ''
+    str_aggregated_events = ''
+    dict_events = []
+    dict_aggregated_events = []
     discord = Discord(DISCORD_BOT_TOKEN)
 
-    def _format(self, events):
-        text_data = ""
+    def _parse(self, events):
+        data = []
         for index, event in enumerate(events):
             description = event['description']
             if description:
@@ -38,7 +41,32 @@ class GetData:
                 guild_id = self.guilds[event['guild_id']]
             else:
                 guild_id = event['guild_id']
-            text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{guild_id}"
+            data.append(
+                {'name': event['name'], 'description': description, 'entity_metadata': event['entity_metadata']['location'], 'scheduled_start_time': event['scheduled_start_time'], 'scheduled_end_time': event['scheduled_end_time'], 'guild_id': guild_id}
+            )
+        return data
+
+    def _format(self, events, quick=False):
+        text_data = ""
+        for index, event in enumerate(events):
+            description = event['description']
+            if description:
+                description = description.replace('`', ' ')
+                description = description.replace('\n\n', ' ')
+                description = description.replace('\n\r', ' ')
+                description = description.replace('\n', ' ')
+                description = description.replace('\r', ' ')
+            else:
+                description = ''
+
+            if quick:
+                text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['guild_id']}"
+            else:
+                if event['guild_id'].isdigit():
+                    guild_id = self.guilds[event['guild_id']]
+                else:
+                    guild_id = event['guild_id']
+                text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{guild_id}"
             if index != len(events)-1:
                 text_data += '\n\r'
         return text_data
@@ -71,10 +99,12 @@ class GetData:
             )
         aggregated_events.extend(events)
         aggregated_events.sort(key=lambda x: x['scheduled_start_time'])
-        self.aggregated_events = self._format(aggregated_events)
+        self.dict_aggregated_events = self._parse(aggregated_events)
+        self.str_aggregated_events = self._format(aggregated_events)
 
         events = sorted(events, key=lambda d: d['scheduled_start_time'])
-        self.events = self._format(events)
+        self.dict_events = self._parse(events)
+        self.str_events = self._format(events)
 
 getData = GetData()
 
@@ -86,13 +116,45 @@ sched.start()
 
 app = Flask(__name__)
 
+def get_communities_sorted_events(events, communities):
+    sorted_events = []
+    for community in communities:
+        for event in events:
+            if event['guild_id'] == community:
+                sorted_events.append(event)
+    return sorted_events
+
+def get_communities_events(communities, aggregated_events=False):
+    if communities:
+        if aggregated_events:
+            events = getData.dict_aggregated_events
+        else:
+            events = getData.dict_events
+        communities = communities.split(',')
+        sorted_events = get_communities_sorted_events(
+            events, communities
+        )
+        sorted_events.sort(key=lambda x: x['scheduled_start_time'])
+        return getData._format(sorted_events, quick=True)
+    else:
+        if aggregated_events:
+            return getData.str_aggregated_events
+        else:
+            return getData.str_events
+
 @app.route("/v1/events")
 def get_data():
-   return getData.events
+    return get_communities_events(
+        request.args.get('communities'),
+    )
+    return data
 
 @app.route("/v1/aggregated_events")
 def get_aggregated_data():
-    return getData.aggregated_events
+    return get_communities_events(
+        request.args.get('communities'),
+        aggregated_events=True,
+    )
 
 @app.route("/")
 def index():
