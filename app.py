@@ -44,12 +44,13 @@ class GetData:
             else:
                 description = ''
 
-            if event['guild_id'].isdigit():
-                guild_id = self.guilds[event['guild_id']]
-            else:
-                guild_id = event['guild_id']
+            community = event['community'] if 'community' in event else event['guild_id']
+
+            if community.isdigit():
+                community = self.guilds[community]
+
             data.append(
-                {'name': event['name'], 'description': description, 'entity_metadata': event['entity_metadata']['location'], 'scheduled_start_time': event['scheduled_start_time'], 'scheduled_end_time': event['scheduled_end_time'], 'guild_id': guild_id}
+                {'name': event['name'], 'description': description, 'entity_metadata': event['entity_metadata']['location'], 'scheduled_start_time': event['scheduled_start_time'], 'scheduled_end_time': event['scheduled_end_time'], 'community': community}
             )
         return data
 
@@ -67,13 +68,15 @@ class GetData:
                 description = ''
 
             if quick:
-                text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['guild_id']}"
+                text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['community']}"
             else:
-                if event['guild_id'].isdigit():
-                    guild_id = self.guilds[event['guild_id']]
-                else:
-                    guild_id = event['guild_id']
-                text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{guild_id}"
+
+                community = event['community'] if 'community' in event else event['guild_id']
+
+                if community.isdigit():
+                    community = self.guilds[community]
+
+                text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{community}"
             if index != len(events)-1:
                 text_data += '\n\r'
         return text_data
@@ -87,9 +90,9 @@ class GetData:
         events = []
         aggregated_events = []
         self.get_guilds()
-        for guild_id in self.guilds.keys():
+        for community in self.guilds.keys():
             try:
-                events.extend(self.discord.list_guild_events(guild_id))
+                events.extend(self.discord.list_guild_events(community))
             except Exception as e:
                 pass
         for server in config['SERVERS_EVENT']:
@@ -102,7 +105,7 @@ class GetData:
             _server_events = r.text.split('\n\r')
             server_events = [event.split('`') for event in _server_events]
             aggregated_events.extend(
-                [{'name': event[0], 'description': event[1], 'entity_metadata': {'location': event[2]}, 'scheduled_start_time': event[3], 'scheduled_end_time': event[4], 'guild_id': event[5]} for event in server_events]
+                [{'name': event[0], 'description': event[1], 'entity_metadata': {'location': event[2]}, 'scheduled_start_time': event[3], 'scheduled_end_time': event[4], 'community': event[5]} for event in server_events]
             )
 
         def clean_google_description(description):
@@ -120,11 +123,10 @@ class GetData:
                 return date['dateTime']
 
         if getattr(self, 'google', False):
-            print('erere')
             google_data = self.google.get_events()
             google_events = []
             for event in google_data[0]['items']:
-                guild_id, name = event['summary'].split('`')
+                community, name = event['summary'].split('`')
                 start_time = parse_date(event['start'])
                 end_time = parse_date(event['end'])
                 description = ''
@@ -137,7 +139,7 @@ class GetData:
                         'entity_metadata': {'location': event['location']},
                         'scheduled_start_time': start_time,
                         'scheduled_end_time': end_time,
-                        'guild_id': guild_id,
+                        'community': community,
                     }]
                 )
             events.extend(google_events)
@@ -165,7 +167,7 @@ def get_communities_sorted_events(events, communities):
     sorted_events = []
     for community in communities:
         for event in events:
-            if event['guild_id'] == community:
+            if event['community'] == community:
                 sorted_events.append(event)
     return sorted_events
 
