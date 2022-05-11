@@ -29,7 +29,15 @@ Note: For now you need to use only one worker since the requests to the API need
 Both endpoints `events` and `aggregated_events` have the possibility to have only some community
 listed with the querystring `communities` who take as a parameters a list of community name
 separated by a coma.
+They also return a list of events from a Google calendar. See configuration below.
 
-# Utilities
+# Add a google agenda
 
-The script `get_discord_server_list.py` return the list where the bot is present.
+For adding a google agenda you need:
+
+- create a Google calendar with your personal account
+- create, or use, a Google Cloud Plateform account and create a new project. Enable the calendar API on it and create a `Service Account` with a `json` API key. Then you need to add the email of this Service Account API key as an authorized user of your personal Google calendar.
+- Copy the `json` file next to the project or where you want on the system.
+- Update the `config.toml` configuration depending on your need.
+
+Note: The id of the calendar is in the settings of your Google Calendar under calendar integration.
