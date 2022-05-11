@@ -26,7 +26,10 @@ class GetData:
     dict_events = []
     dict_aggregated_events = []
     discord = Discord(DISCORD_BOT_TOKEN)
-    google = GoogleCalendar(CALENDARS_ACCEPTED, CREDENTIALS_FILE)
+
+    def __init__(self):
+        if CREDENTIALS_FILE:
+            self.google = GoogleCalendar(CALENDARS_ACCEPTED, CREDENTIALS_FILE)
 
     def _parse(self, events):
         data = []
@@ -116,26 +119,28 @@ class GetData:
             else:
                 return date['dateTime']
 
-        google_data = self.google.get_events()
-        google_events = []
-        for event in google_data[0]['items']:
-            guild_id, name = event['summary'].split('`')
-            start_time = parse_date(event['start'])
-            end_time = parse_date(event['end'])
-            description = ''
-            if 'description' in event:
-                description = clean_google_description(event['description'])
-            google_events.extend(
-                [{
-                    'name': name,
-                    'description': description,
-                    'entity_metadata': {'location': event['location']},
-                    'scheduled_start_time': start_time,
-                    'scheduled_end_time': end_time,
-                    'guild_id': guild_id,
-                }]
-            )
-        events.extend(google_events)
+        if getattr(self, 'google', False):
+            print('erere')
+            google_data = self.google.get_events()
+            google_events = []
+            for event in google_data[0]['items']:
+                guild_id, name = event['summary'].split('`')
+                start_time = parse_date(event['start'])
+                end_time = parse_date(event['end'])
+                description = ''
+                if 'description' in event:
+                    description = clean_google_description(event['description'])
+                google_events.extend(
+                    [{
+                        'name': name,
+                        'description': description,
+                        'entity_metadata': {'location': event['location']},
+                        'scheduled_start_time': start_time,
+                        'scheduled_end_time': end_time,
+                        'guild_id': guild_id,
+                    }]
+                )
+            events.extend(google_events)
         aggregated_events.extend(events)
 
         aggregated_events.sort(key=lambda x: x['scheduled_start_time'])
