@@ -187,7 +187,6 @@ def get_data():
     return get_communities_events(
         request.args.get('communities'),
     )
-    return data
 
 @app.route("/v1/aggregated_events")
 def get_aggregated_data():
