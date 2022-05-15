@@ -41,3 +41,9 @@ For adding a google agenda you need:
 - Update the `config.toml` configuration depending on your need.
 
 Note: The id of the calendar is in the settings of your Google Calendar under calendar integration.
+
+# Note
+
+Either the `title`, the `description`, or the `location` of the event must contain the word `Neos VR` for the event
+being returned by the API. Keep in mind that this 3 fields will be striped of their space, new line, some special
+char and will be lowered for detect this string.
