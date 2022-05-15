@@ -1,5 +1,6 @@
 # Neos Events Dev bot
 DISCORD_BOT_TOKEN = ''
+DISCORD_GUILDS_WHITELISTED = []
 # Neos events to aggrerate, in the format of 'scheme://host:port'
 SERVERS_EVENT = []
 # Google calendars ID to sync

@@ -47,3 +47,8 @@ Note: The id of the calendar is in the settings of your Google Calendar under ca
 Either the `title`, the `description`, or the `location` of the event must contain the word `Neos VR` for the event
 being returned by the API. Keep in mind that this 3 fields will be striped of their space, new line, some special
 char and will be lowered for detect this string.
+
+By default the system have a discord guild whitelist for avoid abuse. If you want to add a guild to the whitelist you need to add it
+with the list of the key `DISCORD_GUILDS_WHITELISTED` in the `config.toml` configuration file.
+For found what is the id of a guild you can use the script `get_discord_server_list.py` who return the list of guild where the bot is
+present.

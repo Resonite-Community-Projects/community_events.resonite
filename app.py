@@ -16,6 +16,7 @@ with open('config.toml', 'r') as f:
     config = toml.load(f)
 
 DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
+DISCORD_GUILDS_WHITELISTED = config['DISCORD_GUILDS_WHITELISTED']
 CALENDARS_ACCEPTED = config['CALENDARS_ACCEPTED']
 CREDENTIALS_FILE = config['CREDENTIALS_FILE']
 
@@ -26,6 +27,7 @@ class GetData:
     dict_events = []
     dict_aggregated_events = []
     discord = Discord(DISCORD_BOT_TOKEN)
+    guilds_whitelisted  = DISCORD_GUILDS_WHITELISTED
 
     def __init__(self):
         if CREDENTIALS_FILE:
@@ -103,6 +105,8 @@ class GetData:
         aggregated_events = []
         self.get_guilds()
         for community in self.guilds.keys():
+            if community not in self.guilds_whitelisted:
+                continue
             try:
                 events.extend(self.discord.list_guild_events(community))
             except Exception as e:

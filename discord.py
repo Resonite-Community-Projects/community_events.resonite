@@ -13,7 +13,7 @@ class Discord:
             'Content-Type':'application/json'
         }
         self.session = requests.session()
-    
+
     def _request(self, method, url, headers=None, data=None) -> requests.Response:
         if not headers:
             headers = self.auth_headers
