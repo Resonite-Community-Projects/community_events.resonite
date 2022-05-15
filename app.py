@@ -90,7 +90,9 @@ class GetData:
         for event in events:
             desc = self._text_str(event['description'])
             name = self._text_str(event['name'])
-            location = self._text_str(event['entity_metadata']['location'])
+            location = ''
+            if event['entity_metadata']:
+                location = self._text_str(event['entity_metadata']['location'])
             if 'neosvr' in name + desc + location:
                 filtered_events.append(event)
         return filtered_events
@@ -120,9 +122,16 @@ class GetData:
                 continue
             _server_events = r.text.split('\n\r')
             server_events = [event.split('`') for event in _server_events]
-            aggregated_events.extend(
-                [{'name': event[0], 'description': event[1], 'entity_metadata': {'location': event[2]}, 'scheduled_start_time': event[3], 'scheduled_end_time': event[4], 'community': event[5]} for event in server_events]
-            )
+            for event in server_events:
+                if len(event) == 6:
+                    aggregated_events.extend([{
+                        'name': event[0],
+                        'description': event[1],
+                        'entity_metadata': {'location': event[2]},
+                        'scheduled_start_time': event[3],
+                        'scheduled_end_time': event[4],
+                        'community': event[5]
+                    }])
 
         def clean_google_description(description):
             description = description.replace('<span>', ' ')
