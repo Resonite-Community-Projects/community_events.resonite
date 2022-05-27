@@ -93,7 +93,7 @@ class GetData:
             location = ''
             if event['entity_metadata']:
                 location = self._text_str(event['entity_metadata']['location'])
-            if 'neosvr' in name + desc + location:
+            if 'neos' in name + desc + location:
                 filtered_events.append(event)
         return filtered_events
 
