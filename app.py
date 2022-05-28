@@ -3,6 +3,9 @@ import requests
 import time
 import toml
 
+from dateutil.parser import parse
+import pytz
+
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from flask import Flask
@@ -142,10 +145,13 @@ class GetData:
             return description
 
         def parse_date(date):
+
             if 'date' in date:
-                return date['date']
+                date = parse(date['date'])
+                return date.replace(tzinfo=pytz.UTC).isoformat()
             else:
-                return date['dateTime']
+                date = date['dateTime']
+                return parse(date).isoformat()
 
         if getattr(self, 'google', False):
             google_data = self.google.get_events()
