@@ -1,6 +1,6 @@
 # community_event_neos
 
-Small service for getting the events in multiple discord servers.
+Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for NeosVR.
 
 The token can be set directly in `config.yaml` file.
 
