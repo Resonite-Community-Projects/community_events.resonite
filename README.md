@@ -1,4 +1,4 @@
-# community_event_neos
+# community_event.neos
 
 Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for NeosVR.
 
