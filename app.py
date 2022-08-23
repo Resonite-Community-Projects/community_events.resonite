@@ -11,6 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 from flask import jsonify
 from flask import request
+from flask import render_template
 
 from discord import Discord
 from utils.google import GoogleCalendar
@@ -235,6 +236,16 @@ def get_aggregated_data():
         aggregated_events=True,
     )
 
+@app.template_filter('formatdatetime')
+def format_datetime(value, format="%d %b %I:%M %p"):
+    return parse(value).strftime(format)
+
 @app.route("/")
 def index():
-    return "This API provide a list of events of NeosVR groups agragated by the USFN group. If you want to have your group listed or have any question please contact us at the USFN discord group (<a href='https://discord.gg/V3bXqm9j'>https://discord.gg/V3bXqm9j</a>). Source code available at <a href='https://github.com/brodokk/community_events.neos'>https://github.com/brodokk/community_events.neos</a>"
+    raw_events = get_communities_events(
+        request.args.get('communities'),
+        aggregated_events=request.args.get('aggregated_events', False),
+    )
+    events = raw_events.split('\n\r')
+    events = [event.split('`') for event in events]
+    return render_template('index.html', events=events)

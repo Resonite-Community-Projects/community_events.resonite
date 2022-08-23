@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>community_events.neos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <!-- Bulma Version 0.9.0-->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css'>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/overlayscrollbars/1.9.1/css/OverlayScrollbars.min.css'>
+    <link rel='stylesheet' href='https://kingsora.github.io/OverlayScrollbars/etc/os-theme-thin-dark.css'>	  
+    <link rel='stylesheet' href="../css/prism.css">
+    <link rel="stylesheet" href="../css/cheatsheet.css">
+    <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <section class="hero is-link">
+        <div class="hero-body">
+          <div class="columns">
+            <div class="column is-12">
+              <div class="container content">
+                <h1 class="title">community_events.neos</h1>
+                <h2 class="subtitle">NeosVR group events aggregator</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+    <section class="section" style="min-height: 62vh">
+        <div class="container">
+            <article class="message is-info">
+                <div class="message-header">
+                <p>Info</p>
+                </div>
+                <div class="message-body">
+                    <p>If you want to have your group listed or have any question please contact GrayBoltWolf or Brodokk on NeosVR.</p>
+                    <p>Keep in mind this is a list of events of groups events gathered by GrayBoltWolf and Brodokk. This is <strong>not</strong> an exhaustive list of NeosVR events.</p>
+                </div>
+            </article>
+
+            <p>
+
+            </p>
+
+            {% for event in events %}
+            <div class="container">
+            <div class="card my-3">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        {{ event[0] }}
+                    </p>
+                    <div class="my-3 mx-4 is-flex is-flex-direction-column">
+                        <p>{{ event[3]|formatdatetime }}
+                        <p>{{ event[4]|formatdatetime }}</p>
+                    </div>
+                </header>
+                <div class="card-content">
+                  <p class="subtitle">
+                    {{ event[1] }}
+                  </p>
+                  <p>
+                    <i class="fa-solid fa-location-dot"></i> {{ event[2] }}
+                  </p>
+                  <p>
+                    <a href="#"><i class="fa-brands fa-discord"></i> {{ event[5] }}</a>
+                  </p>
+                </div>
+            </div>
+
+            </div>
+            {% else %}
+              <article class="message">
+                <div class="message-body content">
+                  It doesn't seem there are currently any public events planned. <strong>But</strong> remember:
+                
+                  <ul>
+                    <li>This <strong>isn't</strong> an exhaustive list of NeosVR events;</li>
+                    <li>Private events are not listed here;</li>
+                    <li>Events can be announced during the day for the following evening, come back later.</li>
+                  </ul>
+                </div>
+            </article>
+            {% endfor %}
+            
+        </div>
+
+
+    </section>
+
+  <footer class="footer">
+    <div class="content has-text-centered">
+      <p>
+        <strong>community_events.neos</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
+        Website and API <a href="https://github.com/brodokk/community_events.neos">source code</a>.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
