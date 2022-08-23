@@ -247,5 +247,6 @@ def index():
         aggregated_events=request.args.get('aggregated_events', False),
     )
     events = raw_events.split('\n\r')
+    events = list(filter(None, events))
     events = [event.split('`') for event in events]
     return render_template('index.html', events=events)
