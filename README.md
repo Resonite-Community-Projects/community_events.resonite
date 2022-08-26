@@ -24,12 +24,25 @@ Note: For now you need to use only one worker since the requests to the API need
 - `/v1/events`: return the list of the event in an easy readable format for NeosVR: ```name`description`location`start_time`end_time`community_name\n\r```
   Note: The last line don't have `\n\r`
 - `/v1/aggregated_events`: same format as `/v1/events` but return the list of aggragated events from this instance with the ones from the instance listed in the config variable `SERVER_EVENTS`
-- `/`: return a simple explanation of the utility of this API
+- `/`: WebUI client
 
 Both endpoints `events` and `aggregated_events` have the possibility to have only some community
 listed with the querystring `communities` who take as a parameters a list of community name
 separated by a coma.
 They also return a list of events from a Google calendar. See configuration below.
+
+# WebUI client
+
+The WebUI client is directly using the functions internally and don't talk to the API in HTTP. Its use a simple css
+framework called [Bulma](https://bulma.io/) and are loaded directly from differents CDN for now.
+
+Date are formated directly without taking in account of the timezone of the webbrowser.
+
+There is a support of the discord timestamp but only for the `R` format.
+
+And the neos session URL is automaticaly detected from the description if no URL already present in the locatization parameter.
+It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
+parameter.
 
 # Add a google agenda
 
