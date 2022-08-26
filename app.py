@@ -247,13 +247,11 @@ def get_aggregated_data():
 
 @app.template_filter('formatdatetime')
 def format_datetime(value, format="%d %b %I:%M %p"):
-    return value
     return parse(value).strftime(format)
 
 @app.template_filter('detect_neos_url')
 def detect_neos_url(event):
     world = event[2]
-    print(world)
     if not world.startswith('http'):
         cloudx_url_match = re.search(re_cloudx_url_match_compiled, event[1])
         if cloudx_url_match:
@@ -264,7 +262,6 @@ def detect_neos_url(event):
         world = "<a href='{}'>{}</a>".format(
                 world, world
             )
-    print(world)
     return world
 
 @app.template_filter('parse')
