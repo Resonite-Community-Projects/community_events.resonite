@@ -18,6 +18,7 @@ from discord import Discord
 from utils.google import GoogleCalendar
 
 re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
+re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
 
 with open('config.toml', 'r') as f:
     config = toml.load(f)
@@ -260,6 +261,14 @@ def detect_neos_url(event):
             )
     print(world)
     return world
+
+@app.template_filter('parse')
+def parse(desc):
+    desc = re.sub(
+        re_url_match_compiled,
+        "<a href='\\1'>\\1</a>",
+        desc)
+    return desc
 
 @app.route("/")
 def index():

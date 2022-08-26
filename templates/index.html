@@ -63,7 +63,7 @@
                 </header>
                 <div class="card-content">
                   <p class="subtitle">
-                    {{ event[1] }}
+                    {{ event[1]|parse|safe }}
                   </p>
                   <p>
                     <i class="fa-solid fa-location-dot"></i> {{ event|detect_neos_url|safe }}
