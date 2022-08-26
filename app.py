@@ -265,7 +265,7 @@ def detect_neos_url(event):
     return world
 
 @app.template_filter('parse')
-def parse(desc):
+def parse_desciption(desc):
     try:
         a = re.search(re_discord_timestamp_match_compiled, desc)
         if a:
