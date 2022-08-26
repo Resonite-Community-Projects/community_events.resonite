@@ -3,9 +3,13 @@ import requests
 import time
 import toml
 import re
+import logging
+import traceback
 
 from dateutil.parser import parse
 import pytz
+from datetime import datetime
+import timeago
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -19,6 +23,7 @@ from utils.google import GoogleCalendar
 
 re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
+re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
 with open('config.toml', 'r') as f:
     config = toml.load(f)
@@ -264,11 +269,26 @@ def detect_neos_url(event):
 
 @app.template_filter('parse')
 def parse(desc):
-    desc = re.sub(
-        re_url_match_compiled,
-        "<a href='\\1'>\\1</a>",
-        desc)
-    return desc
+    try:
+        a = re.search(re_discord_timestamp_match_compiled, desc)
+        if a:
+            timestamp,format = a.group(1).split(":")
+            if format == 'R':
+                date = datetime.fromtimestamp(int(timestamp))
+                now = datetime.now()
+                data = timeago.format(date, now)
+                desc = re.sub(
+                    re_discord_timestamp_match_compiled,
+                    f"<code>{data}</code>",
+                    desc)
+        desc = re.sub(
+            re_url_match_compiled,
+            "<a href='\\1'>\\1</a>",
+            desc)
+        return desc
+    except Exception:
+        logging.error(traceback.format_exc())
+        return desc
 
 @app.route("/")
 def index():
