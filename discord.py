@@ -1,5 +1,6 @@
 import json
 import time
+import logging
 
 import requests
 
@@ -19,17 +20,17 @@ class Discord:
             headers = self.auth_headers
         with self.session as session:
             try:
-                print(f'{method} {url}')
+                logging.info(f'{method} {url}')
                 with session.request(method, url, headers=headers, data=data) as response:
                     response.raise_for_status()
                     return response.json()
             except Exception as e:
                 if '429' in str(e):
-                    print(f"Rate limit exceeded when requesting discord API")
-                    print(f"Trying again in {response.headers['X-RateLimit-Reset-After']} seconds")
+                    logging.error(f"Rate limit exceeded when requesting discord API")
+                    logging.error(f"Trying again in {response.headers['X-RateLimit-Reset-After']} seconds")
                     time.sleep(float(response.headers['X-RateLimit-Reset-After']) + 1 )
                     return self._request(method, url, headers=headers, data=data)
-                print(f'EXCEPTION: {e}')
+                logging.error(f'EXCEPTION: {e}')
                 raise e
             finally:
                 session.close()

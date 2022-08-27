@@ -17,9 +17,22 @@ from flask import Flask
 from flask import jsonify
 from flask import request
 from flask import render_template
+from flask.logging import default_handler
 
 from discord import Discord
 from utils.google import GoogleCalendar
+
+
+formatter = logging.Formatter(
+    '[%(asctime)s] [%(module)s] '
+    '[%(levelname)s] %(message)s',
+    "%Y-%m-%d %H:%M:%S %z"
+)
+
+root = logging.getLogger()
+root.setLevel(logging.INFO)
+root.addHandler(default_handler)
+root.handlers[0].setFormatter(formatter)
 
 re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
@@ -129,7 +142,7 @@ class GetData:
         for server in config['SERVERS_EVENT']:
             r = requests.get(server + '/v1/events')
             if r.status_code != 200:
-                print(f'Error {r.status_code}: {r.text}')
+                logging.error(f'Error {r.status_code}: {r.text}')
                 continue
             if not r.text:
                 continue
