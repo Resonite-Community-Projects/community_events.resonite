@@ -140,7 +140,11 @@ class GetData:
             except Exception as e:
                 pass
         for server in config['SERVERS_EVENT']:
-            r = requests.get(server + '/v1/events')
+            try:
+                r = requests.get(server + '/v1/events')
+            except Exception as err:
+                logging.error(f'Error: {err}')
+                continue
             if r.status_code != 200:
                 logging.error(f'Error {r.status_code}: {r.text}')
                 continue
