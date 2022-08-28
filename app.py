@@ -70,6 +70,20 @@ class GetData:
             text = ''
         return text
 
+    def _parse_description(self, description):
+        a = re.search(re_discord_timestamp_match_compiled, description)
+        if a:
+            timestamp,format = a.group(1).split(":")
+            if format == 'R':
+                date = datetime.fromtimestamp(int(timestamp))
+                now = datetime.now()
+                data = timeago.format(date, now)
+                description = re.sub(
+                    re_discord_timestamp_match_compiled,
+                    data,
+                    description)
+        return description
+
     def _get_community_info(self, event):
         community = event['community'] if 'community' in event else event['guild_id']
         if community.isdigit():
@@ -81,6 +95,7 @@ class GetData:
         data = []
         for index, event in enumerate(events):
             description = self._clean_text(event['description'])
+            description = self._parse_description(description)
             community = self._get_community_info(event)
 
             data.append(
@@ -93,6 +108,7 @@ class GetData:
         text_data = ""
         for index, event in enumerate(events):
             description = self._clean_text(event['description'])
+            description = self._parse_description(description)
 
             if quick:
                 text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['community']}"
@@ -281,17 +297,6 @@ def detect_neos_url(event):
 @app.template_filter('parse')
 def parse_desciption(desc):
     try:
-        a = re.search(re_discord_timestamp_match_compiled, desc)
-        if a:
-            timestamp,format = a.group(1).split(":")
-            if format == 'R':
-                date = datetime.fromtimestamp(int(timestamp))
-                now = datetime.now()
-                data = timeago.format(date, now)
-                desc = re.sub(
-                    re_discord_timestamp_match_compiled,
-                    f"<code>{data}</code>",
-                    desc)
         desc = re.sub(
             re_url_match_compiled,
             "<a href='\\1'>\\1</a>",
