@@ -59,16 +59,16 @@ class GetData:
         if CREDENTIALS_FILE:
             self.google = GoogleCalendar(CALENDARS_ACCEPTED, CREDENTIALS_FILE)
 
-    def _clean_description(self, description):
-        if description:
-            description = description.replace('`', ' ')
-            description = description.replace('\n\n', ' ')
-            description = description.replace('\n\r', ' ')
-            description = description.replace('\n', ' ')
-            description = description.replace('\r', ' ')
+    def _clean_text(self, text):
+        if text:
+            text = text.replace('`', ' ')
+            text = text.replace('\n\n', ' ')
+            text = text.replace('\n\r', ' ')
+            text = text.replace('\n', ' ')
+            text = text.replace('\r', ' ')
         else:
-            description = ''
-        return description
+            text = ''
+        return text
 
     def _get_community_info(self, event):
         community = event['community'] if 'community' in event else event['guild_id']
@@ -76,10 +76,11 @@ class GetData:
             community = self.guilds[community]
         return community
 
-    def _parse(self, events):
+    def _dict_format(self, events):
+        """Formats events in dict."""
         data = []
         for index, event in enumerate(events):
-            description = self._clean_description(event['description'])
+            description = self._clean_text(event['description'])
             community = self._get_community_info(event)
 
             data.append(
@@ -87,10 +88,11 @@ class GetData:
             )
         return data
 
-    def _format(self, events, quick=False):
+    def _str_format(self, events, quick=False):
+        """Formats events in str."""
         text_data = ""
         for index, event in enumerate(events):
-            description = self._clean_description(event['description'])
+            description = self._clean_text(event['description'])
 
             if quick:
                 text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['community']}"
@@ -102,24 +104,19 @@ class GetData:
                 text_data += '\n\r'
         return text_data
 
-    def _text_str(self, data):
-        if data:
-            data = self._clean_description(data)
-            data = data.replace(' ', '')
-            data = data.lower()
-            return data
-        else:
-            return ''
-
     def _filter_neos_only_events(self, events):
         filtered_events = []
         for event in events:
-            desc = self._text_str(event['description'])
-            name = self._text_str(event['name'])
+            desc = self._clean_text(event['description'])
+            name = self._clean_text(event['name'])
             location = ''
             if event['entity_metadata']:
-                location = self._text_str(event['entity_metadata']['location'])
-            if 'neos' in name + desc + location:
+                location = self._clean_text(event['entity_metadata']['location'])
+            q = name + desc + location
+            if q:
+                q = q.replace(' ', '')
+                q = q.lower()
+            if 'neos' in q:
                 filtered_events.append(event)
         return filtered_events
 
@@ -205,13 +202,13 @@ class GetData:
 
         aggregated_events.sort(key=lambda x: x['scheduled_start_time'])
         aggregated_events = self._filter_neos_only_events(aggregated_events)
-        self.dict_aggregated_events = self._parse(aggregated_events)
-        self.str_aggregated_events = self._format(aggregated_events)
+        self.dict_aggregated_events = self._dict_format(aggregated_events)
+        self.str_aggregated_events = self._str_format(aggregated_events)
 
         events = self._filter_neos_only_events(events)
         events = sorted(events, key=lambda d: d['scheduled_start_time'])
-        self.dict_events = self._parse(events)
-        self.str_events = self._format(events)
+        self.dict_events = self._dict_format(events)
+        self.str_events = self._str_format(events)
 
 getData = GetData()
 
@@ -242,7 +239,7 @@ def get_communities_events(communities, aggregated_events=False):
             events, communities
         )
         sorted_events.sort(key=lambda x: x['scheduled_start_time'])
-        return getData._format(sorted_events, quick=True)
+        return getData._str_format(sorted_events, quick=True)
     else:
         if aggregated_events:
             return getData.str_aggregated_events
