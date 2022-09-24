@@ -1,27 +1,21 @@
 import json
-import requests
-import time
-import toml
-import re
 import logging
+import re
+import time
 import traceback
-
-from dateutil.parser import parse
-import pytz
 from datetime import datetime
+
+import pytz
+import requests
 import timeago
-
+import toml
 from apscheduler.schedulers.background import BackgroundScheduler
-
-from flask import Flask
-from flask import jsonify
-from flask import request
-from flask import render_template
+from dateutil.parser import parse
+from flask import Flask, jsonify, render_template, request
 from flask.logging import default_handler
 
 from discord import Discord
 from utils.google import GoogleCalendar
-
 
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '

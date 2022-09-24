@@ -1,8 +1,11 @@
 import datetime
 from typing import List
-from google.oauth2 import service_account
+
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
+
+from google.oauth2 import service_account
+
 
 class GoogleCalendar:
 
