@@ -51,7 +51,7 @@ web request for now.
 The calendar application can simply by launch via
 
 ```
-gunicorn -w 4 -b 0.0.0.0:5000 redis:app
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
 # Endpoints
@@ -66,6 +66,14 @@ listed with the querystring `communities` who take as a parameters a list of com
 separated by a coma.
 They also return a list of events from a Google calendar. See configuration below.
 
+# NeosVR facet client
+
+Its possible to see the list of events available in NeosVR via a facet.
+You can find the last version available in the public folder at this
+address: neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de
+
+![NeosVR facet client](images/facet.png)
+
 # WebUI client
 
 The WebUI client is directly using the functions internally and don't talk to the API in HTTP. Its use a simple css
@@ -78,6 +86,8 @@ There is a support of the discord timestamp but only for the `R` format.
 And the neos session URL is automaticaly detected from the description if no URL already present in the locatization parameter.
 It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
 parameter.
+
+![WebUI client](images/webui.png)
 
 # Add a google agenda
 
