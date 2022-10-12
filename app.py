@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import re
@@ -15,7 +16,6 @@ from flask import Flask, jsonify, render_template, request
 from flask.logging import default_handler
 
 from discord import Discord
-from utils.google import GoogleCalendar
 
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '
@@ -32,205 +32,14 @@ re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
 re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
-with open('config.toml', 'r') as f:
-    config = toml.load(f)
-
-DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
-DISCORD_GUILDS_WHITELISTED = config['DISCORD_GUILDS_WHITELISTED']
-CALENDARS_ACCEPTED = config['CALENDARS_ACCEPTED']
-CREDENTIALS_FILE = config['CREDENTIALS_FILE']
-
-class GetData:
-    guilds = {}
-    str_events = ''
-    str_aggregated_events = ''
-    dict_events = []
-    dict_aggregated_events = []
-    discord = Discord(DISCORD_BOT_TOKEN)
-    guilds_whitelisted  = DISCORD_GUILDS_WHITELISTED
-
-    def __init__(self):
-        if CREDENTIALS_FILE:
-            self.google = GoogleCalendar(CALENDARS_ACCEPTED, CREDENTIALS_FILE)
-
-    def _clean_text(self, text):
-        if text:
-            text = text.replace('`', ' ')
-            text = text.replace('\n\n', ' ')
-            text = text.replace('\n\r', ' ')
-            text = text.replace('\n', ' ')
-            text = text.replace('\r', ' ')
-        else:
-            text = ''
-        return text
-
-    def _parse_description(self, description):
-        a = re.search(re_discord_timestamp_match_compiled, description)
-        if a:
-            timestamp,format = a.group(1).split(":")
-            if format == 'R':
-                date = datetime.fromtimestamp(int(timestamp))
-                now = datetime.now()
-                data = timeago.format(date, now)
-                description = re.sub(
-                    re_discord_timestamp_match_compiled,
-                    data,
-                    description)
-        return description
-
-    def _get_community_info(self, event):
-        community = event['community'] if 'community' in event else event['guild_id']
-        if community.isdigit():
-            community = self.guilds[community]
-        return community
-
-    def _dict_format(self, events):
-        """Formats events in dict."""
-        data = []
-        for index, event in enumerate(events):
-            description = self._clean_text(event['description'])
-            description = self._parse_description(description)
-            community = self._get_community_info(event)
-
-            data.append(
-                {'name': event['name'], 'description': description, 'entity_metadata': event['entity_metadata']['location'], 'scheduled_start_time': event['scheduled_start_time'], 'scheduled_end_time': event['scheduled_end_time'], 'community': community}
-            )
-        return data
-
-    def _str_format(self, events, quick=False):
-        """Formats events in str."""
-        text_data = ""
-        for index, event in enumerate(events):
-            description = self._clean_text(event['description'])
-            description = self._parse_description(description)
-
-            if quick:
-                text_data += f"{event['name']}`{description}`{event['entity_metadata']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{event['community']}"
-            else:
-                community = self._get_community_info(event)
-
-                text_data += f"{event['name']}`{description}`{event['entity_metadata']['location']}`{event['scheduled_start_time']}`{event['scheduled_end_time']}`{community}"
-            if index != len(events)-1:
-                text_data += '\n\r'
-        return text_data
-
-    def _filter_neos_only_events(self, events):
-        filtered_events = []
-        for event in events:
-            desc = self._clean_text(event['description'])
-            name = self._clean_text(event['name'])
-            location = ''
-            if event['entity_metadata']:
-                location = self._clean_text(event['entity_metadata']['location'])
-            q = name + desc + location
-            if q:
-                q = q.replace(' ', '')
-                q = q.lower()
-            if 'neos' in q:
-                filtered_events.append(event)
-        return filtered_events
-
-    def get_guilds(self):
-        self.guilds = {}
-        for guild in self.discord.get_guilds():
-            self.guilds[guild['id']] = guild['name']
-
-    def get(self):
-        events = []
-        aggregated_events = []
-        self.get_guilds()
-        for community in self.guilds.keys():
-            if community not in self.guilds_whitelisted:
-                continue
-            try:
-                events.extend(self.discord.list_guild_events(community))
-            except Exception as e:
-                pass
-        for server in config['SERVERS_EVENT']:
-            try:
-                r = requests.get(server + '/v1/events')
-            except Exception as err:
-                logging.error(f'Error: {err}')
-                continue
-            if r.status_code != 200:
-                logging.error(f'Error {r.status_code}: {r.text}')
-                continue
-            if not r.text:
-                continue
-            _server_events = r.text.split('\n\r')
-            server_events = [event.split('`') for event in _server_events]
-            for event in server_events:
-                if len(event) == 6:
-                    aggregated_events.extend([{
-                        'name': event[0],
-                        'description': event[1],
-                        'entity_metadata': {'location': event[2]},
-                        'scheduled_start_time': event[3],
-                        'scheduled_end_time': event[4],
-                        'community': event[5]
-                    }])
-
-        def clean_google_description(description):
-            description = description.replace('<span>', ' ')
-            description = description.replace('</span>', ' ')
-            description = description.replace('<html-blob>', ' ')
-            description = description.replace('</html-blob>', ' ')
-            description = description.strip(' ')
-            return description
-
-        def parse_date(date):
-
-            if 'date' in date:
-                date = parse(date['date'])
-                return date.replace(tzinfo=pytz.UTC).isoformat()
-            else:
-                date = date['dateTime']
-                return parse(date).isoformat()
-
-        if getattr(self, 'google', False):
-            google_data = self.google.get_events()
-            google_events = []
-            for event in google_data[0]['items']:
-                community, name = event['summary'].split('`')
-                start_time = parse_date(event['start'])
-                end_time = parse_date(event['end'])
-                description = ''
-                if 'description' in event:
-                    description = clean_google_description(event['description'])
-                google_events.extend(
-                    [{
-                        'name': name,
-                        'description': description,
-                        'entity_metadata': {'location': event['location']},
-                        'scheduled_start_time': start_time,
-                        'scheduled_end_time': end_time,
-                        'community': community,
-                    }]
-                )
-            events.extend(google_events)
-        aggregated_events.extend(events)
-
-        aggregated_events.sort(key=lambda x: x['scheduled_start_time'])
-        aggregated_events = self._filter_neos_only_events(aggregated_events)
-        self.dict_aggregated_events = self._dict_format(aggregated_events)
-        self.str_aggregated_events = self._str_format(aggregated_events)
-
-        events = self._filter_neos_only_events(events)
-        events = sorted(events, key=lambda d: d['scheduled_start_time'])
-        self.dict_events = self._dict_format(events)
-        self.str_events = self._str_format(events)
-
-getData = GetData()
-
-getData.get()
-
-sched = BackgroundScheduler(daemon=True)
-sched.add_job(getData.get,'interval',minutes=5)
-sched.start()
-
 app = Flask(__name__)
 
+from utils import RedisClient
+
+rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'))
+
 def get_communities_sorted_events(events, communities):
+    """ Return only the events part of the communities indicated. """
     sorted_events = []
     for community in communities:
         for event in events:
@@ -238,7 +47,8 @@ def get_communities_sorted_events(events, communities):
                 sorted_events.append(event)
     return sorted_events
 
-def get_communities_events(communities, aggregated_events=False):
+def get_communities_eventsa(communities, aggregated_events=False):
+    """ Return all the events sorted by starting date."""
     if communities:
         if aggregated_events:
             events = getData.dict_aggregated_events
@@ -256,14 +66,33 @@ def get_communities_events(communities, aggregated_events=False):
         else:
             return getData.str_events
 
+def get_communities_events(communities, aggregated_events=False):
+    if not communities:
+        if aggregated_events:
+            return rclient.get('aggregated_events_v1')
+        return rclient.get('events_v1')
+    else:
+        communities = communities.encode('utf-8').split(b',')
+        if aggregated_events:
+            events = rclient.get('aggregated_events_v1')
+        else:
+            events = rclient.get('events_v1')
+        _events = []
+        for event in events.split(b'\n'):
+            if event.split(b'`')[5] in communities:
+                _events.append(event)
+        return b"\n".join(_events)
+
 @app.route("/v1/events")
 def get_data():
+    """ API endpoints for get events."""
     return get_communities_events(
         request.args.get('communities'),
     )
 
 @app.route("/v1/aggregated_events")
 def get_aggregated_data():
+    """ API endpoints for get aggregated_events."""
     return get_communities_events(
         request.args.get('communities'),
         aggregated_events=True,
@@ -306,7 +135,7 @@ def index():
         request.args.get('communities'),
         aggregated_events=request.args.get('aggregated_events', False),
     )
-    events = raw_events.split('\n\r')
+    events = raw_events.split(b'\n')
     events = list(filter(None, events))
-    events = [event.split('`') for event in events]
+    events = [event.decode('utf-8').split('`') for event in events]
     return render_template('index.html', events=events)

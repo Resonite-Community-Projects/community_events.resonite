@@ -6,18 +6,53 @@ The token can be set directly in `config.yaml` file.
 
 # Use
 
-```
-pip install -r requirements.txt
-flask run
-```
+This is the new version 2.0, not tested in production yet, please see the git tag for the version 1.0.
 
-or if you want to use it directly with gunicorn
+## docker
+
+As an example there is a compose file for start the full project really
+easy.
+
+## Metal
+
+If you want to launch the project without docker you will need a
+Redis database. This project is then separated in two parts,
+the calendar update system and the calendar application by itself.
+This two parts can be executed separately and are totally independent
+from each other but the two depend of the redis database to work.
+
+For the two applications there is an env variable for set the
+redis host: `REDIS_HOST`, it default to `cache`.
+
+## Calendar update system
+
+The calendar update system work in a way that its always listen to
+discord events and as a cron job, every 5 minutes to check for missed
+events or in case of a reboot of this system.
+
+The calendar update system can simply by launch via:
 
 ```
-gunicorn -w 1 -b 0.0.0.0:5003 app:app
+python bot.py
 ```
+### Modularity note
 
-Note: For now you need to use only one worker since the requests to the API need to be start in only one thread for avoid rate limit problems
+The `bots` folder contains a list of modules to get events from. While
+most of them are and will be for discord bot there is actually two
+exception, for now. The module called `google` and `discord` are
+for Google Calendar and Discord integrated event system. All of the
+bot are based on the class `Bot` in the `_base.py` file.
+
+## Calendar application
+
+The calendar application is the system who will handle both API and
+web request for now.
+
+The calendar application can simply by launch via
+
+```
+gunicorn -w 4 -b 0.0.0.0:5000 redis:app
+```
 
 # Endpoints
 
