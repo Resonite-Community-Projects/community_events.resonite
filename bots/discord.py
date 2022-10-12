@@ -69,7 +69,7 @@ class DiscordScheduledEvents(Bot):
     @commands.Cog.listener()
     async def on_ready(self):
         print('discord bot ready')
-        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=1)
+        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=5)
         await self.get_data(self.dclient)
 
     async def get_events(self, guild):

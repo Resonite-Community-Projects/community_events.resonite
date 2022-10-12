@@ -49,7 +49,7 @@ class GoogleCalendar(commands.Cog):
     async def on_ready(self):
         if CREDENTIALS_FILE:
             print('google bot ready')
-            self.sched.add_job(self.get_data, 'interval', args=(self.dclient,), minutes=1)
+            self.sched.add_job(self.get_data, 'interval', args=(self.dclient,), minutes=5)
             await self.get_data(self.dclient)
 
     async def get_data(self, dclient):
