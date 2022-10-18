@@ -5,8 +5,14 @@ import pytz
 
 import logging
 
-
 import redis
+from easydict import EasyDict as edict
+import toml
+
+with open('config.toml', 'r') as f:
+    config = toml.load(f)
+
+Config = edict(config)
 
 class RedisClient:
 

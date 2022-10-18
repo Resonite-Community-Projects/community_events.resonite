@@ -5,14 +5,9 @@ import inspect
 from disnake.ext import commands
 
 import bots
-from utils import RedisClient
+from utils import RedisClient, Config
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-with open('config.toml', 'r') as f:
-    config = toml.load(f)
-
-DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
 rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
 
@@ -25,8 +20,8 @@ sched = AsyncIOScheduler(daemon=True)
 
 for name, obj in inspect.getmembers(bots):
     if inspect.isclass(obj):
-        bot.add_cog(obj(bot, config, sched, dclient, rclient))
+        bot.add_cog(obj(bot, Config, sched, dclient, rclient))
 
 sched.start()
 
-bot.run(DISCORD_BOT_TOKEN)
+bot.run(Config.DISCORD_BOT_TOKEN)

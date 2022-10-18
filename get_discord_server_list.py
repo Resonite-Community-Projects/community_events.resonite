@@ -1,13 +1,11 @@
+import os
 import toml
 
 from discord import Discord
 
-with open('config.toml', 'r') as f:
-    config = toml.load(f)
+from utils import Config
 
-DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
-
-discord = Discord(DISCORD_BOT_TOKEN)
+discord = Discord(Config.DISCORD_BOT_TOKEN)
 
 guilds = discord.get_guilds()
 

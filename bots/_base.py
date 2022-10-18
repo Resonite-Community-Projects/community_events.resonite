@@ -33,7 +33,7 @@ class Bot(commands.Cog):
         return False
 
     def get_aggregated_events(self):
-        for server in self.config['SERVERS_EVENT']:
+        for server in self.config.SERVERS_EVENT:
             try:
                 r = requests.get(server + '/v1/events')
             except Exception as err:
