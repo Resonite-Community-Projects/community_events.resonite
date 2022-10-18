@@ -17,6 +17,8 @@ from flask.logging import default_handler
 
 from discord import Discord
 
+from utils import Config
+
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '
     '[%(levelname)s] %(message)s',
@@ -135,6 +137,8 @@ def parse_desciption(desc):
 
 @app.route("/")
 def index():
+    if not Config.SHOW_WEBUI:
+        return ''
     raw_events = get_communities_events(
         request.args.get('communities'),
         aggregated_events=request.args.get('aggregated_events', False),

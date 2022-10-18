@@ -7,3 +7,4 @@ SERVERS_EVENT = []
 CALENDARS_ACCEPTED = []
 # Path to the Google Service Account credentials file
 CREDENTIALS_FILE = ''
+SHOW_WEBUI = true
