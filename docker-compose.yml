@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.3'
 
 services:
   cache:
@@ -7,23 +7,15 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning
-    volumes:
-      - ./data:/data
   bots:
-    build: .
+    image: community_event:latest
     command: python bot.py
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
+    volumes:
+      - "./config.toml:/app/config.toml"
   web:
-    build: .
+    image: community_event:latest
     command: gunicorn -w 4 -b 0.0.0.0:5000 app:app
+    volumes:
+      - "./config.toml:/app/config.toml"
     ports:
       - '5000:5000'
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3

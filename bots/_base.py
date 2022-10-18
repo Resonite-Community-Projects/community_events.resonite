@@ -1,3 +1,4 @@
+import logging
 from disnake.ext import commands
 import requests
 
@@ -43,9 +44,6 @@ class Bot(commands.Cog):
                 continue
             if not r.text:
                 continue
-            _server_events = r.text.split('\n\r')
+            _server_events = r.text.split('\n')
             return _server_events
-            #print(_server_events)
-            #server_events = [event.split('`') for event in _server_events]
-            #print(server_events)
         return []

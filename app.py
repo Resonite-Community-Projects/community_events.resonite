@@ -36,7 +36,7 @@ app = Flask(__name__)
 
 from utils import RedisClient
 
-rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'))
+rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
 
 def get_communities_sorted_events(events, communities):
     """ Return only the events part of the communities indicated. """
@@ -69,8 +69,9 @@ def get_communities_eventsa(communities, aggregated_events=False):
 def get_communities_events(communities, aggregated_events=False):
     if not communities:
         if aggregated_events:
-            return rclient.get('aggregated_events_v1')
-        return rclient.get('events_v1')
+            events = rclient.get('aggregated_events_v1')
+        else:
+            events = rclient.get('events_v1')
     else:
         communities = communities.encode('utf-8').split(b',')
         if aggregated_events:
@@ -81,7 +82,10 @@ def get_communities_events(communities, aggregated_events=False):
         for event in events.split(b'\n'):
             if event.split(b'`')[5] in communities:
                 _events.append(event)
-        return b"\n".join(_events)
+        events = b"\n".join(_events)
+    if not events:
+        return ''
+    return events
 
 @app.route("/v1/events")
 def get_data():
@@ -135,7 +139,9 @@ def index():
         request.args.get('communities'),
         aggregated_events=request.args.get('aggregated_events', False),
     )
-    events = raw_events.split(b'\n')
+    events = []
+    if raw_events:
+        events = raw_events.split(b'\n')
     events = list(filter(None, events))
     events = [event.decode('utf-8').split('`') for event in events]
     return render_template('index.html', events=events)

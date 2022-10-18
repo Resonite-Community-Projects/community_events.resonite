@@ -14,7 +14,7 @@ with open('config.toml', 'r') as f:
 
 DISCORD_BOT_TOKEN = config['DISCORD_BOT_TOKEN']
 
-rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'))
+rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
 
 dclient = disnake.Client()
 

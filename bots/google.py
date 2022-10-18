@@ -1,3 +1,4 @@
+import os
 import toml
 import pytz
 from dateutil.parser import parse
@@ -73,4 +74,4 @@ class GoogleCalendar(commands.Cog):
                 community
             )
             google_event.append(event_v1)
-        self.rclient.set('events_v1', google_event, 1)
+        self.rclient.write('events_v1', google_event, 1)
