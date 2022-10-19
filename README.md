@@ -2,13 +2,26 @@
 
 Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for NeosVR.
 
-The token can be set directly in `config.yaml` file.
-
+This tool has been write in a way that different  community can host their own server and can be connected to
+each other. There is a main instance available at [neos-community.events](https:/neos-community.events).
 # Use
 
 This is the new version 2.0, not tested in production yet, please see the git tag for the version 1.0.
 
-## docker
+## Configuration
+
+Most of the configuration of this tool are available in the `config.toml` file and the following configuration
+keys are available:
+
+- `DISCORD_BOT_TOKEN`: The bot token, in a string format.
+- `DISCORD_GUILDS_WHITELISTED`: A list of string discord IDs of different community.
+- `SERVERS_EVENT`: A list of string URL of other events server to aggregate in the format of 'scheme://host:port'
+- `CALENDARS_ACCEPTED`: The Google calendars ID string to sync event from
+- `CREDENTIALS_FILE`: The path of the Google Server Account credentials file, as a string. See below for more information.
+- `SHOW_WEBUI`: Enable or now the WebUI, depend if the tool will be used as an API only or no.
+
+
+## Docker
 
 As an example there is a compose file for start the full project really
 easy.
