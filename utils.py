@@ -1,6 +1,7 @@
 from operator import itemgetter
 from datetime import datetime, timezone
 from dateutil.parser import parse
+import dateutil
 import pytz
 
 import logging
@@ -14,6 +15,19 @@ with open('config.toml', 'r') as f:
 
 Config = edict(config)
 
+ekey = {
+    1: {
+        "start_time": 3,
+        "end_time": 4,
+        "community_name": 5,
+    },
+    2: {
+        "start_time": 5,
+        "end_time": 6,
+        "community_name": 7
+    }
+}
+
 class RedisClient:
 
     def __init__(self, host='127.0.0.1', port=6379):
@@ -22,24 +36,28 @@ class RedisClient:
     def get(self, key):
         return self.client.get(key)
 
-    def write(self, key, data, api_ver, community_overwrite=False, deletion=False):
-        
+    def write(self, key, data, api_ver, community=None, deletion=False, local_communities=[]):
+    
         dt_now = datetime.now(timezone.utc)
         old_data = self.get(key)
         updated_data = []
         if old_data:
             old_data = old_data.decode("utf-8").split('\n')
-            if api_ver == 1:
-                updated_data = [ x for x in old_data if parse(x.split('`')[4]).replace(tzinfo=pytz.UTC) > dt_now ]
+            for x in old_data:
+                try:
+                    if parse(x.split('`')[ekey[api_ver]["end_time"]]).replace(tzinfo=pytz.UTC) > dt_now:
+                        updated_data.append(x)
+                except dateutil.parser._parser.ParserError:
+                    continue
+
 
         if isinstance(data, str):
             data = [data]
 
         data = list(set(data))
 
-        if community_overwrite and data:
-            if api_ver == 1:
-                updated_data = [ x for x in updated_data if x.split('`')[5] != data[0].split('`')[5] ]
+        if community:
+            updated_data = [ x for x in updated_data if x.split('`')[ekey[api_ver]["community_name"]] != community ]
             
         for event in data:
             if event not in updated_data:
@@ -50,12 +68,17 @@ class RedisClient:
                 if event not in data:
                     updated_data.remove(event)
 
+        if local_communities:
+            local_communities = [x.name for x in local_communities]
+            for event in updated_data:
+                if event.split('`')[ekey[api_ver]["community_name"]] not in local_communities and event not in data:
+                    updated_data.remove(event)
+
         def sorting(key):
-            if key and api_ver == 1:
-                return key.split('`')[3]
+            if key:
+                return key.split('`')[ekey[api_ver]["start_time"]]
             return ''
-        if api_ver == 1:
-            updated_data.sort(key=sorting)
+        updated_data.sort(key=sorting)
 
         updated_data = "\n".join(d for d in updated_data if d)
         self.client.set(key, updated_data.encode('utf-8'))
@@ -66,7 +89,7 @@ class RedisClient:
         if event_before in updated_data and event_after not in updated_data:
             updated_data.remove(event_before)
             updated_data.append(event_after)
-            self.write(key, updated_data, api_ver, community_overwrite=True)
+            self.write(key, updated_data, api_ver, community=event_after.split('`')[ekey[api_ver]["community_name"]])
 
     def delete(self, key, new_data, api_ver):
         updated_data = self.get(key).decode("utf-8").split('\n')

@@ -15,8 +15,6 @@ from dateutil.parser import parse
 from flask import Flask, jsonify, render_template, request
 from flask.logging import default_handler
 
-from discord import Discord
-
 from utils import Config
 
 formatter = logging.Formatter(
@@ -68,18 +66,18 @@ def get_communities_eventsa(communities, aggregated_events=False):
         else:
             return getData.str_events
 
-def get_communities_events(communities, aggregated_events=False):
+def get_communities_events(communities, api_ver=1, aggregated_events=False):
     if not communities:
         if aggregated_events:
-            events = rclient.get('aggregated_events_v1')
+            events = rclient.get(f'aggregated_events_v{api_ver}')
         else:
-            events = rclient.get('events_v1')
+            events = rclient.get(f'events_v{api_ver}')
     else:
         communities = communities.encode('utf-8').split(b',')
         if aggregated_events:
-            events = rclient.get('aggregated_events_v1')
+            events = rclient.get(f'aggregated_events_v{api_ver}')
         else:
-            events = rclient.get('events_v1')
+            events = rclient.get(f'events_v{api_ver}')
         _events = []
         for event in events.split(b'\n'):
             if event.split(b'`')[5] in communities:
@@ -90,19 +88,40 @@ def get_communities_events(communities, aggregated_events=False):
     return events
 
 @app.route("/v1/events")
-def get_data():
+def get_events_v1():
     """ API endpoints for get events."""
     return get_communities_events(
         request.args.get('communities'),
     )
 
 @app.route("/v1/aggregated_events")
-def get_aggregated_data():
+def get_aggregated_events_v1():
     """ API endpoints for get aggregated_events."""
     return get_communities_events(
         request.args.get('communities'),
         aggregated_events=True,
     )
+
+@app.route("/v2/events")
+def get_events_v2():
+    """ API endpoints for get events."""
+    return get_communities_events(
+        request.args.get('communities'),
+        api_ver=2,
+    )
+
+@app.route("/v2/aggregated_events")
+def get_aggregated_events_v2():
+    """ API endpoints for get aggregated_events."""
+    return get_communities_events(
+        request.args.get('communities'),
+        api_ver=2,
+        aggregated_events=True,
+    )
+
+@app.route("/v2/communities")
+def get_communities_v2():
+    return rclient.get('communities_v2') or ''
 
 @app.template_filter('formatdatetime')
 def format_datetime(value, format="%d %b %I:%M %p"):

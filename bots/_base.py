@@ -5,7 +5,7 @@ import requests
 class Bot(commands.Cog):
 
     def __init__(self, bot, config, sched, dclient, rclient):
-        print('initialise discord bot')
+        print(f'initialise {self.__class__.__name__} bot')
         self.bot = bot
         self.config = config
         self.sched = sched
@@ -32,10 +32,10 @@ class Bot(commands.Cog):
             return True
         return False
 
-    def get_aggregated_events(self):
+    def get_aggregated_events(self, api_ver):
         for server in self.config.SERVERS_EVENT:
             try:
-                r = requests.get(server + '/v1/events')
+                r = requests.get(server + f'/v{api_ver}/events')
             except Exception as err:
                 logging.error(f'Error: {err}')
                 continue
@@ -47,3 +47,43 @@ class Bot(commands.Cog):
             _server_events = r.text.split('\n')
             return _server_events
         return []
+
+    def sformat(
+        self,
+        title = '',
+        description = '',
+        location_str = '',
+        location_web_url = '',
+        location_session_url = '',
+        start_time = '',
+        end_time = '',
+        community_name = '',
+        community_url = '',
+        api_ver = 0,
+    ):
+        if api_ver == 1:
+            return "{}`{}`{}`{}`{}`{}".format(
+                title,
+                description,
+                location_str,
+                start_time,
+                end_time,
+                community_name,
+            )
+        elif api_ver == 2:
+            return "{}`{}`{}`{}`{}`{}`{}`{}`{}".format(
+                title,
+                description,
+                location_str,
+                location_web_url,
+                location_session_url,
+                start_time,
+                end_time,
+                community_name,
+                community_url,
+                self.__class__.__name__ # Source
+            )
+        else:
+            raise ValueError(
+                'Invalid API version'
+            )
