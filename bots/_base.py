@@ -1,16 +1,25 @@
 import logging
+import re
+
 from disnake.ext import commands
 import requests
 
+re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
+re_location_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
 class Bot(commands.Cog):
+    jschema = None
 
     def __init__(self, bot, config, sched, dclient, rclient):
-        print(f'initialise {self.__class__.__name__} bot')
+        self.name = self.__class__.__name__
+        if not self.jschema:
+            raise ValueError(f"The bot {self.name} must have a declared json schema for its configuration!")
+
         self.bot = bot
         self.config = config
         self.sched = sched
         self.dclient = dclient
         self.rclient = rclient
+        print(f'initialise {self.name} bot')
 
     def _clean_text(self, text):
         if text:
@@ -31,6 +40,18 @@ class Bot(commands.Cog):
         if 'neosvr' in q:
             return True
         return False
+
+    def update_communities(self, communities_name):
+        communities_v2 = self.rclient.get('communities_v2')
+        if communities_v2:
+            communities_v2 = communities_v2.decode("utf-8").split('\n')
+        else:
+            communities_v2 = []
+        if isinstance(communities_name, str):
+            communities_name = [communities_name]
+        for community_name in communities_name:
+            communities_v2.append(community_name)
+        self.rclient.client.set('communities_v2', "`".join(communities_v2).encode('utf-8'))
 
     def get_aggregated_events(self, api_ver):
         for server in self.config.SERVERS_EVENT:
@@ -53,12 +74,14 @@ class Bot(commands.Cog):
         title = '',
         description = '',
         location_str = '',
-        location_web_url = '',
+        session_image = '',
+        location_web_session_url = '',
         location_session_url = '',
         start_time = '',
         end_time = '',
         community_name = '',
         community_url = '',
+        tags = '',
         api_ver = 0,
     ):
         if api_ver == 1:
@@ -71,19 +94,33 @@ class Bot(commands.Cog):
                 community_name,
             )
         elif api_ver == 2:
-            return "{}`{}`{}`{}`{}`{}`{}`{}`{}".format(
+            return "{}`{}`{}`{}`{}`{}`{}`{}`{}`{}`{}`{}".format(
                 title,
                 description,
+                session_image,
                 location_str,
-                location_web_url,
+                location_web_session_url,
                 location_session_url,
                 start_time,
                 end_time,
                 community_name,
                 community_url,
+                tags,
                 self.__class__.__name__ # Source
             )
         else:
             raise ValueError(
                 'Invalid API version'
             )
+
+    def get_location_web_session_url(self, description):
+        location_web_session_url_match = re.search(re_location_web_session_url_match_compiled, description)
+        if location_web_session_url_match:
+            return location_web_session_url_match.group()
+        return ''
+
+    def get_location_session_url(self, description):
+        location_session_url_match = re.search(re_location_session_url_match_compiled, description)
+        if location_session_url_match:
+            return location_session_url_match.group()
+        return ''

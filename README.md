@@ -67,6 +67,49 @@ The calendar application can simply by launch via
 gunicorn -w 4 -b 0.0.0.0:5000 app:app
 ```
 
+### Configuration
+
+Each source have his own configuration in the file `config.toml`. And for each
+source there is a configuration for each guild. For now keep in mind the system
+has been tested for on source per guild.
+
+#### DiscordScheduledEvents
+
+Discord scheduler events system source
+
+```
+[[BOTS.DiscordScheduledEvents]]
+community_name = "" # The name of the community
+community_url = "" # The URL where find this community, can be discord or a website
+tags = [] # The list of tags that one can link to the community
+guild_id = # The guild id, as an integer
+```
+
+#### GoogleCalendar
+
+Google calendar source for events
+
+```
+[[BOTS.GoogleCalendar]]
+communities_name = [] # The name of the communities handled by this Google calendar
+email = "" # The email of the Google calendar
+credentials_file = "" # The path of the configuration file
+```
+
+#### Apollo
+
+Not yet fully implemented and working
+
+```
+[[BOTS.Apollo]]
+community_name = "" # The name of the community
+community_url = "" # The URL where find this community, can be discord or a website
+tags = [] # The list of tags that one can link to the community
+guild_id = # The guild id, as an integer
+guild_channel = "" # The channel name
+bot = # The bot id, as an integer
+```
+
 # Endpoints
 
 ## V1
@@ -131,7 +174,5 @@ Either the `title`, the `description`, or the `location` of the event must conta
 being returned by the API. Keep in mind that this 3 fields will be striped of their space, new line, some special
 char and will be lowered for detect this string.
 
-By default the system have a discord guild whitelist for avoid abuse. If you want to add a guild to the whitelist you need to add it
-with the list of the key `DISCORD_GUILDS_WHITELISTED` in the `config.toml` configuration file.
 For found what is the id of a guild you can use the script `get_discord_server_list.py` who return the list of guild where the bot is
 present.

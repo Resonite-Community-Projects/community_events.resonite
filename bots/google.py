@@ -1,32 +1,67 @@
 import os
 import toml
 import pytz
+import logging
 from dateutil.parser import parse
+from jsonschema import validate
+import jsonschema
 
 from disnake.ext import commands
 
 from .utils.google import GoogleCalendarAPI
+from ._base import Bot
 
-with open('config.toml', 'r') as f:
-    config = toml.load(f)
 
-CALENDARS_ACCEPTED = config['CALENDARS_ACCEPTED']
-CREDENTIALS_FILE = config['CREDENTIALS_FILE']
-
-class GoogleCalendar(commands.Cog):
+class GoogleCalendar(Bot):
+    jschema = {
+        "$schema":"http://json-schema.org/draft-04/schema#",
+        "title":"GoogleCalendarConfig",
+        "description":"Config for GoogleCalendar",
+        "type":"object",
+        "properties":{
+            "communities_name": {
+                "description": "",
+                "type": "array"
+            },
+            "email":{
+                "description":"The email of the calendar to get events from",
+                "type": "string"
+            },
+            "credentials_file":{
+                "description":"The credential file of the calendar",
+                "type": "string"
+            }
+        },
+        "required":[
+            "communities_name",
+            "email",
+            "credentials_file"
+        ]
+    }
 
     def __init__(self, bot, config, sched, dclient, rclient):
-        print('initialize google bot')
-        self.bot = bot
-        self.config = config
-        self.sched = sched
-        self.dclient = dclient
-        self.rclient = rclient
+        super().__init__(bot, config, sched, dclient, rclient)
+        self.clients = []
 
-        if CREDENTIALS_FILE:
-            self.google = GoogleCalendarAPI(CALENDARS_ACCEPTED, CREDENTIALS_FILE)
-        else:
-            print("No credential found ignoring google event update")
+        for calendar in getattr(self.config.BOTS, self.name, []):
+            try:
+                validate(instance=calendar, schema=self.jschema)
+            except jsonschema.exceptions.ValidationError as exc:
+                logging.error(f"Ignore {self.name} for now. Invalid schema: {exc.message}")
+                return
+
+            try:
+                self.clients.append(
+                    GoogleCalendarAPI(
+                        calendar.email,
+                        calendar.credentials_file,
+                    )
+                )
+            except FileNotFoundError:
+                logging.error(f"Ignore {self.name} for now. Google {calendar.credentials_file} not found.")
+                continue
+
+            self.update_communities(calendar.communities_name)
 
     def parse_date(self, date):
         """ Parse data."""
@@ -48,30 +83,67 @@ class GoogleCalendar(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        if CREDENTIALS_FILE:
-            print('google bot ready')
-            self.sched.add_job(self.get_data, 'interval', args=(self.dclient,), minutes=5)
-            await self.get_data(self.dclient)
+        print('google bot ready')
+        self.sched.add_job(self.get_data, 'interval', args=(self.dclient,), minutes=5)
+        await self.get_data(self.dclient)
+
+    def format_event(self, event, api_ver):
+        community, name = event['summary'].split('`')
+        start_time = self.parse_date(event['start'])
+        end_time = self.parse_date(event['end'])
+        location = event['location']
+        location_web_session_url = ''
+        location_session_url = ''
+        description = ''
+        if 'description' in event:
+            description = self.clean_google_description(event['description'])
+            location_web_session_url = self.get_location_web_session_url(event['description'])
+            location_session_url = self.get_location_session_url(event['description'])
+        event_v1 = "{}`{}`{}`{}`{}`{}".format(
+            name,
+            description,
+            location,
+            start_time,
+            end_time,
+            community
+        )
+        if api_ver == 1:
+            event = self.sformat(
+                title = name,
+                description = description,
+                location_str = location,
+                start_time = start_time,
+                end_time = end_time,
+                community_name = community,
+                api_ver = 1
+            )
+        if api_ver == 2:
+            session_image = ''
+            event = self.sformat(
+                title = name,
+                description = description,
+                session_image = session_image,
+                location_str = location,
+                location_web_session_url = location_web_session_url,
+                location_session_url = location_session_url,
+                start_time = start_time,
+                end_time = end_time,
+                community_name = community,
+                community_url = "",
+                api_ver = 2
+            )
+        return event
 
     async def get_data(self, dclient):
         print('update google events')
-        google_data = self.google.get_events()
-        google_event = []
-        for event in google_data[0]['items']:
-            community, name = event['summary'].split('`')
-            start_time = self.parse_date(event['start'])
-            end_time = self.parse_date(event['end'])
-            location = event['location']
-            description = ''
-            if 'description' in event:
-                description = self.clean_google_description(event['description'])
-            event_v1 = "{}`{}`{}`{}`{}`{}".format(
-                name,
-                description,
-                location,
-                start_time,
-                end_time,
-                community
-            )
-            google_event.append(event_v1)
-        self.rclient.write('events_v1', google_event, 1)
+        for google in self.clients:
+            google_data = google.get_events()
+            _events_v1 = []
+            _events_v2 = []
+            for event in google_data['items']:
+                _events_v1.append(self.format_event(event, api_ver=1))
+                _events_v2.append(self.format_event(event, api_ver=2))
+            self.rclient.write('events_v1', _events_v1, api_ver=1)
+            self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, local_communities=self.bot.guilds)
+            self.rclient.write('events_v2', _events_v2, api_ver=2)
+            self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, local_communities=self.bot.guilds)

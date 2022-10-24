@@ -12,3 +12,4 @@ timeago
 redis
 disnake
 easydict
+jsonschema

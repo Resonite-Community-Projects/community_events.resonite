@@ -11,6 +11,7 @@ import requests
 import timeago
 import toml
 from apscheduler.schedulers.background import BackgroundScheduler
+import dateutil
 from dateutil.parser import parse
 from flask import Flask, jsonify, render_template, request
 from flask.logging import default_handler
@@ -125,22 +126,28 @@ def get_communities_v2():
 
 @app.template_filter('formatdatetime')
 def format_datetime(value, format="%d %b %I:%M %p"):
-    return parse(value).strftime(format)
+    try:
+        return parse(value).strftime(format)
+    except dateutil.parser._parser.ParserError:
+        return ''
 
-@app.template_filter('detect_neos_url')
+@app.template_filter('detect_location')
 def detect_neos_url(event):
-    world = event[2]
-    if not world.startswith('http'):
-        cloudx_url_match = re.search(re_cloudx_url_match_compiled, event[1])
-        if cloudx_url_match:
-            world = "<a href='{}'>{}</a>".format(
-                cloudx_url_match.group(), world
-            )
-    else:
-        world = "<a href='{}'>{}</a>".format(
-                world, world
-            )
-    return world
+    if event[4]:
+        return "<a href='{}'>{}</a>".format(
+            event[4], event[3]
+        )
+    return event[3]
+
+@app.template_filter('detect_community')
+def detect_neos_url(event):
+    if event[9]:
+        return "<a href='{}'>{}</a>".format(
+            event[9], event[8]
+        )
+    return event[8]
+
+
 
 @app.template_filter('parse')
 def parse_desciption(desc):
@@ -160,6 +167,7 @@ def index():
         return ''
     raw_events = get_communities_events(
         request.args.get('communities'),
+        api_ver=2,
         aggregated_events=request.args.get('aggregated_events', False),
     )
     events = []

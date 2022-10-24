@@ -58,7 +58,7 @@ class RedisClient:
 
         if community:
             updated_data = [ x for x in updated_data if x.split('`')[ekey[api_ver]["community_name"]] != community ]
-            
+
         for event in data:
             if event not in updated_data:
                 updated_data.append(event)
