@@ -17,44 +17,78 @@ keys are available:
 - `SERVERS_EVENT`: A list of string URL of other events server to aggregate in the format of 'scheme://host:port'
 - `SHOW_WEBUI`: Enable or now the WebUI, depend if the tool will be used as an API only or no.
 
-Another thing, each source have his own configuration in the file `config.toml`. And for each source there is a
-configuration for each guild. For now keep in mind the system has been tested for on source per guild.
+
+The different source of information are separated in modules. Each module have is own configuration per
+event.
+
+**Note**: If the configuration is change you should **clean** the Redis database!
 
 ### DiscordScheduledEvents
 
-Discord scheduler events system source
+The source module for discord integrated schedule event system.
+For adding a guild to this source you need to use the key
+`[[BOTS.DiscordScheduledEvents]]` and add the following key:
+
+- `community_name`: str, the name of the community
+- `community_url`: str, the URL where to find this community, can be a discord invite link or a website
+- `tags`: list, the list of tags
+- `guild_ids`: int, the guild id
+
+#### Example
 
 ```
 [[BOTS.DiscordScheduledEvents]]
-community_name = "" # The name of the community
-community_url = "" # The URL where find this community, can be discord or a website
-tags = [] # The list of tags that one can link to the community
-guild_id = # The guild id, as an integer
+community_name = "The Vulpine Garden"
+community_url = "https://discord.gg/GwQXurvt"
+tags = ['karaoke']
+guild_id = xxxxxxxxxxxxxxxxxx
 ```
 
 ### GoogleCalendar
 
-Google calendar source for events
+The source module for fetch events from Google Calendar.
+For adding a guild to this source you need to use the key
+`[[BOTS.GoogleCalendar]]` and add the following keys:
+
+- `communities_name`: list, the list of the names of the communities handled by this Google calendar
+- `email`: str, the email of the Google calendar
+- `credentials_file`: str, the path of the configuration file
+
+
+#### Example
 
 ```
 [[BOTS.GoogleCalendar]]
-communities_name = [] # The name of the communities handled by this Google calendar
-email = "" # The email of the Google calendar
-credentials_file = "" # The path of the configuration file
+communities_name = ['Creator Jam']
+email = "rdklsjhuifkufgitpf1p450n6td04@group.calendar.google.com"
+credentials_file = 'credentials.json'
 ```
 
 ### Apollo
 
-Not yet fully implemented and working
+The source module for fetch events from the Discord Apollo bot.
+For adding a guild to this source you need to use the key
+`[[BOTS.Apollo]]` and add the following keys:
+
+- `community_name`: str, the name of the community
+- `community_url`: str, the URL where to find this community, can be a discord invite link or a website
+- `tags`: list, the list of tags
+- `guild_ids`: int, the guild id
+- `guild_channel`:  str, the name of the channel where the Apollo bot is publishing new events
+- `bot`: int, the bot id
+
+**Note**: Not yet fully implemented and working
+
+#### Example
 
 ```
 [[BOTS.Apollo]]
-community_name = "" # The name of the community
-community_url = "" # The URL where find this community, can be discord or a website
-tags = [] # The list of tags that one can link to the community
-guild_id = # The guild id, as an integer
-guild_channel = "" # The channel name
-bot = # The bot id, as an integer
+community_name = "The Vulpine Garden"
+community_url = "https://discord.gg/GwQXurvt"
+tags = ['karaoke']
+guild_id = xxxxxxxxxxxxxxxxxx
+guild_channel = "events"
+bot = xxxxxxxxxxxxxxxxxx
 ```
 
 ## Docker
