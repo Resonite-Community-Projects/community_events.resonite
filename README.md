@@ -14,12 +14,48 @@ Most of the configuration of this tool are available in the `config.toml` file a
 keys are available:
 
 - `DISCORD_BOT_TOKEN`: The bot token, in a string format.
-- `DISCORD_GUILDS_WHITELISTED`: A list of string discord IDs of different community.
 - `SERVERS_EVENT`: A list of string URL of other events server to aggregate in the format of 'scheme://host:port'
-- `CALENDARS_ACCEPTED`: The Google calendars ID string to sync event from
-- `CREDENTIALS_FILE`: The path of the Google Server Account credentials file, as a string. See below for more information.
 - `SHOW_WEBUI`: Enable or now the WebUI, depend if the tool will be used as an API only or no.
 
+Another thing, each source have his own configuration in the file `config.toml`. And for each source there is a
+configuration for each guild. For now keep in mind the system has been tested for on source per guild.
+
+### DiscordScheduledEvents
+
+Discord scheduler events system source
+
+```
+[[BOTS.DiscordScheduledEvents]]
+community_name = "" # The name of the community
+community_url = "" # The URL where find this community, can be discord or a website
+tags = [] # The list of tags that one can link to the community
+guild_id = # The guild id, as an integer
+```
+
+### GoogleCalendar
+
+Google calendar source for events
+
+```
+[[BOTS.GoogleCalendar]]
+communities_name = [] # The name of the communities handled by this Google calendar
+email = "" # The email of the Google calendar
+credentials_file = "" # The path of the configuration file
+```
+
+### Apollo
+
+Not yet fully implemented and working
+
+```
+[[BOTS.Apollo]]
+community_name = "" # The name of the community
+community_url = "" # The URL where find this community, can be discord or a website
+tags = [] # The list of tags that one can link to the community
+guild_id = # The guild id, as an integer
+guild_channel = "" # The channel name
+bot = # The bot id, as an integer
+```
 
 ## Docker
 
@@ -65,49 +101,6 @@ The calendar application can simply by launch via
 
 ```
 gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-### Configuration
-
-Each source have his own configuration in the file `config.toml`. And for each
-source there is a configuration for each guild. For now keep in mind the system
-has been tested for on source per guild.
-
-#### DiscordScheduledEvents
-
-Discord scheduler events system source
-
-```
-[[BOTS.DiscordScheduledEvents]]
-community_name = "" # The name of the community
-community_url = "" # The URL where find this community, can be discord or a website
-tags = [] # The list of tags that one can link to the community
-guild_id = # The guild id, as an integer
-```
-
-#### GoogleCalendar
-
-Google calendar source for events
-
-```
-[[BOTS.GoogleCalendar]]
-communities_name = [] # The name of the communities handled by this Google calendar
-email = "" # The email of the Google calendar
-credentials_file = "" # The path of the configuration file
-```
-
-#### Apollo
-
-Not yet fully implemented and working
-
-```
-[[BOTS.Apollo]]
-community_name = "" # The name of the community
-community_url = "" # The URL where find this community, can be discord or a website
-tags = [] # The list of tags that one can link to the community
-guild_id = # The guild id, as an integer
-guild_channel = "" # The channel name
-bot = # The bot id, as an integer
 ```
 
 # Endpoints
