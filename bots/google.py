@@ -47,7 +47,7 @@ class GoogleCalendar(Bot):
             try:
                 validate(instance=calendar, schema=self.jschema)
             except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Ignore {self.name} for now. Invalid schema: {exc.message}")
+                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
                 return
 
             try:

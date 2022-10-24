@@ -37,6 +37,8 @@ class DiscordScheduledEvents(Bot):
             },
             "required":[
                 "community_name",
+                "community_url",
+                "tags",
                 "guild_id"
             ]
         }
@@ -49,7 +51,7 @@ class DiscordScheduledEvents(Bot):
             try:
                 validate(instance=bot_config, schema=self.jschema)
             except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Invalid schema: {exc.message}")
+                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
                 continue
 
             self.guilds[bot_config['guild_id']] = bot_config
