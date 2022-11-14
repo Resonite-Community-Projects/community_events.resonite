@@ -1,5 +1,6 @@
 import re
 import logging
+from datetime import datetime
 import disnake
 from disnake.ext import commands
 from jsonschema import validate
@@ -69,37 +70,35 @@ class Apollo(Bot):
         channel = disnake.utils.get(self.bot.get_all_channels(), guild__id=guild.guild_id, name=guild.guild_channel)
         _events_v1 = []
         _events_v2 = []
-        async for msg in channel.history(limit=400, oldest_first=True):
+        async for msg in channel.history(limit=3):
             if msg.author.id == guild.bot:
                 if not msg.embeds:
                     continue
                 embed = msg.embeds[0]
-                location = 'NeosVR'
+                location_str = self.get_location_str(embed.description)
                 location_web_session_url = self.get_location_web_session_url(embed.description)
                 location_session_url = self.get_location_session_url(embed.description)
+                tags = "`".join(guild.tags)
+                community_url = guild.community_url
                 end_time = ''
                 start_time = ''
                 for field in embed.fields:
                     if field.name in ['Time']:
-                        print(field.value)
                         r = re.search("<t:([0-9]{10}):F> - <t:([0-9]{10}):t>", field.value)
                         if r:
-                            #print(r.groups())
-                            start_time = r.group(1)
-                            end_time = r.group(2)
+                            start_time = datetime.fromtimestamp(int(r.group(1)))
+                            end_time = datetime.fromtimestamp(int(r.group(2)))
                 description = self._clean_text(embed.description)
-                #print(embed.title, description, location)
-                print(embed.title)
                 if not end_time or not start_time or not self._filter_neos_event(
                     embed.title,
                     description,
-                    location,
+                    location_str,
                 ):
                     return
                 event_v1 = self.sformat(
                     title = embed.title,
                     description = description,
-                    location_str = location,
+                    location_str = location_str,
                     start_time = start_time,
                     end_time = end_time,
                     community_name = guild.community_name,
@@ -109,24 +108,32 @@ class Apollo(Bot):
                 event_v2 = self.sformat(
                     title = embed.title,
                     description = description,
-                    session_image = session_image,
-                    location_str = location,
+                    session_image = '',
+                    location_str = location_str,
                     location_web_session_url = location_web_session_url,
                     location_session_url = location_session_url,
                     start_time = start_time,
                     end_time = end_time,
                     community_name = guild.community_name,
-                    community_url = '',
+                    community_url = community_url,
+                    tags = tags,
                     api_ver = 2
                 )
                 _events_v2.append(event_v2)
-        self.rclient.write('events_v1', _events_v1, 1)
+        self.rclient.write('events_v1', _events_v1,  api_ver=1, community=guild.community_name)
+        self.rclient.write('events_v2', _events_v2, api_ver=2, community=guild.community_name)
+
+        _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
+        if _aggregated_events_v1:
+            _events_v1.extend(_aggregated_events_v1)
         self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, local_communities=self.bot.guilds)
-        self.rclient.write('events_v2', _events_v2, 1)
+
+        _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
+        if _aggregated_events_v2:
+            _events_v2.extend(_aggregated_events_v2)
         self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, local_communities=self.bot.guilds)
 
     async def get_data(self, dclient):
         print("update apollo events")
-        return
         for guild_id, guild_data in self.guilds.items():
             await self.get_events(guild_data)

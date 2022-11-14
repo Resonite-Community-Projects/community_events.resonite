@@ -36,10 +36,13 @@
     <section class="section" style="min-height: 62vh">
         <div class="container">
             <article class="message is-info">
-                <div class="message-header">
-                <p>Info</p>
+                <div class="message-header" id="info_toggle">
+                  <p>Info</p>
+                  <span class="icon">
+                    <i class="fas fa-angle-up" aria-hidden="true"></i>
+                  </span>
                 </div>
-                <div class="message-body">
+                <div class="message-body" id="info">
                     <p>If you want to have your group listed or have any question please contact GrayBoltWolf or Brodokk on NeosVR.</p>
                     <p>Keep in mind this is a list of events of groups events gathered by GrayBoltWolf and Brodokk. This is <strong>not</strong> an exhaustive list of NeosVR events.</p>
                     <br/>
@@ -106,4 +109,45 @@
     </div>
   </footer>
 </body>
+
+<script>
+
+  window.addEventListener('resize', info_toggle);
+  document.querySelector("#info_toggle").addEventListener("click", info_toggle, false);
+  info_toggle = document.querySelector("#info_toggle");
+  info_toggle_icon = document.querySelector("#info_toggle .icon i");
+  info = document.querySelector("#info");
+
+  if (window.screen.availWidth < 1024) {
+    info_toggle.style.cursor = "pointer";
+    info_toggle_icon.className = "fas fa-angle-down";
+    info_toggle.style.borderRadius = "4px";
+    info.style.display = "none";
+  }
+
+  function info_toggle() {
+    if (window.screen.availWidth < 1024) {
+      if (this.constructor.name != "Window") {
+        if (info.style.display == 'none') {
+          info_toggle.style.borderRadius = "4px 4px 0 0";
+          info_toggle.style.cursor = "pointer";
+          info_toggle_icon.className = "fas fa-angle-up";
+          info.style.display = "block";
+        } else {
+          info_toggle.style.borderRadius = "4px";
+          info_toggle.style.cursor = "pointer";
+          info_toggle_icon.className = "fas fa-angle-down";
+          info.style.display = "none";
+        }
+      } else {
+        info_toggle.style.cursor = "pointer";
+      }
+    } else {
+      info_toggle.style.borderRadius = "4px 4px 0 0";
+      info_toggle.style.cursor = "default";
+      info_toggle_icon.className = "fas fa-angle-up";
+      info.style.display = "block";
+    }
+  }
+</script>
 </html>

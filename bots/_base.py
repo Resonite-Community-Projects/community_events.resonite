@@ -6,6 +6,7 @@ import requests
 
 re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_location_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
+re_location_str_match_compiled = re.compile('Location: (.*)')
 class Bot(commands.Cog):
     jschema = None
 
@@ -123,4 +124,10 @@ class Bot(commands.Cog):
         location_session_url_match = re.search(re_location_session_url_match_compiled, description)
         if location_session_url_match:
             return location_session_url_match.group()
+        return ''
+
+    def get_location_str(self, description):
+        location_str_match = re.search(re_location_str_match_compiled, description)
+        if location_str_match:
+            return location_str_match.group(1)
         return ''

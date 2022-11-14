@@ -77,8 +77,6 @@ For adding a guild to this source you need to use the key
 - `guild_channel`:  str, the name of the channel where the Apollo bot is publishing new events
 - `bot`: int, the bot id
 
-**Note**: Not yet fully implemented and working
-
 #### Example
 
 ```
@@ -197,9 +195,18 @@ Note: The id of the calendar is in the settings of your Google Calendar under ca
 
 # Note
 
-Either the `title`, the `description`, or the `location` of the event must contain the word `Neos VR` for the event
-being returned by the API. Keep in mind that this 3 fields will be striped of their space, new line, some special
-char and will be lowered for detect this string.
-
 For found what is the id of a guild you can use the script `get_discord_server_list.py` who return the list of guild where the bot is
 present.
+
+# Event creator usage notes
+
+Since the source can also contains event who can happen in different location, either virtually or physically, the keyword
+`neosvr` must be specified either in the `title`, the `description`, or the `location` of an event. The case and the presence
+of a space between `neos` and `vr` doesn't matter since the 3 fields will be striped of their spaces, new lines and some special
+chars before being lowered.
+
+## Apollo bot
+
+The Apollo bot is a special case since this bot doesn't support a 'location' field this one must be added in the description in the
+following format: `Location: <event location>`. For a correct detection this field should be on his own line. Don't forget to put a
+carriage return if you add test after and put a space before the `L`.
