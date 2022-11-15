@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -15,6 +15,14 @@
     <link rel='stylesheet' href="../css/prism.css">
     <link rel="stylesheet" href="../css/cheatsheet.css">
     <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
+
+    <style>
+      .content h3.subsubtitle {
+        margin-top: -1.25rem;
+        color: rgba(240, 240, 240, 0.9);
+        font-size: 1.25em;
+      }
+    </style>
 </head>
 
 <body>
@@ -25,42 +33,61 @@
             <div class="column is-12">
               <div class="container content">
                 <h1 class="title">neos-community.events</h1>
-                <h2 class="subtitle">NeosVR group events aggregator</h2>
+                <h2 class="subtitle">NeosVR <strong>non</strong> Exhaustive Communites Events Aggregator</h2>
+                <h3 class="subsubtitle">— by GrayBoltWolf and Brodokk</h3>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="hero-foot">
+          <nav class="tabs is-boxed is-fullwidth is-large">
+                  <div class="container">
+                    <ul>
+                      <li class="tab tab-events is-active" onclick="openTab(event,'Events')"><a >Events</a></li>
+                      <li class="tab tab-about" onclick="openTab(event,'About')"><a >About</a></li>
+                    </ul>
+                  </div>
+                </nav>
+            </div>
       </section>
 
 
     <section class="section" style="min-height: 62vh">
         <div class="container">
-            <article class="message is-info">
-                <div class="message-header" id="info_toggle">
-                  <p>Info</p>
-                  <span class="icon">
-                    <i class="fas fa-angle-up" aria-hidden="true"></i>
-                  </span>
-                </div>
-                <div class="message-body" id="info">
-                    <p>If you want to have your group listed or have any question please contact GrayBoltWolf or Brodokk on NeosVR.</p>
-                    <p>Keep in mind this is a list of events of groups events gathered by GrayBoltWolf and Brodokk. This is <strong>not</strong> an exhaustive list of NeosVR events.</p>
-                    <br/>
-                    <p>In the facet in NeosVR you will have the server URL finishing in <samp>neos.boltwolf.net</samp> but the official website domain should finish in <samp>neos-community.events</samp>.
-                    The two are correct and official managed by us.</p>
-                </div>
-            </article>
 
-            <button class="button is-large is-fullwidth is-dark js-copy-facet-url">
-              <span>Save facet neosdb url</span>
-              <span class="icon is-small">
-                <i class="fas fa-solid fa-clipboard"></i>
-              </span>
-            </button>
+          <div id="Events" class="content-tab">
+
+            <div class="columns">
+              <div class="column">
+                <article class="message is-info">
+                  <div class="message-header" id="info_toggle">
+                    <p>Info</p>
+                    <span class="icon">
+                      <i class="fas fa-angle-up" aria-hidden="true"></i>
+                    </span>
+                  </div>
+                  <div class="message-body" id="info">
+                    <p>Want your group listed here? Any question?</p>
+                    <p><samp>events.neos.boltwolf.net</samp>? <samp>neos-community.events</samp>?</p>
+                    <p>More info in <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                  </div>
+                </article>
+              </div>
+
+              <div class="column">
+                <button class="button is-large is-fullwidth is-dark js-copy-facet-url">
+                  <span>Save facet neosdb url</span>
+                    <span class="icon is-small">
+                    <i class="fas fa-solid fa-clipboard"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
 
             {% for event in events %}
             <div class="container">
-            <div class="card my-3">
+              <div class="card my-3">
                 <header class="card-header">
                     <p class="card-header-title">
                         {{ event[0] }}
@@ -81,22 +108,92 @@
                     <i class="fa-brands fa-discord"></i> {{ event|detect_community|safe }}
                   </p>
                 </div>
-            </div>
-
+              </div>
             </div>
             {% else %}
-              <article class="message">
-                <div class="message-body content">
-                  It doesn't seem there are currently any public events planned. <strong>But</strong> remember:
+            <article class="message">
+              <div class="message-body content">
+                It doesn't seem there are currently any public events planned. <strong>But</strong> remember:
 
-                  <ul>
-                    <li>This <strong>isn't</strong> an exhaustive list of NeosVR events;</li>
-                    <li>Private events are not listed here;</li>
-                    <li>Events can be announced during the day for the following evening, come back later.</li>
-                  </ul>
-                </div>
+                <ul>
+                  <li>This <strong>isn't</strong> an exhaustive list of NeosVR events;</li>
+                  <li>Private events are not listed here;</li>
+                  <li>Events can be announced during the day for the following evening, come back later.</li>
+                </ul>
+              </div>
             </article>
             {% endfor %}
+          </div>
+
+          <div id="About" class="content-tab" style="display:none">
+            <div class="content">
+              <p>This service is provided to you by GrayBoltWolf and Brodokk. If you have any question about it, you can contact them either on discord or NeosVR.</p>
+
+              <br>
+
+              <p>Keep in mind this is a list of gathered events of differents NeosVR communities. This means that it is <strong>not</strong> an exhaustive list of NeosVR events.</p>
+
+              <br>
+
+              <p>For now the two domains <code>neos.boltwolf.net</code> and <code>neos-community.events</code> are delivering the same service run by the same group of person.</p>
+              <h2>News</h2>
+
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.3.0</strong>
+                  &nbsp;
+                  <small>2022-11-16</small>
+                  <br>
+                  <p>Update general website UI. Added new <code>About</code> and <code>News</code> section.</p>
+                </div>
+              </div>
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.2.0</strong>
+                  &nbsp;
+                  <small>2022-11-15</small>
+                  <br>
+                  <p>Simplify the mobile version by auto collapsing the <code>info</code> message. Adding a button for copy the last version of the facet in the clipboard.</p>
+                </div>
+              </div>
+              <div class="box">
+                <div class="content">
+                  <strong>Update communities</strong>
+                  &nbsp;
+                  <small>2022-10-13</small>
+                  <br>
+                  <p>Added <code>The Grand Oasis</code> and <code>Neos Amatar Radio Association</code> communities.</p>
+                </div>
+              </div>
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.1.0</strong>
+                  &nbsp;
+                  <small>2022-10-28</small>
+                  <br>
+                  <p>Finishing the Apollo Bot events source.</p>
+                </div>
+              </div>
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.0.0</strong>
+                  &nbsp;
+                  <small>2022-10-24</small>
+                  <br>
+                  <p>Finalize V2 of the API.</p>
+                </div>
+              </div>
+              <div class="box">
+                <div class="content">
+                  <strong>Release 1.0.0</strong>
+                  &nbsp;
+                  <small>2022-10-23</small>
+                  <br>
+                  <p>Public release of the project.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
 
@@ -111,97 +208,117 @@
       </p>
     </div>
   </footer>
-</body>
 
-<script>
+  <script>
+    // Tab management
+    function openTab(evt, tabName) {
+      var i, x, tablinks;
+      x = document.getElementsByClassName("content-tab");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tab");
+      for (i = 0; i < x.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" is-active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      if (evt.currentTarget.constructor.name != "HTMLLIElement") {
+        target = document.getElementsByClassName("tab-"+tabName.toLowerCase())[0]
+      } else {
+        target = evt.currentTarget
+      }
+      target.className += " is-active";
+    }
 
-  window.addEventListener('resize', info_toggle);
-  document.querySelector("#info_toggle").addEventListener("click", info_toggle, false);
-  info_toggle = document.querySelector("#info_toggle");
-  info_toggle_icon = document.querySelector("#info_toggle .icon i");
-  info = document.querySelector("#info");
+    // Manage facet neosdb url copy button
+    window.addEventListener('resize', info_toggle);
+    document.querySelector("#info_toggle").addEventListener("click", info_toggle, false);
+    info_toggle = document.querySelector("#info_toggle");
+    info_toggle_icon = document.querySelector("#info_toggle .icon i");
+    info = document.querySelector("#info");
 
-  if (window.screen.availWidth < 1024) {
-    info_toggle.style.cursor = "pointer";
-    info_toggle_icon.className = "fas fa-angle-down";
-    info_toggle.style.borderRadius = "4px";
-    info.style.display = "none";
-  }
-
-  function info_toggle() {
     if (window.screen.availWidth < 1024) {
-      if (this.constructor.name != "Window") {
-        if (info.style.display == 'none') {
-          info_toggle.style.borderRadius = "4px 4px 0 0";
-          info_toggle.style.cursor = "pointer";
-          info_toggle_icon.className = "fas fa-angle-up";
-          info.style.display = "block";
+      info_toggle.style.cursor = "pointer";
+      info_toggle_icon.className = "fas fa-angle-down";
+      info_toggle.style.borderRadius = "4px";
+      info.style.display = "none";
+    }
+
+    function info_toggle() {
+      if (window.screen.availWidth < 1024) {
+        if (this.constructor.name != "Window") {
+          if (info.style.display == 'none') {
+            info_toggle.style.borderRadius = "4px 4px 0 0";
+            info_toggle.style.cursor = "pointer";
+            info_toggle_icon.className = "fas fa-angle-up";
+            info.style.display = "block";
+          } else {
+            info_toggle.style.borderRadius = "4px";
+            info_toggle.style.cursor = "pointer";
+            info_toggle_icon.className = "fas fa-angle-down";
+            info.style.display = "none";
+          }
         } else {
-          info_toggle.style.borderRadius = "4px";
           info_toggle.style.cursor = "pointer";
-          info_toggle_icon.className = "fas fa-angle-down";
-          info.style.display = "none";
         }
       } else {
-        info_toggle.style.cursor = "pointer";
+        info_toggle.style.borderRadius = "4px 4px 0 0";
+        info_toggle.style.cursor = "default";
+        info_toggle_icon.className = "fas fa-angle-up";
+        info.style.display = "block";
       }
-    } else {
-      info_toggle.style.borderRadius = "4px 4px 0 0";
-      info_toggle.style.cursor = "default";
-      info_toggle_icon.className = "fas fa-angle-up";
-      info.style.display = "block";
-    }
-  }
-
-  function CopyFacetNeosDBUrlToClipboard(text) {
-    var textArea = document.createElement("textarea");
-
-    textArea.style.position = 'fixed';
-    textArea.style.top = 0;
-    textArea.style.left = 0;
-    textArea.style.width = '2em';
-    textArea.style.height = '2em';
-    textArea.style.padding = 0;
-    textArea.style.border = 'none';
-    textArea.style.outline = 'none';
-    textArea.style.boxShadow = 'none';
-    textArea.style.background = 'transparent';
-
-    textArea.value = text;
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    function resetCopyBtn(oldStatus) {
-      CopyFacetNeosDBUrl.classList.remove(oldStatus);
-      CopyFacetNeosDBUrl.classList.add('is-dark');
-      CopyFacetNeosDBUrl.querySelector('span').innerHTML = 'Save facet neosdb url'
     }
 
-    function setStatusCopyBtn(msg, status) {
-      var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
-      CopyFacetNeosDBUrl.querySelector('span').innerHTML = msg;
-      CopyFacetNeosDBUrl.classList.remove('is-dark');
-      CopyFacetNeosDBUrl.classList.add(status);
-      setTimeout(function () {resetCopyBtn(status)}, 3000);
+    function CopyFacetNeosDBUrlToClipboard(text) {
+      var textArea = document.createElement("textarea");
+
+      textArea.style.position = 'fixed';
+      textArea.style.top = 0;
+      textArea.style.left = 0;
+      textArea.style.width = '2em';
+      textArea.style.height = '2em';
+      textArea.style.padding = 0;
+      textArea.style.border = 'none';
+      textArea.style.outline = 'none';
+      textArea.style.boxShadow = 'none';
+      textArea.style.background = 'transparent';
+
+      textArea.value = text;
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      function resetCopyBtn(oldStatus) {
+        CopyFacetNeosDBUrl.classList.remove(oldStatus);
+        CopyFacetNeosDBUrl.classList.add('is-dark');
+        CopyFacetNeosDBUrl.querySelector('span').innerHTML = 'Save facet neosdb url'
+      }
+
+      function setStatusCopyBtn(msg, status) {
+        var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
+        CopyFacetNeosDBUrl.querySelector('span').innerHTML = msg;
+        CopyFacetNeosDBUrl.classList.remove('is-dark');
+        CopyFacetNeosDBUrl.classList.add(status);
+        setTimeout(function () {resetCopyBtn(status)}, 3000);
+      }
+
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';;
+        setStatusCopyBtn('Success copy neosdb url', 'is-success');
+      } catch (err) {
+        setStatusCopyBtn('Error copy neosdb url', 'is-danger');
+      }
+
+      document.body.removeChild(textArea);
     }
 
-    try {
-      var successful = document.execCommand('copy');
-      var msg = successful ? 'successful' : 'unsuccessful';;
-      setStatusCopyBtn('Success copy neosdb url', 'is-success');
-    } catch (err) {
-      setStatusCopyBtn('Error copy neosdb url', 'is-danger');
-    }
+    var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
 
-    document.body.removeChild(textArea);
-  }
-
-  var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
-
-  CopyFacetNeosDBUrl.addEventListener('click', function(event) {
-    CopyFacetNeosDBUrlToClipboard('neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de');
-  });
-</script>
+    CopyFacetNeosDBUrl.addEventListener('click', function(event) {
+      CopyFacetNeosDBUrlToClipboard('neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de');
+    });
+  </script>
+</body>
 </html>
