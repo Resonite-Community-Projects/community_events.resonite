@@ -28,6 +28,20 @@
         max-width: 7.5em;
         padding-right: 1em;
       }
+
+      .event .date {
+          flex-direction: column;
+        }
+
+      @media (max-width: 769px) {
+        .event .card-header {
+          flex-direction: column;
+        }
+
+        .event .date {
+          flex-direction: row;
+        }
+      }
     </style>
 </head>
 
@@ -93,13 +107,13 @@
             </div>
 
             {% for event in events %}
-            <div class="container">
+            <div class="container event">
               <div class="card my-3">
                 <header class="card-header">
                     <p class="card-header-title">
                         {{ event[0] }}
                     </p>
-                    <div class="my-3 mx-4 is-flex is-flex-direction-column">
+                    <div class="date my-3 mx-4 is-flex">
                         <p>{{ event[6]|formatdatetime }}
                         <p>{{ event[7]|formatdatetime }}</p>
                     </div>
