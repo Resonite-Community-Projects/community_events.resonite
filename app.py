@@ -4,6 +4,7 @@ import logging
 import re
 import time
 import traceback
+import base64
 from datetime import datetime
 
 import pytz
@@ -175,4 +176,6 @@ def index():
         events = raw_events.split(b'\n')
     events = list(filter(None, events))
     events = [event.decode('utf-8').split('`') for event in events]
-    return render_template('index.html', events=events)
+    with open("static/images/icon.png", "rb") as logo_file:
+        logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
+    return render_template('index.html', events=events, logo=logo_base64)
