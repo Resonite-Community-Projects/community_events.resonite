@@ -47,6 +47,10 @@
         object-fit: cover;
       }
 
+      .date .mobile-separator {
+        display: none;
+      }
+
       @media (min-width: 769px) {
         .event .card-content {
           background-image: none !important;
@@ -86,6 +90,11 @@
 
         .event .card-content img {
           display: none;
+        }
+
+        .date .mobile-separator {
+          display: inline;
+          padding: 0 5px;
         }
       }
     </style>
@@ -159,9 +168,13 @@
                     <p class="card-header-title">
                         {{ event[0] }}
                     </p>
-                    <div class="date my-3 mx-4 is-flex">
-                        <p>{{ event[6]|formatdatetime }}
-                        <p>{{ event[7]|formatdatetime }}</p>
+                    <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
+                        <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
+                        <div class="date my-3 mx-4 is-flex">
+                          <p>{{ event[6]|formatdatetime }}</p>
+                          <p class="mobile-separator">-</p>
+                          <p>{{ event[7]|formatdatetime }}</p>
+                        </div>
                     </div>
                 </header>
                 <div class="card-content" style="background-image: url({{ event[2] }});">
