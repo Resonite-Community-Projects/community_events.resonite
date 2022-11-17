@@ -30,8 +30,28 @@
       }
 
       .event .date {
-          flex-direction: column;
+        flex-direction: column;
+      }
+
+      .event .card-content {
+        padding: 0;
+        display: flex;
+      }
+
+      .event .card-content .content {
+        padding: 1.5rem;
+        margin-bottom: 0;
+      }
+
+      .event .card-content img {
+        object-fit: cover;
+      }
+
+      @media (min-width: 769px) {
+        .event .card-content {
+          background-image: none !important;
         }
+      }
 
       @media (max-width: 769px) {
         .event .card-header {
@@ -40,6 +60,24 @@
 
         .event .date {
           flex-direction: row;
+        }
+
+        .event .card-content {
+          color: #fff;
+          background-size: cover;
+          background-repeat: no-repeat;
+        }
+
+        .event .card-content .content {
+          background-color: #0009;
+        }
+
+        .event .card-content .content .subtitle {
+          color: #fff;
+        }
+
+        .event .card-content img {
+          display: none;
         }
       }
     </style>
@@ -118,16 +156,19 @@
                         <p>{{ event[7]|formatdatetime }}</p>
                     </div>
                 </header>
-                <div class="card-content">
-                  <p class="subtitle">
-                    {{ event[1]|parse|safe }}
-                  </p>
-                  <p>
-                    <i class="fa-solid fa-location-dot"></i> {{ event|detect_location|safe }}
-                  </p>
-                  <p>
-                    <i class="fa-brands fa-discord"></i> {{ event|detect_community|safe }}
-                  </p>
+                <div class="card-content" style="background-image: url({{ event[2] }});">
+                  <div class="content">
+                    <p class="subtitle"">
+                      {{ event[1]|parse|safe }}
+                    </p>
+                    <p>
+                      <i class="fa-solid fa-location-dot"></i> {{ event|detect_location|safe }}
+                    </p>
+                    <p>
+                      <i class="fa-brands fa-discord"></i> {{ event|detect_community|safe }}
+                    </p>
+                  </div>
+                  <img src="{{ event[2] }}">
                 </div>
               </div>
             </div>
