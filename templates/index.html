@@ -49,6 +49,7 @@
       .event .card-content img {
         object-fit: cover;
         padding: 12px 12px 0 0;
+        width: 100%;
       }
 
       .date .mobile-separator {
@@ -79,7 +80,7 @@
 
         .event .card-content .content {
           background-color: #0009;
-          min-width: 100%;
+          width: 100%;
         }
 
         .event .card-content .content a {
@@ -197,7 +198,9 @@
                       </p>
                     </div>
                   </div>
+                  {% if event[2]  %}
                   <img class="column" src="{{ event[2] }}">
+                  {% endif %}
                 </div>
               </div>
             </div>
