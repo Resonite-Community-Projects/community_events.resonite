@@ -39,12 +39,16 @@
       }
 
       .event .card-content .content {
-        padding: 1.5rem;
+        padding: 1.5em 1.5rem 0.5em 1.5em;
         margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
 
       .event .card-content img {
         object-fit: cover;
+        padding: 12px 12px 0 0;
       }
 
       .date .mobile-separator {
@@ -67,6 +71,7 @@
         }
 
         .event .card-content {
+          margin: 0;
           color: #fff;
           background-size: cover;
           background-repeat: no-repeat;
@@ -74,6 +79,7 @@
 
         .event .card-content .content {
           background-color: #0009;
+          min-width: 100%;
         }
 
         .event .card-content .content a {
@@ -177,19 +183,21 @@
                         </div>
                     </div>
                 </header>
-                <div class="card-content" style="background-image: url({{ event[2] }});">
-                  <div class="content">
+                <div class="card-content columns" style="background-image: url({{ event[2] }});">
+                  <div class="content column is-three-fifths">
                     <p class="subtitle"">
                       {{ event[1]|parse|safe }}
                     </p>
-                    <p>
-                      <i class="fa-solid fa-location-dot"></i> {{ event|detect_location|safe }}
-                    </p>
-                    <p>
-                      <i class="fa-brands fa-discord"></i> {{ event|detect_community|safe }}
-                    </p>
+                    <div class="more">
+                      <p>
+                        <i class="fa-solid fa-location-dot"></i> {{ event|detect_location|safe }}
+                      </p>
+                      <p>
+                        <i class="fa-brands fa-discord"></i> {{ event|detect_community|safe }}
+                      </p>
+                    </div>
                   </div>
-                  <img src="{{ event[2] }}">
+                  <img class="column" src="{{ event[2] }}">
                 </div>
               </div>
             </div>
