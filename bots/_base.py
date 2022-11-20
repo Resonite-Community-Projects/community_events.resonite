@@ -20,6 +20,17 @@ class Bot(commands.Cog):
         self.sched = sched
         self.dclient = dclient
         self.rclient = rclient
+
+        communities_name = []
+        for bot in self.config.BOTS:
+            if 'community_name' in bot:
+                communities_name.append(bot.community_name)
+            elif 'communities_name' in bot:
+                for community_name in bot.communities_name:
+                    communities_name.append(community_name)
+        self.communities_name = communities_name
+
+
         print(f'initialise {self.name} bot')
 
     def _clean_text(self, text):

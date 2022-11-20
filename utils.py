@@ -64,7 +64,6 @@ class RedisClient:
                     updated_data.remove(event)
 
         if local_communities:
-            local_communities = [x.name for x in local_communities]
             for event in updated_data:
                 if event.split('`')[ekey[api_ver]["community_name"]] not in local_communities and event not in data:
                     updated_data.remove(event)
