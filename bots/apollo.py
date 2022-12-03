@@ -120,18 +120,18 @@ class Apollo(Bot):
                     api_ver = 2
                 )
                 _events_v2.append(event_v2)
-        self.rclient.write('events_v1', _events_v1,  api_ver=1, community=guild.community_name)
-        self.rclient.write('events_v2', _events_v2, api_ver=2, community=guild.community_name)
+        self.rclient.write('events_v1', _events_v1,  api_ver=1, communities=[guild.community_name])
+        self.rclient.write('events_v2', _events_v2, api_ver=2, communities=[guild.community_name])
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
         if _aggregated_events_v1:
             _events_v1.extend(_aggregated_events_v1)
-        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, local_communities=self.communities_name)
+        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, communities=[guild.community_name])
 
         _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
         if _aggregated_events_v2:
             _events_v2.extend(_aggregated_events_v2)
-        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, local_communities=self.communities_name)
+        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, communities=[guild.community_name])
 
     async def get_data(self, dclient):
         print("update apollo events")

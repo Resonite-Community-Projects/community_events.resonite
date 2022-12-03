@@ -60,7 +60,6 @@ class DiscordScheduledEvents(Bot):
     def format_event(self, event, api_ver):
         location_web_session_url = self.get_location_web_session_url(event.description)
         location_session_url = self.get_location_session_url(event.description)
-        print(self.guilds)
         if event.image:
             session_image = event.image.url
         else:
@@ -85,7 +84,7 @@ class DiscordScheduledEvents(Bot):
                 location_str = location_str,
                 start_time = event.scheduled_start_time,
                 end_time = event.scheduled_end_time,
-                community_name = event.guild.name,
+                community_name = self.guilds[event.guild.id].community_name,
                 api_ver = 1
             )
         if api_ver == 2:
@@ -105,25 +104,6 @@ class DiscordScheduledEvents(Bot):
             )
         return event
 
-    @commands.Cog.listener('on_guild_scheduled_event_create')
-    async def on_scheduled_event_create(self, event):
-        logging.info('event created in cog')
-        self.rclient.write('events_v1', self.format_event(event, api_ver=1), api_ver=1)
-        self.rclient.write('events_v2', self.format_event(event, api_ver=2), api_ver=2)
-
-    @commands.Cog.listener()
-    async def on_guild_scheduled_event_delete(self, event):
-        logging.error('event delete in cog')
-        self.rclient.delete('events_v1', self.format_event(event, api_ver=1), api_ver=1)
-        self.rclient.delete('events_v2', self.format_event(event, api_ver=2), api_ver=2)
-
-
-    @commands.Cog.listener('on_guild_scheduled_event_update')
-    async def on_scheduled_event_update(self, event_before, event_after):
-        logging.info('event updated in cog')
-        self.rclient.update('events_v1', self.format_event(event_before, api_ver=1), self.format_event(event_after, 1), api_ver=1)
-        self.rclient.update('events_v2', self.format_event(event_before, api_ver=2), self.format_event(event_after, 2), api_ver=2)
-
     @commands.Cog.listener()
     async def on_ready(self):
         logging.info(f'{self.name} bot ready')
@@ -142,18 +122,18 @@ class DiscordScheduledEvents(Bot):
             if _event_v2:
                 _events_v2.append(_event_v2)
 
-        self.rclient.write('events_v1', _events_v1, api_ver=1, community=self.guilds[guild.id].community_name)
-        self.rclient.write('events_v2', _events_v2, api_ver=2, community=self.guilds[guild.id].community_name)
+        self.rclient.write('events_v1', _events_v1, api_ver=1, communities=[self.guilds[guild.id].community_name])
+        self.rclient.write('events_v2', _events_v2, api_ver=2, communities=[self.guilds[guild.id].community_name])
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
         if _aggregated_events_v1:
             _events_v1.extend(_aggregated_events_v1)
-        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, local_communities=self.communities_name)
+        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, communities=[self.guilds[guild.id].community_name])
 
         _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
         if _aggregated_events_v2:
             _events_v2.extend(_aggregated_events_v2)
-        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, local_communities=self.communities_name)
+        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, communities=[self.guilds[guild.id].community_name])
 
     async def get_data(self, dclient):
         print('update discord events')
