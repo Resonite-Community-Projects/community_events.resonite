@@ -128,8 +128,8 @@
           <nav class="tabs is-boxed is-fullwidth is-large">
                   <div class="container">
                     <ul>
-                      <li class="tab tab-events is-active" onclick="openTab(event,'Events')"><a >Events</a></li>
-                      <li class="tab tab-about" onclick="openTab(event,'About')"><a >About</a></li>
+                      <li class="tab tab-events is-active" onclick="openTab(event,'Events')"><a>Events</a></li>
+                      <li class="tab tab-about" onclick="openTab(event,'About')"><a>About</a></li>
                     </ul>
                   </div>
                 </nav>
@@ -179,9 +179,9 @@
                     <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
                         <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
                         <div class="date my-3 mx-4 is-flex">
-                          <p>{{ event[6]|formatdatetime }}</p>
+                          <p class="start">{{ event[6]|formatdatetime }}</p>
                           <p class="mobile-separator">-</p>
-                          <p>{{ event[7]|formatdatetime }}</p>
+                          <p class="end">{{ event[7]|formatdatetime }}</p>
                         </div>
                     </div>
                 </header>
@@ -233,6 +233,19 @@
               <p>For now the two domains <code>neos.boltwolf.net</code> and <code>neos-community.events</code> are delivering the same service run by the same group of person.</p>
               <h2>News</h2>
               
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.5.0</strong>
+                  &nbsp;
+                  <small>2022-12-03</small>
+                  <br>
+                  <p>
+                    <ul>
+                      <li>Show dates in the local timezone of the web browser.</li>
+                    </ul>
+                  </p>
+                </div>
+              </div>
               <div class="box">
                 <div class="content">
                   <strong>Release 2.4.0</strong>
@@ -439,6 +452,35 @@
     CopyFacetNeosDBUrl.addEventListener('click', function(event) {
       CopyFacetNeosDBUrlToClipboard('neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de');
     });
+
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const dates_tip = document.querySelectorAll(".date i");
+
+    dates_tip.forEach((date_tip) => {
+      date_tip.title = 'Dates are in ' + timezone + ' timezone';
+    });
+
+    const dates_start = document.querySelectorAll(".date .start");
+
+    dates_start.forEach((date_start) => {
+      parsed_date = new Date(Date.parse(date_start.innerHTML + " 2022 UTC"));
+      date_start.innerText = parsed_date.toLocaleDateString(
+        'en-us', {
+          weekday:"short", year:"numeric", month:"short", day:"numeric", hour: "numeric", minute: "numeric"
+        });
+    });
+
+    const dates_end = document.querySelectorAll(".date .end");
+
+    dates_end.forEach((date_end) => {
+      parsed_date = new Date(Date.parse(date_end.innerHTML + " 2022 UTC"));
+      date_end.innerText = parsed_date.toLocaleDateString(
+        'en-us', {
+          weekday:"short", year:"numeric", month:"short", day:"numeric", hour: "numeric", minute: "numeric"
+        });
+    });
+
   </script>
 </body>
 </html>
