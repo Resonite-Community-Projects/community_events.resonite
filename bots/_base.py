@@ -7,6 +7,17 @@ import requests
 re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_location_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
 re_location_str_match_compiled = re.compile('Location: (.*)')
+
+separator = {
+    1: {
+        'field': '`',
+        'event': '\n',
+    },
+    2: {
+        'field': chr(30),
+        'event': chr(29),
+    }
+}
 class Bot(commands.Cog):
     jschema = None
 
@@ -29,7 +40,6 @@ class Bot(commands.Cog):
                 for community_name in bot.communities_name:
                     communities_name.append(community_name)
         self.communities_name = communities_name
-
 
         print(f'initialise {self.name} bot')
 
@@ -56,7 +66,7 @@ class Bot(commands.Cog):
     def update_communities(self, communities_name):
         communities_v2 = self.rclient.get('communities_v2')
         if communities_v2:
-            communities_v2 = communities_v2.decode("utf-8").split('\n')
+            communities_v2 = communities_v2.decode("utf-8").split(chr(29))
         else:
             communities_v2 = []
         if isinstance(communities_name, str):
@@ -77,7 +87,7 @@ class Bot(commands.Cog):
                 continue
             if not r.text:
                 continue
-            _server_events = r.text.split('\n')
+            _server_events = r.text.split(separator[api_ver]['event'])
             return _server_events
         return []
 
@@ -97,29 +107,27 @@ class Bot(commands.Cog):
         api_ver = 0,
     ):
         if api_ver == 1:
-            return "{}`{}`{}`{}`{}`{}".format(
-                title,
-                description,
-                location_str,
-                start_time,
-                end_time,
-                community_name,
-            )
+            return \
+                title + '`' + \
+                description + '`' + \
+                location_str + '`' + \
+                str(start_time) + '`' + \
+                str(end_time) + '`' + \
+                community_name
         elif api_ver == 2:
-            return "{}`{}`{}`{}`{}`{}`{}`{}`{}`{}`{}`{}".format(
-                title,
-                description,
-                session_image,
-                location_str,
-                location_web_session_url,
-                location_session_url,
-                start_time,
-                end_time,
-                community_name,
-                community_url,
-                tags,
+            return \
+                title + chr(30) + \
+                description + chr(30) + \
+                session_image + chr(30) + \
+                location_str + chr(30) + \
+                location_web_session_url + chr(30) + \
+                location_session_url + chr(30) + \
+                str(start_time) + chr(30) + \
+                str(end_time) + chr(30) + \
+                community_name + chr(30) + \
+                community_url + chr(30) + \
+                tags + chr(30) + \
                 self.__class__.__name__ # Source
-            )
         else:
             raise ValueError(
                 'Invalid API version'

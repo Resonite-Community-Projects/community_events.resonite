@@ -66,21 +66,20 @@ class DiscordScheduledEvents(Bot):
             session_image = ''
         community_url = self.guilds[event.guild.id].community_url
         tags = "`".join(self.guilds[event.guild.id].tags)
-        description = self._clean_text(event.description)
         if event.entity_metadata:
             location_str = event.entity_metadata.location
         else:
             location_str = ''
         if not self._filter_neos_event(
             event.name,
-            description,
+            event.description,
             location_str,
         ):
             return
         if api_ver == 1:
             event = self.sformat(
                 title = event.name,
-                description = description,
+                description = self._clean_text(event.description),
                 location_str = location_str,
                 start_time = event.scheduled_start_time,
                 end_time = event.scheduled_end_time,
@@ -90,7 +89,7 @@ class DiscordScheduledEvents(Bot):
         if api_ver == 2:
             event = self.sformat(
                 title = event.name,
-                description = description,
+                description = event.description,
                 session_image = session_image,
                 location_str = location_str,
                 location_web_session_url = location_web_session_url,

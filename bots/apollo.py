@@ -88,16 +88,15 @@ class Apollo(Bot):
                         if r:
                             start_time = datetime.fromtimestamp(int(r.group(1)))
                             end_time = datetime.fromtimestamp(int(r.group(2)))
-                description = self._clean_text(embed.description)
                 if not end_time or not start_time or not self._filter_neos_event(
                     embed.title,
-                    description,
+                    embed.description,
                     location_str,
                 ):
                     return
                 event_v1 = self.sformat(
                     title = embed.title,
-                    description = description,
+                    description = self._clean_text(event.description),
                     location_str = location_str,
                     start_time = start_time,
                     end_time = end_time,
@@ -107,7 +106,7 @@ class Apollo(Bot):
                 _events_v1.append(event_v1)
                 event_v2 = self.sformat(
                     title = embed.title,
-                    description = description,
+                    description = embed.description,
                     session_image = '',
                     location_str = location_str,
                     location_web_session_url = location_web_session_url,

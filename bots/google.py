@@ -99,14 +99,6 @@ class GoogleCalendar(Bot):
             description = self.clean_google_description(event['description'])
             location_web_session_url = self.get_location_web_session_url(event['description'])
             location_session_url = self.get_location_session_url(event['description'])
-        event_v1 = "{}`{}`{}`{}`{}`{}".format(
-            name,
-            description,
-            location,
-            start_time,
-            end_time,
-            community
-        )
         if api_ver == 1:
             event = self.sformat(
                 title = name,
