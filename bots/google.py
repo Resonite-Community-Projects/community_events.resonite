@@ -3,8 +3,6 @@ import toml
 import pytz
 import logging
 from dateutil.parser import parse
-from jsonschema import validate
-import jsonschema
 
 from disnake.ext import commands
 
@@ -43,26 +41,21 @@ class GoogleCalendar(Bot):
         super().__init__(bot, config, sched, dclient, rclient)
         self.clients = []
 
-        for calendar in getattr(self.config.BOTS, self.name, []):
-            try:
-                validate(instance=calendar, schema=self.jschema)
-            except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
-                return
-
+        for bot_config in getattr(self.config.BOTS, self.name, []):
             try:
                 self.clients.append(
                     GoogleCalendarAPI(
-                        calendar.email,
-                        calendar.credentials_file,
+                        bot_config.email,
+                        bot_config.credentials_file,
                     )
                 )
             except FileNotFoundError:
-                logging.error(f"Ignore {self.name} for now. Google {calendar.credentials_file} not found.")
+                logging.error(f"Ignore {self.name} for now. Google {bot_config.credentials_file} not found.")
                 continue
 
-            self.update_communities(calendar.communities_name)
-            self.communities_name = [x for x in self.communities_name if x not in calendar.communities_name]
+            for community_name in bot_config.communities_name:
+                self.update_communities(community_name)
+            self.communities_name = [x for x in self.communities_name if x not in bot_config.communities_name]
 
     def parse_date(self, date):
         """ Parse data."""

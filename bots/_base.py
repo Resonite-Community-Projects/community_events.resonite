@@ -1,5 +1,7 @@
 import logging
 import re
+from jsonschema import validate
+import jsonschema
 
 from disnake.ext import commands
 import requests
@@ -50,6 +52,14 @@ class Bot(commands.Cog):
                 for community_description in bot.communities_description:
                     communities_description.append(community_description)
         self.communities_description = communities_description
+
+        self.guilds = {}
+        for bot_config in getattr(config.BOTS, self.name, []):
+            try:
+                validate(instance=bot_config, schema=self.jschema)
+            except jsonschema.exceptions.ValidationError as exc:
+                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
+                continue
 
         print(f'initialise {self.name} bot')
 

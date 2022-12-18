@@ -1,8 +1,6 @@
 import re
 import logging
 from time import sleep
-from jsonschema import validate
-import jsonschema
 
 import disnake
 from disnake.ext import commands
@@ -51,14 +49,7 @@ class DiscordScheduledEvents(Bot):
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
-        self.guilds = {}
-        for bot_config in getattr(config.BOTS, self.name, []):
-            try:
-                validate(instance=bot_config, schema=self.jschema)
-            except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
-                continue
-
+        for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
             self.update_communities(bot_config.community_name)
             self.communities_name = [x for x in self.communities_name if x != bot_config.community_name]

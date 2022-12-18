@@ -3,8 +3,6 @@ import logging
 from datetime import datetime
 import disnake
 from disnake.ext import commands
-from jsonschema import validate
-import jsonschema
 
 from ._base import Bot
 
@@ -55,15 +53,10 @@ class Apollo(Bot):
 
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
-        self.guilds = {}
-        for bot_config in getattr(config.BOTS, self.name, []):
-            try:
-                validate(instance=bot_config, schema=self.jschema)
-            except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Invalid schema: {exc.message}")
-                continue
 
+        for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
+            self.update_communities(bot_config.community_name)
             self.communities_name = [x for x in self.communities_name if x != bot_config.community_name]
 
     @commands.Cog.listener()
