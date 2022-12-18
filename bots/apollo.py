@@ -19,6 +19,10 @@ class Apollo(Bot):
                     "description": "The name of the community",
                     "type": "string"
                 },
+                "community_description": {
+                    "description": "The description of a community",
+                    "type": "string"
+                },
                 "community_url": {
                     "description": "The website of the community",
                     "type": "string"
@@ -42,6 +46,7 @@ class Apollo(Bot):
             },
             "required":[
                 "community_name",
+                "community_description",
                 "guild_id",
                 "guild_channel",
                 "bot"
@@ -115,7 +120,6 @@ class Apollo(Bot):
                     start_time = start_time,
                     end_time = end_time,
                     community_name = guild.community_name,
-                    community_description = guild.community_description,
                     community_url = community_url,
                     tags = tags,
                     api_ver = 2

@@ -89,7 +89,7 @@ class GoogleCalendar(Bot):
         await self.get_data(self.dclient)
 
     def format_event(self, event, api_ver):
-        community, name = event['summary'].split('`')
+        community_name, name = event['summary'].split('`')
         start_time = self.parse_date(event['start'])
         end_time = self.parse_date(event['end'])
         location = event['location']
@@ -107,7 +107,7 @@ class GoogleCalendar(Bot):
                 location_str = location,
                 start_time = start_time,
                 end_time = end_time,
-                community_name = community,
+                community_name = community_name,
                 api_ver = 1
             )
         if api_ver == 2:
@@ -121,7 +121,7 @@ class GoogleCalendar(Bot):
                 location_session_url = location_session_url,
                 start_time = start_time,
                 end_time = end_time,
-                community_name = community,
+                community_name = community_name,
                 community_url = "",
                 api_ver = 2
             )

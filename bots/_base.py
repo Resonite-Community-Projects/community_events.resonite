@@ -42,6 +42,15 @@ class Bot(commands.Cog):
                     communities_name.append(community_name)
         self.communities_name = communities_name
 
+        communities_description = []
+        for bot in self.config.BOTS:
+            if 'community_description' in bot:
+                communities_description.append(bot.community_description)
+            elif 'communities_description' in bot:
+                for community_description in bot.communities_description:
+                    communities_description.append(community_description)
+        self.communities_description = communities_description
+
         print(f'initialise {self.name} bot')
 
     def _clean_text(self, text):

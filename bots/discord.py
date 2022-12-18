@@ -22,6 +22,10 @@ class DiscordScheduledEvents(Bot):
                     "description": "The name of the community",
                     "type": "string"
                 },
+                "community_description": {
+                    "description": "The description of a community",
+                    "type": "string"
+                },
                 "community_url": {
                     "description": "The website of the community",
                     "type": "string"
@@ -37,6 +41,7 @@ class DiscordScheduledEvents(Bot):
             },
             "required":[
                 "community_name",
+                "community_description",
                 "community_url",
                 "tags",
                 "guild_id"
