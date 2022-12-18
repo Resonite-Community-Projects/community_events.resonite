@@ -59,8 +59,7 @@ class RedisClient:
         if isinstance(new_events, str):
             new_events = [new_events]
 
-        for community in communities:
-            old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] != community ]
+        old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] in communities ]
 
         events = old_events
         for event in new_events:

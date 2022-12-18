@@ -33,7 +33,8 @@ class Bot(commands.Cog):
         self.rclient = rclient
 
         communities_name = []
-        for bot in self.config.BOTS:
+        for bot in self.config.BOTS.values():
+            bot = bot[0]
             if 'community_name' in bot:
                 communities_name.append(bot.community_name)
             elif 'communities_name' in bot:

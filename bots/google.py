@@ -62,6 +62,7 @@ class GoogleCalendar(Bot):
                 continue
 
             self.update_communities(calendar.communities_name)
+            self.communities_name = [x for x in self.communities_name if x not in calendar.communities_name]
 
     def parse_date(self, date):
         """ Parse data."""
@@ -135,8 +136,9 @@ class GoogleCalendar(Bot):
             for event in google_data['items']:
                 _events_v1.append(self.format_event(event, api_ver=1))
                 _events_v2.append(self.format_event(event, api_ver=2))
-            self.rclient.write('events_v1', _events_v1, api_ver=1)
-            self.rclient.write('events_v2', _events_v2, api_ver=2)
+
+            self.rclient.write('events_v1', _events_v1, api_ver=1, communities=self.communities_name)
+            self.rclient.write('events_v2', _events_v2, api_ver=2, communities=self.communities_name)
 
             _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
             if _aggregated_events_v1:
