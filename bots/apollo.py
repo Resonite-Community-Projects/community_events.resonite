@@ -45,6 +45,8 @@ class Apollo(Bot):
             "required":[
                 "community_name",
                 "community_description",
+                "community_url",
+                "tags",
                 "guild_id",
                 "guild_channel",
                 "bot"
