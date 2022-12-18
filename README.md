@@ -30,6 +30,7 @@ For adding a guild to this source you need to use the key
 `[[BOTS.DiscordScheduledEvents]]` and add the following key:
 
 - `community_name`: str, the name of the community
+- `community_description`: str, the description of the community
 - `community_url`: str, the URL where to find this community, can be a discord invite link or a website
 - `tags`: list, the list of tags
 - `guild_ids`: int, the guild id
@@ -39,6 +40,7 @@ For adding a guild to this source you need to use the key
 ```
 [[BOTS.DiscordScheduledEvents]]
 community_name = "The Vulpine Garden"
+community_description = "The Vulpine Garden Community"
 community_url = "https://discord.gg/GwQXurvt"
 tags = ['karaoke']
 guild_id = xxxxxxxxxxxxxxxxxx
@@ -71,6 +73,7 @@ For adding a guild to this source you need to use the key
 `[[BOTS.Apollo]]` and add the following keys:
 
 - `community_name`: str, the name of the community
+- `community_description`: str, the description of the community
 - `community_url`: str, the URL where to find this community, can be a discord invite link or a website
 - `tags`: list, the list of tags
 - `guild_ids`: int, the guild id
@@ -82,6 +85,7 @@ For adding a guild to this source you need to use the key
 ```
 [[BOTS.Apollo]]
 community_name = "The Vulpine Garden"
+community_description = "The Vulpine Garden Community"
 community_url = "https://discord.gg/GwQXurvt"
 tags = ['karaoke']
 guild_id = xxxxxxxxxxxxxxxxxx
