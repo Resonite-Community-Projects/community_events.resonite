@@ -56,11 +56,10 @@ class Apollo(Bot):
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
-        self.older_communities = self.communities_name
+        self.other_communities = self.communities_name
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
             self.update_communities(bot_config.community_name)
-            self.older_communities = [x for x in self.older_communities if x != bot_config.community_name]
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -69,6 +68,7 @@ class Apollo(Bot):
         await self.get_data(self.dclient)
 
     async def get_events(self, guild):
+        self.other_communities = [x for x in self.other_communities if x != guild.community_name]
         channel = disnake.utils.get(self.bot.get_all_channels(), guild__id=guild.guild_id, name=guild.guild_channel)
         _events_v1 = []
         _events_v2 = []

@@ -56,6 +56,7 @@ class GoogleCalendar(Bot):
 
             for community_name in bot_config.communities_name:
                 self.update_communities(community_name)
+
             self.other_communities = [x for x in self.other_communities if x not in bot_config.communities_name]
 
     def parse_date(self, date):

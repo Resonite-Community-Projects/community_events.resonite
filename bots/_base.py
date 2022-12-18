@@ -35,26 +35,24 @@ class Bot(commands.Cog):
         self.rclient = rclient
 
         communities_name = []
-        for bot in self.config.BOTS.values():
-            bot = bot[0]
-            if 'community_name' in bot:
-                communities_name.append(bot.community_name)
-            elif 'communities_name' in bot:
-                for community_name in bot.communities_name:
-                    communities_name.append(community_name)
-        self.communities_name = communities_name
-
         communities_description = []
-        for bot in self.config.BOTS:
-            if 'community_description' in bot:
-                communities_description.append(bot.community_description)
-            elif 'communities_description' in bot:
-                for community_description in bot.communities_description:
-                    communities_description.append(community_description)
-        self.communities_description = communities_description
+        for bot in self.config.BOTS.values():
+            for config in bot:
+                if 'community_name' in config:
+                    communities_name.append(config.community_name)
+                elif 'communities_name' in config:
+                    for community_name in config.communities_name:
+                        communities_name.append(community_name)
+                self.communities_name = communities_name
+                if 'community_description' in config:
+                    communities_description.append(config.community_description)
+                elif 'communities_description' in config:
+                    for community_description in config.communities_description:
+                        communities_description.append(community_description)
+                self.communities_description = communities_description
 
         self.guilds = {}
-        for bot_config in getattr(config.BOTS, self.name, []):
+        for bot_config in getattr(self.config.BOTS, self.name, []):
             try:
                 validate(instance=bot_config, schema=self.jschema)
             except jsonschema.exceptions.ValidationError as exc:
