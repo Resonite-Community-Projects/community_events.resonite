@@ -41,6 +41,7 @@ class GoogleCalendar(Bot):
         super().__init__(bot, config, sched, dclient, rclient)
         self.clients = []
 
+        self.other_communities = self.communities_name
         for bot_config in getattr(self.config.BOTS, self.name, []):
             try:
                 self.clients.append(
@@ -55,7 +56,7 @@ class GoogleCalendar(Bot):
 
             for community_name in bot_config.communities_name:
                 self.update_communities(community_name)
-            self.communities_name = [x for x in self.communities_name if x not in bot_config.communities_name]
+            self.other_communities = [x for x in self.other_communities if x not in bot_config.communities_name]
 
     def parse_date(self, date):
         """ Parse data."""
@@ -130,15 +131,15 @@ class GoogleCalendar(Bot):
                 _events_v1.append(self.format_event(event, api_ver=1))
                 _events_v2.append(self.format_event(event, api_ver=2))
 
-            self.rclient.write('events_v1', _events_v1, api_ver=1, communities=self.communities_name)
-            self.rclient.write('events_v2', _events_v2, api_ver=2, communities=self.communities_name)
+            self.rclient.write('events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
+            self.rclient.write('events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)
 
             _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
             if _aggregated_events_v1:
                 _events_v1.extend(_aggregated_events_v1)
-            self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, communities=self.communities_name)
+            self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
 
             _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
             if _aggregated_events_v2:
                 _events_v2.extend(_aggregated_events_v2)
-            self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, communities=self.communities_name)
+            self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)

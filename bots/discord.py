@@ -49,10 +49,11 @@ class DiscordScheduledEvents(Bot):
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
+        self.other_communities = self.communities_name
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
             self.update_communities(bot_config.community_name)
-            self.communities_name = [x for x in self.communities_name if x != bot_config.community_name]
+            self.other_communities = [x for x in self.other_communities if x != bot_config.community_name]
 
     def format_event(self, event, api_ver):
         location_web_session_url = self.get_location_web_session_url(event.description)
@@ -118,18 +119,18 @@ class DiscordScheduledEvents(Bot):
             if _event_v2:
                 _events_v2.append(_event_v2)
 
-        self.rclient.write('events_v1', _events_v1, api_ver=1, communities=self.communities_name)
-        self.rclient.write('events_v2', _events_v2, api_ver=2, communities=self.communities_name)
+        self.rclient.write('events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
+        self.rclient.write('events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
         if _aggregated_events_v1:
             _events_v1.extend(_aggregated_events_v1)
-        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, communities=self.communities_name)
+        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
 
         _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
         if _aggregated_events_v2:
             _events_v2.extend(_aggregated_events_v2)
-        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, communities=self.communities_name)
+        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)
 
     async def get_data(self, dclient):
         print('update discord events')

@@ -46,7 +46,7 @@ class RedisClient:
     def get(self, key):
         return self.client.get(key)
 
-    def write(self, key, new_events, api_ver, communities=[]):
+    def write(self, key, new_events, api_ver, other_communities=[]):
     
         dt_now = datetime.now(timezone.utc)
 
@@ -59,7 +59,7 @@ class RedisClient:
         if isinstance(new_events, str):
             new_events = [new_events]
 
-        old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] in communities ]
+        old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] in other_communities ]
 
         events = old_events
         for event in new_events:
