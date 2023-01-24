@@ -77,20 +77,21 @@ class RedisClient:
         old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] in other_communities ]
 
         events = old_events
-        for event in new_events:
-            if event not in old_events:
-                events.append(event)
+        for new_event in new_events:
+            if new_event not in old_events:
+                events.append(new_event)
 
-        for x in old_events:
+        for event in events:
             try:
-                if parse(x.split(separator[api_ver]['field'])[ekey[api_ver]["end_time"]]).replace(tzinfo=pytz.UTC) < dt_now:
-                    old_events.remove(x)
+                if parse(event.split(separator[api_ver]['field'])[ekey[api_ver]["end_time"]]).replace(tzinfo=pytz.UTC) < dt_now:
+                    events.remove(event)
             except dateutil.parser._parser.ParserError:
                 continue
 
-        old_events = self.sort_events(old_events, api_ver)
-        old_events = f"{separator[api_ver]['event']}".join(d for d in old_events if d)
-        self.client.set(key, old_events.encode('utf-8'))
+
+        events = self.sort_events(events, api_ver)
+        events = f"{separator[api_ver]['event']}".join(d for d in events if d)
+        self.client.set(key, events.encode('utf-8'))
 
     def sort_events(self, events, api_ver):
         def sorting(key):
