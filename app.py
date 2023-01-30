@@ -160,8 +160,19 @@ def parse_desciption(desc):
     desc = desc.replace('\n', '<br>')
     return desc
 
-@app.route("/")
-def index():
+@app.template_filter('tab_is_active')
+def filter_tab_is_active(tab, current_tab):
+    if tab == current_tab:
+        return "is-active"
+    return ""
+
+@app.template_filter('tab_display')
+def filter_tab_display(tab, current_tab):
+    if tab == current_tab:
+        return "block"
+    return "none"
+
+def render_main(tab):
     if not Config.SHOW_WEBUI:
         return ''
     raw_events = get_communities_events(
@@ -170,13 +181,18 @@ def index():
         aggregated_events=request.args.get('aggregated_events', False),
     )
     events = []
-    print('---------')
-    print(request.accept_languages)
-    print(raw_events)
     if raw_events:
         events = raw_events.split(chr(29).encode('utf-8'))
     events = list(filter(None, events))
     events = [event.decode('utf-8').split(chr(30)) for event in events]
     with open("static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
-    return render_template('index.html', events=events, logo=logo_base64)
+    return render_template('index.html', events=events, tab=tab, logo=logo_base64)
+
+@app.route("/")
+def index():
+    return render_main(tab="Events")
+
+@app.route("/about")
+def about():
+    return render_main(tab="About")

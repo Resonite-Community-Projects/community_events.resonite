@@ -137,8 +137,8 @@
           <nav class="tabs is-boxed is-fullwidth is-large">
                   <div class="container">
                     <ul>
-                      <li class="tab tab-events is-active" onclick="openTab(event,'Events')"><a>Events</a></li>
-                      <li class="tab tab-about" onclick="openTab(event,'About')"><a>About</a></li>
+                      <li class="tab tab-events {{tab|tab_is_active('Events')}}" onclick="openTab(event,'Events')"><a href="/">Events</a></li>
+                      <li class="tab tab-about {{tab|tab_is_active('About')}}" onclick="openTab(event,'About')"><a href="/about">About</a></li>
                     </ul>
                   </div>
                 </nav>
@@ -149,7 +149,7 @@
     <section class="section" style="min-height: 62vh">
         <div class="container">
 
-          <div id="Events" class="content-tab">
+          <div id="Events" class="content-tab" style="display:{{tab|tab_display('Events')}}">
 
             <div class="columns">
               <div class="column">
@@ -169,12 +169,17 @@
               </div>
 
               <div class="column">
-                <button class="button is-large is-fullwidth is-dark js-copy-facet-url">
+                <button class="button is-large is-fullwidth is-dark js-copy-facet-url" style="display:none">
                   <span>Save facet neosdb url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>
                   </span>
                 </button>
+                <div class="box nojs-copy-facet-url">
+                  <p class="has-text-danger">You seems to have JavaScript disabled.</p>
+                  <p>Link to download the facet:</p>
+                  <span>neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de</span>
+                </div>
               </div>
             </div>
 
@@ -229,7 +234,7 @@
             {% endfor %}
           </div>
 
-          <div id="About" class="content-tab" style="display:none">
+          <div id="About" class="content-tab" style="display:{{tab|tab_display('About')}}">
             <div class="content">
               <p>This service is provided to you by GrayBoltWolf and Brodokk. If you have any question about it, you can contact them either on discord or NeosVR.</p>
 
@@ -369,6 +374,11 @@
 
   <script>
     // Tab management
+    var tablinks;
+    tablinks = document.getElementsByClassName("tab");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].children[0].removeAttribute("href");
+    }
     function openTab(evt, tabName) {
       var i, x, tablinks;
       x = document.getElementsByClassName("content-tab");
@@ -386,9 +396,14 @@
         target = evt.currentTarget
       }
       target.className += " is-active";
+      url = '/'
+      if (tabName.toLowerCase() != "events") {
+        url += tabName.toLowerCase();
+      }
+      window.history.pushState('neos-community.events', 'neos-community.events', url);
     }
 
-    // Manage facet neosdb url copy button
+    // Manage info toggle
     window.addEventListener('resize', info_toggle);
     document.querySelector("#info_toggle").addEventListener("click", info_toggle, false);
     info_toggle = document.querySelector("#info_toggle");
@@ -401,6 +416,11 @@
       info_toggle.style.borderRadius = "4px";
       info.style.display = "none";
     }
+
+    // Manage facet neosdb url copy button
+    //js-copy-facet-url
+    document.querySelector('.js-copy-facet-url').style.display = 'block'
+    document.querySelector('.nojs-copy-facet-url').style.display = 'none'
 
     function info_toggle() {
       if (window.screen.availWidth < 1024) {
