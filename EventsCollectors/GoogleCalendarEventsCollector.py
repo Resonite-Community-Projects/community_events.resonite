@@ -1,16 +1,15 @@
 import os
 import toml
 import pytz
-import logging
 from dateutil.parser import parse
 
 from disnake.ext import commands
 
 from .utils.google import GoogleCalendarAPI
-from ._base import Bot
+from ._base import EventsCollector
 
 
-class GoogleCalendar(Bot):
+class GoogleCalendarEventsCollector(EventsCollector):
     jschema = {
         "$schema":"http://json-schema.org/draft-04/schema#",
         "title":"GoogleCalendarConfig",
@@ -37,7 +36,7 @@ class GoogleCalendar(Bot):
         ]
     }
 
-    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
+    def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
         self.clients = []
 
@@ -51,7 +50,7 @@ class GoogleCalendar(Bot):
                     )
                 )
             except FileNotFoundError:
-                logging.error(f"Ignore {self.name} for now. Google {bot_config.credentials_file} not found.")
+                self.logger.error(f"Ignore {self.name} for now. Google {bot_config.credentials_file} not found.")
                 continue
 
             for community_name in bot_config.communities_name:
@@ -76,12 +75,6 @@ class GoogleCalendar(Bot):
         description = description.replace('</html-blob>', ' ')
         description = description.strip(' ')
         return description
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print('google bot ready')
-        self.sched.add_job(self.get_data, 'interval', args=(self.dclient,), minutes=5)
-        await self.get_data(self.dclient)
 
     def format_event(self, event, api_ver):
         community_name, name = event['summary'].split('`')
@@ -123,7 +116,7 @@ class GoogleCalendar(Bot):
         return event
 
     async def get_data(self, dclient):
-        print('update google events')
+        self.logger.info(f'Update {self.name} events collector')
         for google in self.clients:
             google_data = google.get_events()
             _events_v1 = []

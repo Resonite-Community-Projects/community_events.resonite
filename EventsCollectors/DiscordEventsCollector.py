@@ -1,15 +1,14 @@
 import re
-import logging
 from time import sleep
 
 import disnake
 from disnake.ext import commands
-from ._base import Bot, separator, ekey
+from ._base import EventsCollector, separator, ekey
 
 re_world_session_web_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_world_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
 
-class DiscordScheduledEvents(Bot):
+class DiscordEventsCollector(EventsCollector):
     jschema = {
             "$schema":"http://json-schema.org/draft-04/schema#",
             "title":"ApolloConfig",
@@ -46,7 +45,7 @@ class DiscordScheduledEvents(Bot):
             ]
         }
 
-    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
+    def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
         self.other_communities = self.communities_name
@@ -100,12 +99,6 @@ class DiscordScheduledEvents(Bot):
             )
         return event
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        logging.info(f'{self.name} bot ready')
-        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=1)
-        await self.get_data(self.dclient)
-
     async def get_events(self, guild):
         ignored_other_communities = [x for x in self.other_communities if x != guild.name]
         events = guild.scheduled_events
@@ -123,6 +116,8 @@ class DiscordScheduledEvents(Bot):
         self.rclient.write('events_v2', _events_v2, api_ver=2, other_communities=ignored_other_communities)
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
+        #for event in _aggregated_events_v1:
+        #    print(event.split(separator[1]['field'])[ekey[1]["community_name"]])
         if _aggregated_events_v1:
             _events_v1.extend(_aggregated_events_v1)
         self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, other_communities=ignored_other_communities)
@@ -133,7 +128,7 @@ class DiscordScheduledEvents(Bot):
         self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, other_communities=ignored_other_communities)
 
     async def get_data(self, dclient):
-        print('update discord events')
+        self.logger.info(f'Update {self.name} events collector')
         for guild in self.bot.guilds:
             if guild.id in self.guilds:
                 await self.get_events(guild)

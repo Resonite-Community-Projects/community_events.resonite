@@ -1,12 +1,11 @@
 import re
-import logging
 from datetime import datetime
 import disnake
 from disnake.ext import commands
 
-from ._base import Bot
+from ._base import EventsCollector
 
-class Apollo(Bot):
+class ApolloEventsCollector(EventsCollector):
     jschema = {
             "$schema":"http://json-schema.org/draft-04/schema#",
             "title":"ApolloConfig",
@@ -53,19 +52,13 @@ class Apollo(Bot):
             ]
         }
 
-    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
+    def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
         self.other_communities = self.communities_name
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
             self.update_communities(bot_config.community_name)
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        logging.info(f'{self.name} bot ready')
-        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=5)
-        await self.get_data(self.dclient)
 
     async def get_events(self, guild):
         self.other_communities = [x for x in self.other_communities if x != guild.community_name]
@@ -135,6 +128,6 @@ class Apollo(Bot):
         self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, older_communities=self.older_communities)
 
     async def get_data(self, dclient):
-        print("update apollo events")
+        self.logger.info(f'Update {self.name} events collector')
         for guild_id, guild_data in self.guilds.items():
             await self.get_events(guild_data)

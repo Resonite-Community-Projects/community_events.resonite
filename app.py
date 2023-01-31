@@ -25,10 +25,10 @@ formatter = logging.Formatter(
     "%Y-%m-%d %H:%M:%S %z"
 )
 
-root = logging.getLogger()
-root.setLevel(logging.INFO)
-root.addHandler(default_handler)
-root.handlers[0].setFormatter(formatter)
+logger = logging.getLogger('community_events')
+logger.setLevel(logging.INFO)
+logger.addHandler(default_handler)
+logger.handlers[0].setFormatter(formatter)
 
 re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
@@ -156,7 +156,7 @@ def parse_desciption(desc):
             "<a href='\\1'>\\1</a>",
             desc)
     except Exception:
-        logging.error(traceback.format_exc())
+        loigger.error(traceback.format_exc())
     desc = desc.replace('\n', '<br>')
     return desc
 

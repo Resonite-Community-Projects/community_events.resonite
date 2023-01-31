@@ -12,6 +12,21 @@ from easydict import EasyDict as edict
 import toml
 from dateutil.parser import parse
 
+from flask.logging import default_handler
+
+
+import logging
+formatter = logging.Formatter(
+    '[%(asctime)s] [%(module)s] '
+    '[%(levelname)s] %(message)s',
+    "%Y-%m-%d %H:%M:%S %z"
+)
+
+logger = logging.getLogger('community_events')
+logger.setLevel(logging.INFO)
+logger.addHandler(default_handler)
+logger.handlers[0].setFormatter(formatter)
+
 with open('config.toml', 'r') as f:
     config = toml.load(f)
 
@@ -28,8 +43,8 @@ for bots in Config.BOTS.values():
                 communities_define_multiple_time.append(bot['community_name'])
 
 if communities_define_multiple_time:
-    logging.error(f'The following communities have been defined too many time: {communities_define_multiple_time}')
-    logging.error('Multiple event source for one community are not supported yet')
+    logger.error(f'The following communities have been defined too many time: {communities_define_multiple_time}')
+    logger.error('Multiple event source for one community are not supported yet')
     exit()
 
 ekey = {
@@ -129,7 +144,7 @@ class TwitchClient:
             self._oauth_token = auth_data['access_token']
             self._oauth_token_expire_in = auth_data['expires_in'] # use this later
         else:
-            logging.error(f"Can't connect to twitch: {response.status_code}")
+            logger.error(f"Can't connect to twitch: {response.status_code}")
 
     def _get_broadcasters_id(self):
         broadcasters_id = []
@@ -152,7 +167,7 @@ class TwitchClient:
                 }
 
         else:
-            logging.error(f"Can't connect to twitch: {response.status_code}")
+            logger.error(f"Can't connect to twitch: {response.status_code}")
         return broadcasters_id
     
     def get_schedules(self):
@@ -174,6 +189,6 @@ class TwitchClient:
                             [d['title'], d['start_time'], d['end_time'], schedule_data['data']['broadcaster_name'], self.broadcasters[broadcaster_id]['profile_image_url']]
                         )
             else:
-                logging.error(f"{self.broadcasters[broadcaster_id]['login']} => Can't connect to twitch: {response.status_code}: {response}")
+                logger.error(f"{self.broadcasters[broadcaster_id]['login']} => Can't connect to twitch: {response.status_code}: {response}")
         events = sorted(events, key=lambda x: x[1])
         return events

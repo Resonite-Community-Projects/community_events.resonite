@@ -10,6 +10,18 @@ re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx
 re_location_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
 re_location_str_match_compiled = re.compile('Location: (.*)')
 
+ekey = {
+    1: {
+        "start_time": 3,
+        "end_time": 4,
+        "community_name": 5,
+    },
+    2: {
+        "start_time": 6,
+        "end_time": 7,
+        "community_name": 8
+    }
+}
 separator = {
     1: {
         'field': '`',
@@ -20,7 +32,7 @@ separator = {
         'event': chr(29),
     }
 }
-class Bot(commands.Cog):
+class EventsCollector(commands.Cog):
     jschema = None
 
     def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
@@ -33,6 +45,7 @@ class Bot(commands.Cog):
         self.sched = sched
         self.dclient = dclient
         self.rclient = rclient
+        self.logger = logging.getLogger('community_events')
 
         communities_name = []
         communities_description = []
@@ -56,10 +69,10 @@ class Bot(commands.Cog):
             try:
                 validate(instance=bot_config, schema=self.jschema)
             except jsonschema.exceptions.ValidationError as exc:
-                logging.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
+                self.logger.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
                 continue
 
-        print(f'initialise {self.name} bot')
+        self.logger.info(f'Initialise {self.name} events collector')
 
     def _clean_text(self, text):
         if text:
@@ -81,6 +94,12 @@ class Bot(commands.Cog):
             return True
         return False
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.logger.info(f'{self.name} events collector ready')
+        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=5)
+        await self.get_data(self.dclient)
+
     def update_communities(self, communities_name):
         communities_v2 = self.rclient.get('communities_v2')
         if communities_v2:
@@ -98,10 +117,10 @@ class Bot(commands.Cog):
             try:
                 r = requests.get(server + f'/v{api_ver}/events')
             except Exception as err:
-                logging.error(f'Error: {err}')
+                self.logger.error(f'Error: {err}')
                 continue
             if r.status_code != 200:
-                logging.error(f'Error {r.status_code}: {r.text}')
+                self.logger.error(f'Error {r.status_code}: {r.text}')
                 continue
             if not r.text:
                 continue
