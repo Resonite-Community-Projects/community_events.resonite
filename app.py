@@ -14,8 +14,9 @@ import toml
 from apscheduler.schedulers.background import BackgroundScheduler
 import dateutil
 from dateutil.parser import parse
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 from flask.logging import default_handler
+from flask_discord import DiscordOAuth2Session, Unauthorized, DiscordOAuth2Scope
 
 from utils import Config
 
@@ -35,6 +36,35 @@ re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+
 re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
 app = Flask(__name__)
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
+
+app.secret_key = Config.SECRET_KEY
+app.config["DISCORD_CLIENT_ID"] = Config.DISCORD_CLIENT_ID
+app.config["DISCORD_CLIENT_SECRET"] = Config.DISCORD_CLIENT_SECRET
+app.config["DISCORD_REDIRECT_URI"] = Config.DISCORD_REDIRECT_URI
+app.config["DISCORD_BOT_TOKEN"] = Config.DISCORD_CLIENT_BOT_TOKEN
+
+discord = DiscordOAuth2Session(app)
+
+@app.route("/login/")
+def login():
+    return discord.create_session(scopes=[DiscordOAuth2Scope.IDENTIFY, DiscordOAuth2Scope.GUILDS])
+
+@app.route("/callback/")
+def callback():
+    discord.callback()
+    user = discord.fetch_user()
+    return redirect(url_for(".index"))
+
+@app.errorhandler(Unauthorized)
+def redirect_unauthorized(e):
+    return redirect(url_for(".index"))
+
+@app.route("/logout/")
+def logout():
+    discord.revoke()
+    return redirect(url_for(".index"))
 
 from utils import RedisClient
 
@@ -172,29 +202,59 @@ def filter_tab_display(tab, current_tab):
         return "block"
     return "none"
 
+@app.template_filter('tags')
+def filter_tag(tags):
+    html_tags = ""
+    if not tags:
+        return ""
+    for tag in tags.split(','):
+        html_tags += f"<span class='tag is-info m-1'>{tag}</span>"
+    return html_tags
+
 def render_main(tab):
     if not Config.SHOW_WEBUI:
         return ''
+    with open("static/images/icon.png", "rb") as logo_file:
+        logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
+    aggregated_events=aggregated_events=request.args.get('aggregated_events', False)
+    user=None
+    if Config.PRIVATE_DISCORDS:
+        if not discord.authorized:
+            return render_template('login.html', userlogo=logo_base64)
+        aggregated_events=True
+        user = discord.fetch_user()
     raw_events = get_communities_events(
         request.args.get('communities'),
         api_ver=2,
-        aggregated_events=request.args.get('aggregated_events', False),
+        aggregated_events=aggregated_events,
     )
-    events = []
+    _events = []
     if raw_events:
-        events = raw_events.split(chr(29).encode('utf-8'))
-    events = list(filter(None, events))
-    events = [event.decode('utf-8').split(chr(30)) for event in events]
-
+        _events = raw_events.split(chr(29).encode('utf-8'))
+    _events = list(filter(None, _events))
+    _events = [event.decode('utf-8').split(chr(30)) for event in _events]
+    user_guilds = []
+    if Config.PRIVATE_DISCORDS:
+        events = []
+        _user_guilds = [guild.name for guild in discord.fetch_guilds()]
+        for user_guild in _user_guilds:
+            if user_guild not in Config.PRIVATE_DISCORDS:
+                continue
+            user_guilds.append(user_guild)
+        if discord.authorized:
+            for event in _events:
+                if event[8] in Config.PRIVATE_DISCORDS and event[8] not in user_guilds:
+                    continue
+                events.append(event)
+    else:
+        events = _events
     raw_streams = rclient.get(f'stream_v2')
     streams = []
     if raw_streams:
         streams = raw_streams.split(chr(29).encode('utf-8'))
     streams = list(filter(None, streams))
     streams = [stream.decode('utf-8').split(chr(30)) for stream in streams]
-    with open("static/images/icon.png", "rb") as logo_file:
-        logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
-    return render_template('index.html', events=events, streams=streams, tab=tab, logo=logo_base64)
+    return render_template('index.html', events=events, streams=streams, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
 
 @app.route("/")
 def index():

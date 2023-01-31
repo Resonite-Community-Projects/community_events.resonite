@@ -116,8 +116,6 @@ class DiscordEventsCollector(EventsCollector):
         self.rclient.write('events_v2', _events_v2, api_ver=2, other_communities=ignored_other_communities)
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
-        #for event in _aggregated_events_v1:
-        #    print(event.split(separator[1]['field'])[ekey[1]["community_name"]])
         if _aggregated_events_v1:
             _events_v1.extend(_aggregated_events_v1)
         self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, other_communities=ignored_other_communities)

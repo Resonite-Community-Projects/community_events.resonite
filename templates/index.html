@@ -72,6 +72,16 @@
         display: none;
       }
 
+      .login {
+        width: 90%;
+        position: relative;
+        margin: auto;
+      }
+
+      .user-info .pfp img {
+        padding: 3px;
+      }
+
       @media (min-width: 769px) {
         .event .card-content {
           background-image: none !important;
@@ -98,6 +108,11 @@
         }
 
         .event .card-header, .stream .card-header {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .event .card-header .tags {
           flex-direction: column;
           align-items: center;
         }
@@ -158,17 +173,41 @@
           </div>
         </div>
 
+        {% if user %}
+        <div class="container box user-info login is-flex">
+          <div class="is-flex is-flex-direction-column m-1">
+            <figure class="image pfp is-96x96 m-1">
+              <img class="is-rounded has-background-info" src='{{user.avatar_url}}' />
+            </figure>
+            <a class="button m-1" href="/logout/">Logout</a>
+          </div>
+          <div class="is-flex-direction-column m-1">
+            <p class="m-1">Connected as <span class="tag has-text-info">{{user.name}}</span></p>
+            {% if user_guilds %}
+            <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
+            {% else %}
+            <p class="m-1">You are not part of any communities sadly.</p>
+            {% endif %}
+            <div>
+              {% for user_guild in user_guilds %}
+              <span class="tag is-info m-1">{{ user_guild }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <div class="hero-foot">
           <nav class="tabs is-boxed is-fullwidth is-large">
-                  <div class="container">
-                    <ul>
-                      <li class="tab tab-events {{tab|tab_is_active('Events')}}" onclick="openTab(event,'Events')"><a href="/">Events</a></li>
-                      <li class="tab tab-streams {{tab|tab_is_active('Streams')}}" onclick="openTab(event,'Streams')"><a href="/streams">Streams</a></li>
-                      <li class="tab tab-about {{tab|tab_is_active('About')}}" onclick="openTab(event,'About')"><a href="/about">About</a></li>
-                    </ul>
-                  </div>
-                </nav>
+            <div class="container">
+              <ul>
+                <li class="tab tab-events {{tab|tab_is_active('Events')}}" onclick="openTab(event,'Events')"><a href="/">Events</a></li>
+                <li class="tab tab-streams {{tab|tab_is_active('Streams')}}" onclick="openTab(event,'Streams')"><a href="/streams">Streams</a></li>
+                <li class="tab tab-about {{tab|tab_is_active('About')}}" onclick="openTab(event,'About')"><a href="/about">About</a></li>
+              </ul>
             </div>
+          </nav>
+        </div>
       </section>
 
 
@@ -213,9 +252,10 @@
             <div class="container event">
               <div class="card my-3">
                 <header class="card-header">
-                    <p class="card-header-title">
-                        {{ event[0] }}
-                    </p>
+                    <div class="card-header-title is-flex is-flex-direction-column is-align-items-flex-start">
+                        <p>{{ event[0] }}</p>
+                        <div class="tags is-flex">{{ event[10]|tags|safe }}</div>
+                    </div>
                     <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
                         <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
                         <div class="date my-3 mx-4 is-flex">
@@ -312,6 +352,22 @@
               <p>For now the two domains <code>neos.boltwolf.net</code> and <code>neos-community.events</code> are delivering the same service run by the same group of person.</p>
               <h2>News</h2>
               
+              <div class="box">
+                <div class="content">
+                  <strong>Release 2.8.0</strong>
+                  &nbsp;
+                  <small>2023-02-02</small>
+                  <br>
+                  <p>
+                    <ul>
+                      <li>Add NeosVR streams schedules.</li>
+                      <li>Add login via discord for show hidden communities.</li>
+                      <li>Fix support for user who disabled the javascript.</li>
+                      <li>Fix bugs</li>
+                    </ul>
+                  </p>
+                </div>
+              </div>
               <div class="box">
                 <div class="content">
                   <strong>Release 2.6.0</strong>

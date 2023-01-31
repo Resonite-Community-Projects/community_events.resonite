@@ -13,3 +13,4 @@ redis
 disnake
 easydict
 jsonschema
+git+https://github.com/brodokk/Flask-Discord@v10_custom#egg=Flask-Discord

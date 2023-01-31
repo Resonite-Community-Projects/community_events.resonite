@@ -123,6 +123,7 @@ class EventsCollector(commands.Cog):
                 self.logger.error(f'Error {r.status_code}: {r.text}')
                 continue
             if not r.text:
+                self.logger.error(f'Error {r.status_code}: {r}')
                 continue
             _server_events = r.text.split(separator[api_ver]['event'])
             return _server_events
