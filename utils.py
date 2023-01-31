@@ -1,7 +1,8 @@
 from operator import itemgetter
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dateutil.parser import parse
 import dateutil
+import requests
 import pytz
 
 import logging
@@ -9,6 +10,7 @@ import logging
 import redis
 from easydict import EasyDict as edict
 import toml
+from dateutil.parser import parse
 
 with open('config.toml', 'r') as f:
     config = toml.load(f)
@@ -52,6 +54,7 @@ separator = {
         'event': chr(29),
     }
 }
+
 
 class RedisClient:
 
@@ -99,4 +102,78 @@ class RedisClient:
                 return key.split(separator[api_ver]['field'])[ekey[api_ver]["start_time"]]
             return ''
         events.sort(key=sorting)
+        return events
+
+class TwitchClient:
+
+    def __init__(self, client_id, secret):
+        self.client_id = client_id
+        self.secret = secret
+
+        self._auth()
+        self.broadcasters = {}
+        self.broadcasters_id = self._get_broadcasters_id()
+
+    def _auth(self):
+        response = requests.post(
+            f'https://id.twitch.tv/oauth2/token',
+            params={
+                'client_id': self.client_id,
+                'client_secret': self.secret,
+                'grant_type': 'client_credentials'
+            },
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        if response.status_code == 200:
+            auth_data = response.json()
+            self._oauth_token = auth_data['access_token']
+            self._oauth_token_expire_in = auth_data['expires_in'] # use this later
+        else:
+            logging.error(f"Can't connect to twitch: {response.status_code}")
+
+    def _get_broadcasters_id(self):
+        broadcasters_id = []
+        user_logins = ['neosvr', 'contactsplus', 'creatorjam', 'raithsphere', 'xlinka', 'zairawolfe']
+        b = ""
+        for user_login in user_logins:
+            b += f"&login={user_login}"
+        b = b.lstrip("&")
+        response = requests.get(
+            f'https://api.twitch.tv/helix/users?{b}',
+            headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
+        )
+        if response.status_code == 200:
+            users_data = response.json()
+            for user in users_data['data']:
+                broadcasters_id.append(user['id'])
+                self.broadcasters[user['id']] = {
+                    "profile_image_url": user['profile_image_url'],
+                    "login": user["login"]
+                }
+
+        else:
+            logging.error(f"Can't connect to twitch: {response.status_code}")
+        return broadcasters_id
+    
+    def get_schedules(self):
+        dt_now = datetime.now(timezone.utc)
+        events = []
+        for broadcaster_id in self.broadcasters_id:
+            response = requests.get(
+                f'https://api.twitch.tv/helix/schedule',
+                params={'broadcaster_id': broadcaster_id},
+                headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
+            )
+            if response.status_code == 200:
+                schedule_data = response.json()
+                for d in schedule_data['data']['segments']:
+                    if parse((d['start_time'])) > dt_now + timedelta(days=7):
+                        continue
+                    if (d['category'] and d['category']['id'] == '945792190') or schedule_data['data']['broadcaster_name'] == 'NeosVR':
+                        events.append(
+                            [d['title'], d['start_time'], d['end_time'], schedule_data['data']['broadcaster_name'], self.broadcasters[broadcaster_id]['profile_image_url']]
+                        )
+            else:
+                logging.error(f"{self.broadcasters[broadcaster_id]['login']} => Can't connect to twitch: {response.status_code}: {response}")
+        events = sorted(events, key=lambda x: x[1])
         return events

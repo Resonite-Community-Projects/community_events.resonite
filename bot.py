@@ -5,12 +5,12 @@ import inspect
 from disnake.ext import commands
 
 import bots
-from utils import RedisClient, Config
+from utils import RedisClient, Config, TwitchClient
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
-
+tclient = TwitchClient(client_id=Config.TWITCH_CLIENT_ID, secret=Config.TWITCH_SECRET)
 dclient = disnake.Client()
 
 intents = disnake.Intents.all()
@@ -22,7 +22,7 @@ rclient.client.delete("communities_v2")
 
 for name, obj in inspect.getmembers(bots):
     if inspect.isclass(obj):
-        bot.add_cog(obj(bot, Config, sched, dclient, rclient))
+        bot.add_cog(obj(bot, Config, sched, dclient, rclient, tclient))
 
 sched.start()
 

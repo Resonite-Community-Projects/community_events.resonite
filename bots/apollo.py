@@ -53,7 +53,7 @@ class Apollo(Bot):
             ]
         }
 
-    def __init__(self, bot, config, sched, dclient, rclient):
+    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
         super().__init__(bot, config, sched, dclient, rclient)
 
         self.other_communities = self.communities_name

@@ -4,7 +4,7 @@ from time import sleep
 
 import disnake
 from disnake.ext import commands
-from ._base import Bot
+from ._base import Bot, separator, ekey
 
 re_world_session_web_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
 re_world_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
@@ -46,7 +46,7 @@ class DiscordScheduledEvents(Bot):
             ]
         }
 
-    def __init__(self, bot, config, sched, dclient, rclient):
+    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
         super().__init__(bot, config, sched, dclient, rclient)
 
         self.other_communities = self.communities_name

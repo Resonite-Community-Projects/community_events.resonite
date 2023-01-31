@@ -23,7 +23,7 @@ separator = {
 class Bot(commands.Cog):
     jschema = None
 
-    def __init__(self, bot, config, sched, dclient, rclient):
+    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
         self.name = self.__class__.__name__
         if not self.jschema:
             raise ValueError(f"The bot {self.name} must have a declared json schema for its configuration!")

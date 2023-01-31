@@ -37,7 +37,7 @@ class GoogleCalendar(Bot):
         ]
     }
 
-    def __init__(self, bot, config, sched, dclient, rclient):
+    def __init__(self, bot, config, sched, dclient, rclient, *args, **kwargs):
         super().__init__(bot, config, sched, dclient, rclient)
         self.clients = []
 

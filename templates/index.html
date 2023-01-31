@@ -29,11 +29,22 @@
         padding-right: 1em;
       }
 
-      .event {
+      .event, .stream {
         margin-bottom: 2em;
       }
 
-      .event .date {
+      .stream .button {
+        align-self: center;
+        margin: 1em;
+      }
+
+      .stream .card-header-title {
+        flex-direction: column;
+        align-items: start;
+        align-self: center;
+      }
+
+      .event .date, .stream .date {
         flex-direction: column;
       }
 
@@ -69,15 +80,29 @@
 
       @media (max-width: 769px) {
 
-        .event {
+        .event, .stream {
           margin-bottom: 0;
         }
 
-        .event .card-header {
-          flex-direction: column;
+        .stream .image img {
+          border-radius: 6px;
         }
 
-        .event .date {
+        .stream .card-header-title {
+          align-items: center;
+          align-self: center;
+        }
+
+        .stream .card-header-title p {
+          text-align: center;
+        }
+
+        .event .card-header, .stream .card-header {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .event .date, .stream .date {
           flex-direction: row;
         }
 
@@ -138,6 +163,7 @@
                   <div class="container">
                     <ul>
                       <li class="tab tab-events {{tab|tab_is_active('Events')}}" onclick="openTab(event,'Events')"><a href="/">Events</a></li>
+                      <li class="tab tab-streams {{tab|tab_is_active('Streams')}}" onclick="openTab(event,'Streams')"><a href="/streams">Streams</a></li>
                       <li class="tab tab-about {{tab|tab_is_active('About')}}" onclick="openTab(event,'About')"><a href="/about">About</a></li>
                     </ul>
                   </div>
@@ -228,6 +254,45 @@
                   <li>This <strong>isn't</strong> an exhaustive list of NeosVR events;</li>
                   <li>Private events are not listed here;</li>
                   <li>Events can be announced during the day for the following evening, come back later.</li>
+                </ul>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+
+          <div id="Streams" class="content-tab" style="display:{{tab|tab_display('Streams')}}">
+            
+            {% for stream in streams %}
+            <div class="container stream">
+              <div class="card my-3">
+                <header class="card-header">
+                    <figure  class="image is-128x128 is-center">
+                      <img src="{{ stream[4] }}" alt="Image">
+                    </figure >
+                    <div class="card-header-title">
+                      <p>{{ stream[0] }}</p>
+                      <br>
+                      <p class="subtitle">Streamed by {{ stream[3] }}</p>
+                    </div>
+                    <a class="button is-info" href="https://www.twitch.tv/{{ stream[3] }}">Visit channel</a>
+                    <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
+                        <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
+                        <div class="date my-3 mx-4 is-flex">
+                          <p class="start">{{ stream[1]|formatdatetime }}</p>
+                          <p class="end">{{ stream[2]|formatdatetime }}</p>
+                        </div>
+                    </div>
+                </header>
+              </div>
+            </div>
+            {% else %}
+            <article class="message">
+              <div class="message-body content">
+                It doesn't seem there are currently any streams planned. <strong>But</strong> remember:
+
+                <ul>
+                  <li>This <strong>isn't</strong> an exhaustive list of NeosVR streams;</li>
+                  <li>Streams can be started without any prior schedule.</li>
                 </ul>
               </div>
             </article>

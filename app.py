@@ -185,9 +185,16 @@ def render_main(tab):
         events = raw_events.split(chr(29).encode('utf-8'))
     events = list(filter(None, events))
     events = [event.decode('utf-8').split(chr(30)) for event in events]
+
+    raw_streams = rclient.get(f'stream_v2')
+    streams = []
+    if raw_streams:
+        streams = raw_streams.split(chr(29).encode('utf-8'))
+    streams = list(filter(None, streams))
+    streams = [stream.decode('utf-8').split(chr(30)) for stream in streams]
     with open("static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
-    return render_template('index.html', events=events, tab=tab, logo=logo_base64)
+    return render_template('index.html', events=events, streams=streams, tab=tab, logo=logo_base64)
 
 @app.route("/")
 def index():
@@ -196,3 +203,7 @@ def index():
 @app.route("/about")
 def about():
     return render_main(tab="About")
+
+@app.route("/streams")
+def streams():
+    return render_main(tab="Streams")
