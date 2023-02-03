@@ -1,7 +1,7 @@
 import os
 import toml
 
-from discord import Discord
+from simple_discord import Discord
 
 from utils import Config
 
