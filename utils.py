@@ -148,9 +148,8 @@ class TwitchClient:
 
     def _get_broadcasters_id(self):
         broadcasters_id = []
-        user_logins = ['neosvr', 'contactsplus', 'creatorjam', 'raithsphere', 'xlinka', 'zairawolfe']
         b = ""
-        for user_login in user_logins:
+        for user_login in Config.TWITCH_STREAMS:
             b += f"&login={user_login}"
         b = b.lstrip("&")
         response = requests.get(
