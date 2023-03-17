@@ -17,6 +17,7 @@ from dateutil.parser import parse
 from flask import Flask, jsonify, render_template, request, redirect, url_for
 from flask.logging import default_handler
 from flask_discord import DiscordOAuth2Session, Unauthorized, DiscordOAuth2Scope
+from fenkeysmanagement import KeyManager
 
 from utils import Config
 
@@ -44,8 +45,24 @@ app.config["DISCORD_CLIENT_ID"] = Config.DISCORD_CLIENT_ID
 app.config["DISCORD_CLIENT_SECRET"] = Config.DISCORD_CLIENT_SECRET
 app.config["DISCORD_REDIRECT_URI"] = Config.DISCORD_REDIRECT_URI
 app.config["DISCORD_BOT_TOKEN"] = Config.DISCORD_CLIENT_BOT_TOKEN
+app.key_manager = KeyManager()
 
 discord = DiscordOAuth2Session(app)
+
+def check_perms(request):
+    data_str = request.data.decode('utf-8')
+    try:
+        data_json = json.loads(data_str)
+        if "auth_key" in data_json.keys():
+            app.key_manager.reload_keys()
+            if (
+                app.key_manager.keys.get('key', data_json['auth_key'])
+                and not app.key_manager.key_revoked(data_json['auth_key'])
+            ):
+                return True
+        return False
+    except json.decoder.JSONDecodeError:
+        return False
 
 @app.route("/login/")
 def login():
@@ -154,6 +171,16 @@ def get_aggregated_events_v2():
 @app.route("/v2/communities")
 def get_communities_v2():
     return rclient.get('communities_v2') or ''
+
+@app.route('/clean', methods=["POST"])
+def clean():
+    if not check_perms(request):
+        return 'permissions denied'
+    rclient.client.set('events_v1', '')
+    rclient.client.set('aggregated_events_v1', '')
+    rclient.client.set('events_v2', '')
+    rclient.client.set('aggregated_events_v2', '')
+    return 'cleaned'
 
 @app.template_filter('formatdatetime')
 def format_datetime(value, format="%d %b %I:%M %p"):
