@@ -24,18 +24,20 @@ class ExternalEventsCollector(EventsCollector):
         external_communities = self.get_external_communities()
         external_communities.extend(self.communities_name)
 
-        _event_v1 = self.rclient.get('events_v1')
-        _event_v1 = _event_v1.decode("utf-8").split(separator[1]['event'])
-
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
-        _aggregated_events_v1.extend(_event_v1)
+
+        _event_v1 = self.rclient.get('events_v1')
+        if _event_v1:
+            _event_v1 = _event_v1.decode("utf-8").split(separator[1]['event'])
+            _aggregated_events_v1.extend(_event_v1)
         self.rclient.write('aggregated_events_v1', _aggregated_events_v1, api_ver=1, current_communities=external_communities)
 
-        _event_v2 = self.rclient.get('events_v2')
-        _event_v2 = _event_v2.decode("utf-8").split(separator[2]['event'])
-
         _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
-        _aggregated_events_v2.extend(_event_v2)
+
+        _event_v2 = self.rclient.get('events_v2')
+        if _event_v2:
+            _event_v2 = _event_v2.decode("utf-8").split(separator[2]['event'])
+            _aggregated_events_v2.extend(_event_v2)
         self.rclient.write('aggregated_events_v2', _aggregated_events_v2, api_ver=2, current_communities=external_communities)
 
     def get_data(self, dclient):
