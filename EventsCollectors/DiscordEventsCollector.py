@@ -122,7 +122,6 @@ class DiscordEventsCollector(EventsCollector):
     async def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')
         for guild in self.bot.guilds:
-            self.logger.info(self.guilds)
             if guild.id in self.guilds:
                 await self.get_events(guild)
                 sleep(1)
