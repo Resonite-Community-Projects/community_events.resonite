@@ -79,7 +79,7 @@ class RedisClient:
     def get(self, key):
         return self.client.get(key)
 
-    def write(self, key, new_events, api_ver, other_communities=[]):
+    def write(self, key, new_events, api_ver, current_communities=[]):
     
         dt_now = datetime.now(timezone.utc)
 
@@ -92,20 +92,20 @@ class RedisClient:
         if isinstance(new_events, str):
             new_events = [new_events]
 
-        old_events = [ x for x in old_events if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] in other_communities ]
+        events = []
+        for x in old_events:
+            if x.split(separator[api_ver]['field'])[ekey[api_ver]["community_name"]] not in current_communities:
+                events.append(x)
 
-        events = old_events
         for new_event in new_events:
-            if new_event not in old_events:
-                events.append(new_event)
+            events.append(new_event)
 
         for event in events:
             try:
                 if parse(event.split(separator[api_ver]['field'])[ekey[api_ver]["end_time"]]).replace(tzinfo=pytz.UTC) < dt_now:
                     events.remove(event)
             except dateutil.parser._parser.ParserError:
-                continue
-
+                logging.error(f"Error parsing date: {event.split(separator[api_ver]['field'])[ekey[api_ver]['end_time']]} for event: {event}")
 
         events = self.sort_events(events, api_ver)
         events = f"{separator[api_ver]['event']}".join(d for d in events if d)

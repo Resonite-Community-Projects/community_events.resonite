@@ -38,17 +38,16 @@ class GoogleCalendarEventsCollector(EventsCollector):
 
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
+
+        if not self.valide_config:
+            return
+
         self.clients = []
 
-        self.other_communities = self.communities_name
+        self.other_communities = ""
         for bot_config in getattr(self.config.BOTS, self.name, []):
             try:
-                self.clients.append(
-                    GoogleCalendarAPI(
-                        bot_config.email,
-                        bot_config.credentials_file,
-                    )
-                )
+                self.clients.append(GoogleCalendarAPI(bot_config))
             except FileNotFoundError:
                 self.logger.error(f"Ignore {self.name} for now. Google {bot_config.credentials_file} not found.")
                 continue
@@ -117,23 +116,13 @@ class GoogleCalendarEventsCollector(EventsCollector):
 
     async def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')
-        for google in self.clients:
-            google_data = google.get_events()
+        for client in self.clients:
+            google_data = client.get_events()
             _events_v1 = []
             _events_v2 = []
             for event in google_data['items']:
                 _events_v1.append(self.format_event(event, api_ver=1))
                 _events_v2.append(self.format_event(event, api_ver=2))
 
-            self.rclient.write('events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
-            self.rclient.write('events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)
-
-            _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
-            if _aggregated_events_v1:
-                _events_v1.extend(_aggregated_events_v1)
-            self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, other_communities=self.other_communities)
-
-            _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
-            if _aggregated_events_v2:
-                _events_v2.extend(_aggregated_events_v2)
-            self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, other_communities=self.other_communities)
+            self.rclient.write('events_v1', _events_v1, api_ver=1, current_communities=client.bot_config.communities_name)
+            self.rclient.write('events_v2', _events_v2, api_ver=2, current_communities=client.bot_config.communities_name)

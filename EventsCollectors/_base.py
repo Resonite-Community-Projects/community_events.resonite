@@ -46,6 +46,7 @@ class EventsCollector(commands.Cog):
         self.dclient = dclient
         self.rclient = rclient
         self.logger = logging.getLogger('community_events')
+        self.valide_config = False
 
         communities_name = []
         communities_description = []
@@ -56,21 +57,28 @@ class EventsCollector(commands.Cog):
                 elif 'communities_name' in config:
                     for community_name in config.communities_name:
                         communities_name.append(community_name)
-                self.communities_name = communities_name
                 if 'community_description' in config:
                     communities_description.append(config.community_description)
                 elif 'communities_description' in config:
                     for community_description in config.communities_description:
                         communities_description.append(community_description)
-                self.communities_description = communities_description
+
+        self.communities_name = communities_name
+        self.communities_description = communities_description
 
         self.guilds = {}
-        for bot_config in getattr(self.config.BOTS, self.name, []):
+
+        bots_config = getattr(self.config.BOTS, self.name, [])
+        if not bots_config and self.name != 'ExternalEventsCollector':
+            self.logger.error(f"Ignoring {self.name} for now. No configuration found.")
+            return
+        for bot_config in bots_config:
             try:
                 validate(instance=bot_config, schema=self.jschema)
+                self.valide_config = True
             except jsonschema.exceptions.ValidationError as exc:
                 self.logger.error(f"Ignoring {self.name} for now. Invalid schema: {exc.message}")
-                continue
+                return
 
         self.logger.info(f'Initialise {self.name} events collector')
 
@@ -128,6 +136,19 @@ class EventsCollector(commands.Cog):
             _server_events = r.text.split(separator[api_ver]['event'])
             return _server_events
         return []
+
+    def get_external_communities(self, community_name=None):
+        external_communities = []
+        if community_name:
+            external_communities.append(community_name)
+        for server in self.config.SERVERS_EVENT:
+            try:
+                _external_communities = requests.get(server + f'/v2/communities')
+                external_communities.extend(external_communities.text.split('`'))
+            except Exception as err:
+                self.logger.error(f'Error: {err}')
+
+        return external_communities
 
     def sformat(
         self,

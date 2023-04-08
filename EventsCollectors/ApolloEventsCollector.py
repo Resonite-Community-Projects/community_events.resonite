@@ -55,13 +55,14 @@ class ApolloEventsCollector(EventsCollector):
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
 
-        self.other_communities = self.communities_name
+        if not self.valide_config:
+            return
+
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
             self.update_communities(bot_config.community_name)
 
     async def get_events(self, guild):
-        self.other_communities = [x for x in self.other_communities if x != guild.community_name]
         channel = disnake.utils.get(self.bot.get_all_channels(), guild__id=guild.guild_id, name=guild.guild_channel)
         _events_v1 = []
         _events_v2 = []
@@ -114,18 +115,8 @@ class ApolloEventsCollector(EventsCollector):
                     api_ver = 2
                 )
                 _events_v2.append(event_v2)
-        self.rclient.write('events_v1', _events_v1,  api_ver=1, older_communities=self.older_communities)
-        self.rclient.write('events_v2', _events_v2, api_ver=2, older_communities=self.older_communities)
-
-        _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)
-        if _aggregated_events_v1:
-            _events_v1.extend(_aggregated_events_v1)
-        self.rclient.write('aggregated_events_v1', _events_v1, api_ver=1, older_communities=self.older_communities)
-
-        _aggregated_events_v2 = self.get_aggregated_events(api_ver=2)
-        if _aggregated_events_v2:
-            _events_v2.extend(_aggregated_events_v2)
-        self.rclient.write('aggregated_events_v2', _events_v2, api_ver=2, older_communities=self.older_communities)
+        self.rclient.write('events_v1', _events_v1,  api_ver=1, current_communities=self.older_communities)
+        self.rclient.write('events_v2', _events_v2, api_ver=2, current_communities=self.older_communities)
 
     async def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')

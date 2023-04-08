@@ -9,11 +9,12 @@ from google.oauth2 import service_account
 
 class GoogleCalendarAPI:
 
-    def __init__(self, calendar: str, credentials_file: str):
-        self.calendar = calendar
-        self.credentials_file = credentials_file
+    def __init__(self, bot_config):
+        self.calendar = bot_config.email
+        self.credentials_file = bot_config.credentials_file
         self.service = self._get_calendar_service()
         self.google_calendars_id = self._get_google_calendars_id()
+        self.bot_config = bot_config
 
     def _get_calendar_service(self):
         credentials = service_account.Credentials.from_service_account_file(
