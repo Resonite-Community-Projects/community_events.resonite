@@ -104,7 +104,7 @@ class EventsCollector(commands.Cog):
 
     def init_sched(self):
         self.logger.info(f'{self.name} events collector ready')
-        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=1)
+        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=self.config['DISCORD_BOT_TOKEN_REFRESH_INTERVAL'])
         self.get_data(self.dclient)
 
     @commands.Cog.listener()
