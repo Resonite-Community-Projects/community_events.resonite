@@ -35,7 +35,9 @@ sched = AsyncIOScheduler(daemon=True)
 
 for name, obj in inspect.getmembers(EventsCollectors):
     if inspect.isclass(obj):
-        bot.add_cog(obj(bot, Config, sched, dclient, rclient))
+        events_collector = obj(bot, Config, sched, dclient, rclient)
+        if events_collector.valide_config:
+            bot.add_cog(events_collector)
 
 for name, obj in inspect.getmembers(StreamsCollectors):
     if inspect.isclass(obj):
