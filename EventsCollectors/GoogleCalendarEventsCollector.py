@@ -44,7 +44,6 @@ class GoogleCalendarEventsCollector(EventsCollector):
 
         self.clients = []
 
-        self.other_communities = ""
         for bot_config in getattr(self.config.BOTS, self.name, []):
             try:
                 self.clients.append(GoogleCalendarAPI(bot_config))
@@ -55,7 +54,7 @@ class GoogleCalendarEventsCollector(EventsCollector):
             for community_name in bot_config.communities_name:
                 self.update_communities(community_name)
 
-            self.other_communities = [x for x in self.other_communities if x not in bot_config.communities_name]
+        self.init_sched()
 
     def parse_date(self, date):
         """ Parse data."""
@@ -114,7 +113,7 @@ class GoogleCalendarEventsCollector(EventsCollector):
             )
         return event
 
-    async def get_data(self, dclient):
+    def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')
         for client in self.clients:
             google_data = client.get_events()

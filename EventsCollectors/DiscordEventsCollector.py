@@ -102,7 +102,7 @@ class DiscordEventsCollector(EventsCollector):
             )
         return event
 
-    async def get_events(self, guild):
+    def get_events(self, guild):
         events = guild.scheduled_events
         _events_v1 = []
         _events_v2 = []
@@ -119,9 +119,9 @@ class DiscordEventsCollector(EventsCollector):
         if _events_v2:
             self.rclient.write('events_v2', _events_v2, api_ver=2, current_communities=[guild.name])
 
-    async def get_data(self, dclient):
+    def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')
         for guild in self.bot.guilds:
             if guild.id in self.guilds:
-                await self.get_events(guild)
+                self.get_events(guild)
                 sleep(1)

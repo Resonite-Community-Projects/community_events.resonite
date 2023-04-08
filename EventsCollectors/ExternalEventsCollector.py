@@ -18,8 +18,9 @@ class ExternalEventsCollector(EventsCollector):
 
     def __init__(self, bot, config, sched, dclient, rclient):
         super().__init__(bot, config, sched, dclient, rclient)
+        self.init_sched()
 
-    async def get_events(self):
+    def get_events(self):
         external_communities = self.get_external_communities()
         external_communities.extend(self.communities_name)
 
@@ -37,6 +38,6 @@ class ExternalEventsCollector(EventsCollector):
         _aggregated_events_v2.extend(_event_v2)
         self.rclient.write('aggregated_events_v2', _aggregated_events_v2, api_ver=2, current_communities=external_communities)
 
-    async def get_data(self, dclient):
+    def get_data(self, dclient):
         self.logger.info(f'Update {self.name} events collector')
-        await self.get_events()
+        self.get_events()

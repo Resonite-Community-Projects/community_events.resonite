@@ -102,11 +102,14 @@ class EventsCollector(commands.Cog):
             return True
         return False
 
+    def init_sched(self):
+        self.logger.info(f'{self.name} events collector ready')
+        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=1)
+        self.get_data(self.dclient)
+
     @commands.Cog.listener()
     async def on_ready(self):
-        self.logger.info(f'{self.name} events collector ready')
-        self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=5)
-        await self.get_data(self.dclient)
+        self.init_sched()
 
     def update_communities(self, communities_name):
         communities_v2 = self.rclient.get('communities_v2')
@@ -144,7 +147,7 @@ class EventsCollector(commands.Cog):
         for server in self.config.SERVERS_EVENT:
             try:
                 _external_communities = requests.get(server + f'/v2/communities')
-                external_communities.extend(external_communities.text.split('`'))
+                external_communities.extend(_external_communities.text.split('`'))
             except Exception as err:
                 self.logger.error(f'Error: {err}')
 
