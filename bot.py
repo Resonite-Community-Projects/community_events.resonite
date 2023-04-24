@@ -6,6 +6,7 @@ from disnake.ext import commands
 
 import EventsCollectors
 import StreamsCollectors
+import EventsTransmitters
 from utils import RedisClient, Config, TwitchClient
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -42,6 +43,10 @@ for name, obj in inspect.getmembers(EventsCollectors):
 for name, obj in inspect.getmembers(StreamsCollectors):
     if inspect.isclass(obj):
         obj(Config, sched, rclient, tclient)
+
+for name, obj in inspect.getmembers(EventsTransmitters):
+    if inspect.isclass(obj):
+        obj(Config, sched, rclient)
 
 sched.start()
 

@@ -4,6 +4,10 @@ DISCORD_BOT_TOKEN_REFRESH_INTERVAL = 5
 # Neos events to aggrerate, in the format of 'scheme://host:port'
 SERVERS_EVENT = []
 SHOW_WEBUI = true
+CLOUDVAR_NEOS_USER = ""
+CLOUDVAR_NEOS_PASS = ""
+CLOUDVAR_BASE_NAME = ""
+CLOUDVAR_GENERAL_NAME = ""
 
 PRIVATE_DISCORDS = []
 SECRET_KEY = ""

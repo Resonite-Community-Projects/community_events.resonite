@@ -35,6 +35,15 @@ For adding a guild to this source you need to use the key
 - `tags`: list, the list of tags
 - `guild_ids`: int, the guild id
 
+### NeosVRCalendarTransmitter
+
+It's possible to send all events in a cloud variable to be used by JackTheOtter calendar system.
+
+- `CLOUDVAR_NEOS_USER`: str, the `U-` NeosVR username used to set the cloud variable
+- `CLOUDVAR_NEOS_PASS`: str
+- `CLOUDVAR_BASE_NAME`: str, the NeosVR cloud variable base name
+- `CLOUDVAR_GENERAL_NAME`: str, the NeosVR cloud variable general name
+
 #### Example
 
 ```
