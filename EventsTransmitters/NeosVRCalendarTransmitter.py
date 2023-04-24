@@ -81,13 +81,12 @@ class NeosVRCalendarTransmitter:
 
     def transmitt(self, rclient):
         aggregated_events_v2 = self.rclient.get('aggregated_events_v2')
-        if not aggregated_events_v2:
-            self.logger.info(f'No events to transmit')
-            return
         events = aggregated_events_v2.decode("utf-8").split(separator['event'])
         cloud = json.loads('{"Meta":{"Name":"TestCommunityEvents.All","Desc":"","Color":"","LastEdited":""},"Events":{}}')
         for event in events:
             event = list(filter(None, event.split(separator['field'])))
+            if not event:
+                continue
             cloud['Events'].update(
                 new_event(
                     start_date=parser.parse(event[3]),
