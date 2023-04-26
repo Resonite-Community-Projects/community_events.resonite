@@ -1,4 +1,5 @@
 import re
+import logging
 from time import sleep
 
 import disnake
@@ -103,6 +104,10 @@ class DiscordEventsCollector(EventsCollector):
         return event
 
     def get_events(self, guild):
+        if guild.name not in self.communities_name:
+            logging.error(f'{guild.name} not configured!')
+            logging.error('Potential events duplication!')
+            logging.error(f'Ignoring {guild.name} events update...')
         events = guild.scheduled_events
         _events_v1 = []
         _events_v2 = []
