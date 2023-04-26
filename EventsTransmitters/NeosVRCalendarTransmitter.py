@@ -84,18 +84,19 @@ class NeosVRCalendarTransmitter:
         events = aggregated_events_v2.decode("utf-8").split(separator['event'])
         cloud = json.loads('{"Meta":{"Name":"TestCommunityEvents.All","Desc":"","Color":"","LastEdited":""},"Events":{}}')
         for event in events:
-            event = list(filter(None, event.split(separator['field'])))
-            if not event:
-                continue
-            cloud['Events'].update(
-                new_event(
-                    start_date=parser.parse(event[3]),
-                    end_date=parser.parse(event[4]),
-                    title=event[0],
-                    description=event[1],
-                    other_ids=cloud['Events'].keys()
+            event = event.split(separator['field'])
+            try:
+                cloud['Events'].update(
+                    new_event(
+                        start_date=parser.parse(event[6]),
+                        end_date=parser.parse(event[7]),
+                        title=event[0],
+                        description=event[1],
+                        other_ids=cloud['Events'].keys()
+                    )
                 )
-            )
+            except IndexError:
+                logging.error('Invalid event format')
 
         cloud_var = f'{self.config.CLOUDVAR_NEOS_USER}.{self.config.CLOUDVAR_BASE_NAME}.{self.config.CLOUDVAR_GENERAL_NAME}'
         setCloudVar = self.nclient.setCloudVar(
