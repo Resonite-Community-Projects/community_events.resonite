@@ -104,7 +104,7 @@ class RedisClient:
 
         for event in events:
             try:
-                if parse(event_field(event, api_ver, 'end_time')).replace(tzinfo=pytz.UTC) < dt_now:
+                if parse(event_field(event, api_ver, 'end_time')).replace(tzinfo=pytz.UTC) < dt_now and event in events:
                     events.remove(event)
             except dateutil.parser._parser.ParserError:
                 logging.error(f"Error parsing date: {event_field(event, api_ver, 'end_time')} for event: {event}")
