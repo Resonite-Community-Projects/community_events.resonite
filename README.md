@@ -1,5 +1,9 @@
 # community_event.neos
 
+> [!WARNING]  
+> Depreciation notice for NeosVR, this project will be renamed and modified to support only Resonite.
+> Until the release a branch will be available for Resonite, the main branch will be for NeosVR until them.
+
 Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for NeosVR.
 
 This tool has been write in a way that different  community can host their own server and can be connected to
