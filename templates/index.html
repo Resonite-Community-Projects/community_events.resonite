@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>neos-community.events</title>
+    <title>resonite-community.events</title>
     <link rel="icon" href="data:image/jpeg;base64,{{ logo | safe }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
@@ -165,8 +165,8 @@
             <div class="column is-12">
               <div class="container content">
                 <img class="logo is-hidden-mobile" src="data:image/jpeg;base64,{{ userlogo | safe }}">
-                <h1 class="title">neos-community.events</h1>
-                <h2 class="subtitle">NeosVR <strong>non</strong> Exhaustive Communites Events Aggregator</h2>
+                <h1 class="title">resonite-community.events</h1>
+                <h2 class="subtitle">Resonite <strong>non</strong> Exhaustive Communites Events Aggregator</h2>
                 <h3 class="subsubtitle">— by GrayBoltWolf and Brodokk</h3>
               </div>
             </div>
@@ -227,7 +227,7 @@
                   </div>
                   <div class="message-body" id="info">
                     <p>Want your group listed here? Any question?</p>
-                    <p><samp>events.neos.boltwolf.net</samp>? <samp>neos-community.events</samp>?</p>
+                    <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-community.events</samp>?</p>
                     <p>More info in <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
                   </div>
                 </article>
@@ -235,7 +235,7 @@
 
               <div class="column">
                 <button class="button is-large is-fullwidth is-dark js-copy-facet-url" style="display:none">
-                  <span>Save facet neosdb url</span>
+                  <span>Save facet resonitedb url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>
                   </span>
@@ -243,7 +243,7 @@
                 <div class="box nojs-copy-facet-url">
                   <p class="has-text-danger">You seems to have JavaScript disabled.</p>
                   <p>Link to download the facet:</p>
-                  <span>neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de</span>
+                  <span>resrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de</span>
                 </div>
               </div>
             </div>
@@ -291,7 +291,7 @@
                 It doesn't seem there are currently any public events planned. <strong>But</strong> remember:
 
                 <ul>
-                  <li>This <strong>isn't</strong> an exhaustive list of NeosVR events;</li>
+                  <li>This <strong>isn't</strong> an exhaustive list of Resonite events;</li>
                   <li>Private events are not listed here;</li>
                   <li>Events can be announced during the day for the following evening, come back later.</li>
                 </ul>
@@ -331,7 +331,7 @@
                 It doesn't seem there are currently any streams planned. <strong>But</strong> remember:
 
                 <ul>
-                  <li>This <strong>isn't</strong> an exhaustive list of NeosVR streams;</li>
+                  <li>This <strong>isn't</strong> an exhaustive list of Resonite streams;</li>
                   <li>Streams can be started without any prior schedule.</li>
                 </ul>
               </div>
@@ -341,15 +341,15 @@
 
           <div id="About" class="content-tab" style="display:{{tab|tab_display('About')}}">
             <div class="content">
-              <p>This service is provided to you by GrayBoltWolf and Brodokk. If you have any question about it, you can contact them either on discord or NeosVR.</p>
+              <p>This service is provided to you by GrayBoltWolf and Brodokk. If you have any question about it, you can contact them either on discord or Resonite.</p>
 
               <br>
 
-              <p>Keep in mind this is a list of gathered events of differents NeosVR communities. This means that it is <strong>not</strong> an exhaustive list of NeosVR events.</p>
+              <p>Keep in mind this is a list of gathered events of differents Resonite communities. This means that it is <strong>not</strong> an exhaustive list of Resonite events.</p>
 
               <br>
 
-              <p>For now the two domains <code>neos.boltwolf.net</code> and <code>neos-community.events</code> are delivering the same service run by the same group of person.</p>
+              <p>For now the two domains <code>resonite.boltwolf.net</code> and <code>resonite-community.events</code> are delivering the same service run by the same group of person.</p>
               <h2>News</h2>
               
               <div class="box">
@@ -360,7 +360,7 @@
                   <br>
                   <p>
                     <ul>
-                      <li>Add NeosVR streams schedules.</li>
+                      <li>Add Resonite streams schedules.</li>
                       <li>Add login via discord for show hidden communities.</li>
                       <li>Fix support for user who disabled the javascript.</li>
                       <li>Fix bugs</li>
@@ -487,7 +487,7 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        <strong>neos-community.events</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
+        <strong>resonite-community.events</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
         Website and API <a href="https://github.com/NeosVR-Community-Projects/community_events.neos">source code</a>.
       </p>
     </div>
@@ -521,7 +521,7 @@
       if (tabName.toLowerCase() != "events") {
         url += tabName.toLowerCase();
       }
-      window.history.pushState('neos-community.events', 'neos-community.events', url);
+      window.history.pushState('resonite-community.events', 'resonite-community.events', url);
     }
 
     // Manage info toggle
@@ -538,7 +538,7 @@
       info.style.display = "none";
     }
 
-    // Manage facet neosdb url copy button
+    // Manage facet resdb url copy button
     //js-copy-facet-url
     document.querySelector('.js-copy-facet-url').style.display = 'block'
     document.querySelector('.nojs-copy-facet-url').style.display = 'none'
@@ -568,7 +568,7 @@
       }
     }
 
-    function CopyFacetNeosDBUrlToClipboard(text) {
+    function CopyFacetResoniteDBUrlToClipboard(text) {
       var textArea = document.createElement("textarea");
 
       textArea.style.position = 'fixed';
@@ -589,34 +589,34 @@
       textArea.select();
 
       function resetCopyBtn(oldStatus) {
-        CopyFacetNeosDBUrl.classList.remove(oldStatus);
-        CopyFacetNeosDBUrl.classList.add('is-dark');
-        CopyFacetNeosDBUrl.querySelector('span').innerHTML = 'Save facet neosdb url'
+        CopyFacetResoniteDBUrl.classList.remove(oldStatus);
+        CopyFacetResoniteDBUrl.classList.add('is-dark');
+        CopyFacetResoniteDBUrl.querySelector('span').innerHTML = 'Save facet resonitedb url'
       }
 
       function setStatusCopyBtn(msg, status) {
-        var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
-        CopyFacetNeosDBUrl.querySelector('span').innerHTML = msg;
-        CopyFacetNeosDBUrl.classList.remove('is-dark');
-        CopyFacetNeosDBUrl.classList.add(status);
+        var CopyFacetResoniteDBUrl = document.querySelector('.js-copy-facet-url');
+        CopyFacetResoniteDBUrl.querySelector('span').innerHTML = msg;
+        CopyFacetResoniteDBUrl.classList.remove('is-dark');
+        CopyFacetResoniteDBUrl.classList.add(status);
         setTimeout(function () {resetCopyBtn(status)}, 3000);
       }
 
       try {
         var successful = document.execCommand('copy');
         var msg = successful ? 'successful' : 'unsuccessful';;
-        setStatusCopyBtn('Success copy neosdb url', 'is-success');
+        setStatusCopyBtn('Success copy resonitedb url', 'is-success');
       } catch (err) {
-        setStatusCopyBtn('Error copy neosdb url', 'is-danger');
+        setStatusCopyBtn('Error copy resonitedb url', 'is-danger');
       }
 
       document.body.removeChild(textArea);
     }
 
-    var CopyFacetNeosDBUrl = document.querySelector('.js-copy-facet-url');
+    var CopyFacetResoniteDBUrl = document.querySelector('.js-copy-facet-url');
 
-    CopyFacetNeosDBUrl.addEventListener('click', function(event) {
-      CopyFacetNeosDBUrlToClipboard('neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de');
+    CopyFacetResoniteDBUrl.addEventListener('click', function(event) {
+      CopyFacetResoniteDBUrlToClipboard('resrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de');
     });
 
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

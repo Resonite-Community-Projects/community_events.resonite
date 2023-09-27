@@ -190,7 +190,7 @@ def format_datetime(value, format="%d %b %I:%M %p"):
         return ''
 
 @app.template_filter('detect_location')
-def detect_neos_url(event):
+def detect_resonite_url(event):
     if event[4]:
         return "<a href='{}'>{}</a>".format(
             event[4], event[3]
@@ -198,7 +198,7 @@ def detect_neos_url(event):
     return event[3]
 
 @app.template_filter('detect_community')
-def detect_neos_url(event):
+def detect_resonite_url(event):
     if event[9]:
         return "<a href='{}'>{}</a>".format(
             event[9], event[8]
