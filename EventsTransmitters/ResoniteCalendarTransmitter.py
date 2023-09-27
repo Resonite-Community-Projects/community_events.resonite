@@ -6,8 +6,8 @@ import string
 import logging
 from dateutil import parser
 
-from neosvrpy.client import Client
-from neosvrpy.classes import LoginDetails
+from resonitepy.client import Client
+from resonitepy.classes import LoginDetails
 
 def fromDateTimeComp(value):
 
@@ -54,7 +54,7 @@ separator = {
     'event': chr(29),
 }
 
-class NeosVRCalendarTransmitter:
+class ResoniteCalendarTransmitter:
 
     def __init__(self, config, sched, rclient, *args, **kwargs):
         self.name = self.__class__.__name__
@@ -67,8 +67,8 @@ class NeosVRCalendarTransmitter:
 
         self.nclient.login(
             LoginDetails(
-                ownerId=self.config.CLOUDVAR_NEOS_USER,
-                password=self.config.CLOUDVAR_NEOS_PASS
+                ownerId=self.config.CLOUDVAR_RESONITE_USER,
+                password=self.config.CLOUDVAR_RESONITE_PASS
             )
         )
 
@@ -98,12 +98,12 @@ class NeosVRCalendarTransmitter:
             except IndexError:
                 logging.error('Invalid event format')
 
-        cloud_var = f'{self.config.CLOUDVAR_NEOS_USER}.{self.config.CLOUDVAR_BASE_NAME}.{self.config.CLOUDVAR_GENERAL_NAME}'
+        cloud_var = f'{self.config.CLOUDVAR_RESONITE_USER}.{self.config.CLOUDVAR_BASE_NAME}.{self.config.CLOUDVAR_GENERAL_NAME}'
         setCloudVar = self.nclient.setCloudVar(
-            self.config.CLOUDVAR_NEOS_USER,
+            self.config.CLOUDVAR_RESONITE_USER,
             cloud_var,
             json.dumps(cloud, ensure_ascii=False)
         )
 
-        self.logger.info(f'Events transmitted to NeosVR {cloud_var} cloud var')
+        self.logger.info(f'Events transmitted to Resonite {cloud_var} cloud var')
 

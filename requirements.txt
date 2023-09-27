@@ -15,4 +15,4 @@ easydict
 jsonschema
 Flask-Discord @ git+https://github.com/brodokk/Flask-Discord@v10_custom#egg=Flask-Discord
 fenkeysmanagement
-neosvrpy @ git+https://github.com/brodokk/neosvrpy.git#egg=neosvrpy
+resonitepy @ git+https://github.com/brodokk/resonitepy.git#egg=resonitepy

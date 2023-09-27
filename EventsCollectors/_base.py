@@ -7,7 +7,7 @@ from disnake.ext import commands
 import requests
 
 re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
-re_location_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
+re_location_session_url_match_compiled = re.compile('(lnl-nat|res-steam):\/\/([^\s]+)')
 re_location_str_match_compiled = re.compile('Location: (.*)')
 
 ekey = {
@@ -93,12 +93,12 @@ class EventsCollector(commands.Cog):
             text = ''
         return text
 
-    def _filter_neos_event(self, title, desc, location):
+    def _filter_resonite_event(self, title, desc, location):
         q = title + desc + location
         if q:
             q = q.replace(' ', '')
             q = q.lower()
-        if 'neosvr' in q:
+        if 'resonite' in q:
             return True
         return False
 

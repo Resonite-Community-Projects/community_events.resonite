@@ -7,7 +7,7 @@ from disnake.ext import commands
 from ._base import EventsCollector, separator, ekey
 
 re_world_session_web_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
-re_world_session_url_match_compiled = re.compile('(lnl-nat|neos-steam):\/\/([^\s]+)')
+re_world_session_url_match_compiled = re.compile('(lnl-nat|res-steam):\/\/([^\s]+)')
 
 class DiscordEventsCollector(EventsCollector):
     jschema = {
@@ -70,7 +70,7 @@ class DiscordEventsCollector(EventsCollector):
             location_str = event.entity_metadata.location
         else:
             location_str = ''
-        if not self._filter_neos_event(
+        if not self._filter_resonite_event(
             event.name,
             event.description,
             location_str,

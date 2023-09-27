@@ -84,7 +84,7 @@ class ApolloEventsCollector(EventsCollector):
                         if r:
                             start_time = datetime.fromtimestamp(int(r.group(1)))
                             end_time = datetime.fromtimestamp(int(r.group(2)))
-                if not end_time or not start_time or not self._filter_neos_event(
+                if not end_time or not start_time or not self._filter_resonite_event(
                     embed.title,
                     embed.description,
                     location_str,

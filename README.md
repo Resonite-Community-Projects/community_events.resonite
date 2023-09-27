@@ -1,13 +1,9 @@
-# community_event.neos
+# community_event.resonite
 
-> [!WARNING]  
-> Depreciation notice for NeosVR, this project will be renamed and modified to support only Resonite.
-> Until the release a branch will be available for Resonite, the main branch will be for NeosVR until them.
-
-Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for NeosVR.
+Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for Resonite.
 
 This tool has been write in a way that different  community can host their own server and can be connected to
-each other. There is a main instance available at [neos-community.events](https://neos-community.events).
+each other. There is a main instance available at [resonite-community.events](https://resonite-community.events).
 # Use
 
 This is the new version 2.0, not tested in production yet, please see the git tag for the version 1.0.
@@ -39,14 +35,16 @@ For adding a guild to this source you need to use the key
 - `tags`: list, the list of tags
 - `guild_ids`: int, the guild id
 
-### NeosVRCalendarTransmitter
+### ResoniteCalendarTransmitter
+
+**Not**: Not yet available
 
 It's possible to send all events in a cloud variable to be used by JackTheOtter calendar system.
 
-- `CLOUDVAR_NEOS_USER`: str, the `U-` NeosVR username used to set the cloud variable
-- `CLOUDVAR_NEOS_PASS`: str
-- `CLOUDVAR_BASE_NAME`: str, the NeosVR cloud variable base name
-- `CLOUDVAR_GENERAL_NAME`: str, the NeosVR cloud variable general name
+- `CLOUDVAR_RESONITE_USER`: str, the `U-` Resonite username used to set the cloud variable
+- `CLOUDVAR_RESONITE_PASS`: str
+- `CLOUDVAR_BASE_NAME`: str, the Resnonite cloud variable base name
+- `CLOUDVAR_GENERAL_NAME`: str, the Resnonite cloud variable general name
 
 #### Example
 
@@ -158,7 +156,7 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
 **Note**: This endpoint is noted as deprecated
 
-- `/v1/events`: return the list of the event in an easy readable format for NeosVR: ```name`description`location`start_time`end_time`community_name\n\r```
+- `/v1/events`: return the list of the event in an easy readable format for Resonite: ```name`description`location`start_time`end_time`community_name\n\r```
   Note: The last line don't have `\n\r`
 - `/v1/aggregated_events`: same format as `/v1/events` but return the list of aggragated events from this instance with the ones from the instance listed in the config variable `SERVER_EVENTS`
 - `/`: WebUI client
@@ -171,18 +169,18 @@ They also return a list of events from a Google calendar. See configuration belo
 ## V2
 
 - `/v2/communities`: return the list of the communities available on this event server
-  `/v2/events`: return the list of the event in an easy readable format for NeosVR: ```\n\r```
+  `/v2/events`: return the list of the event in an easy readable format for Resonite: ```\n\r```
   Note: The last line don't have `\n\r`
 - `/v2/aggregated_events`: same format as `/v2/events` but return the list of aggragated events from this instance with the ones from the instance listed in the config variable `SERVER_EVENTS`
 - `/`: WebUI client
 
-# NeosVR facet client
+# Resonite facet client
 
-Its possible to see the list of events available in NeosVR via a facet.
+Its possible to see the list of events available in Resonite via a facet.
 You can find the last version available in the public folder at this
-address: neosrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de
+address: resrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de
 
-![NeosVR facet client](images/facet.png)
+![Resonite facet client](images/facet.png)
 
 # WebUI client
 
@@ -193,7 +191,7 @@ Date are formated directly without taking in account of the timezone of the webb
 
 There is a support of the discord timestamp but only for the `R` format.
 
-And the neos session URL is automaticaly detected from the description if no URL already present in the locatization parameter.
+And the resonite session URL is automaticaly detected from the description if no URL already present in the locatization parameter.
 It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
 parameter.
 
@@ -218,8 +216,7 @@ present.
 # Event creator usage notes
 
 Since the source can also contains event who can happen in different location, either virtually or physically, the keyword
-`neosvr` must be specified either in the `title`, the `description`, or the `location` of an event. The case and the presence
-of a space between `neos` and `vr` doesn't matter since the 3 fields will be striped of their spaces, new lines and some special
+`Resonite` must be specified either in the `title`, the `description`, or the `location` of an event. New lines and some special
 chars before being lowered.
 
 ## Apollo bot
