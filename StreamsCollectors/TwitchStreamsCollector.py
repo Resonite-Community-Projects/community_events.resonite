@@ -30,7 +30,7 @@ class TwitchStreamsCollector(StreamsCollector):
         self.sched.add_job(self.get_data, 'interval', args=(), minutes=5)
         self.get_data()
 
-        
+
     def get_data(self):
         self.logger.info(f'Update {self.name} streams collector')
         str_streams = []
