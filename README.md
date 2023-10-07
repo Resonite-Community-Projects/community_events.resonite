@@ -178,7 +178,7 @@ They also return a list of events from a Google calendar. See configuration belo
 
 Its possible to see the list of events available in Resonite via a facet.
 You can find the last version available in the public folder at this
-address: resrec:///U-GrayBoltWolf/R-1813632e-ca8f-4492-bec4-9259677394de
+address: `resrec:///U-GrayBoltWolf/R-6D21762A77D6D5F16D03C0163191BD068DCBA62DC7869C1C64E916ECDEFDEBC9`
 
 ![Resonite facet client](images/facet.png)
 
