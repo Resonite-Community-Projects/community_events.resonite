@@ -180,7 +180,7 @@ Its possible to see the list of events available in Resonite via a facet.
 You can find the last version available in the public folder at this
 address: `resrec:///U-GrayBoltWolf/R-6D21762A77D6D5F16D03C0163191BD068DCBA62DC7869C1C64E916ECDEFDEBC9`
 
-![Resonite facet client](images/facet.png)
+![Resonite facet client](https://github.com/Resonite-Community-Projects/community_events.resonite/assets/76159594/bdc45850-eb5c-47a6-b0b4-67b25aa6b9f5)
 
 # WebUI client
 
@@ -195,7 +195,8 @@ And the resonite session URL is automaticaly detected from the description if no
 It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
 parameter.
 
-![WebUI client](images/webui.png)
+![WebUI client](https://github.com/Resonite-Community-Projects/community_events.resonite/assets/76159594/0a78fc1e-9250-41ee-a162-004076f13cb8)
+
 
 # Add a google agenda
 
