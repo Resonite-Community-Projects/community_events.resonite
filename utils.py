@@ -185,7 +185,7 @@ class TwitchClient:
                 for d in schedule_data['data']['segments']:
                     if parse((d['start_time'])) > dt_now + timedelta(days=7):
                         continue
-                    if (d['category'] and d['category']['id'] == '225087833') or schedule_data['data']['broadcaster_name'] == 'Resonite':
+                    if (d['category'] and d['category']['id'] == Config.TWITCH_GAME_ID) or schedule_data['data']['broadcaster_name'] == Config.TWITCH_RESONITE_ACCOUNT_NAME:
                         events.append(
                             [d['title'], d['start_time'], d['end_time'], schedule_data['data']['broadcaster_name'], self.broadcasters[broadcaster_id]['profile_image_url']]
                         )
