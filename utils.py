@@ -129,7 +129,7 @@ class TwitchClient:
 
         self._auth()
         self.broadcasters = {}
-        self.broadcasters_id = self._get_broadcasters_id()
+        self.broadcasters_info = self._get_broadcasters_info()
 
     def _auth(self):
         response = requests.post(
@@ -148,8 +148,20 @@ class TwitchClient:
         else:
             logger.error(f"Can't connect to twitch: {response.status_code}")
 
-    def _get_broadcasters_id(self):
-        broadcasters_id = []
+    def _get_broadcaster_followers(self, user):
+        broadcasters_followers = {}
+        response = requests.get(
+            f'https://api.twitch.tv/helix/channels/followers?broadcaster_id={user}',
+            headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
+        )
+        if response.status_code == 200:
+            broadcasters_followers = response.json()
+        else:
+            logger.error(f"Can't connect to twitch: {response.status_code}")
+        return broadcasters_followers
+
+    def _get_broadcasters_info(self):
+        broadcasters_info = []
         b = ""
         for user_login in Config.TWITCH_STREAMS:
             b += f"&login={user_login}"
@@ -161,20 +173,23 @@ class TwitchClient:
         if response.status_code == 200:
             users_data = response.json()
             for user in users_data['data']:
-                broadcasters_id.append(user['id'])
+                broadcasters_info.append(user['id'])
                 self.broadcasters[user['id']] = {
                     "profile_image_url": user['profile_image_url'],
-                    "login": user["login"]
+                    "login": user["login"],
+                    "description": user["description"],
+                    "profile_image_url": user["profile_image_url"],
+                    "followers": self._get_broadcaster_followers(user['id']),
                 }
 
         else:
             logger.error(f"Can't connect to twitch: {response.status_code}")
-        return broadcasters_id
+        return broadcasters_info
 
     def get_schedules(self):
         dt_now = datetime.now(timezone.utc)
         events = []
-        for broadcaster_id in self.broadcasters_id:
+        for broadcaster_id in self.broadcasters_info:
             response = requests.get(
                 f'https://api.twitch.tv/helix/schedule',
                 params={'broadcaster_id': broadcaster_id},
@@ -193,3 +208,9 @@ class TwitchClient:
                 logger.error(f"{self.broadcasters[broadcaster_id]['login']} => Can't connect to twitch: {response.status_code}: {response}")
         events = sorted(events, key=lambda x: x[1])
         return events
+
+    def get_streamers(self):
+        streamers = []
+        for broadcaster_id in self.broadcasters_info:
+            streamers.append([self.broadcasters[broadcaster_id]['login'], str(self.broadcasters[broadcaster_id]['followers']['total']), self.broadcasters[broadcaster_id]['profile_image_url'], self.broadcasters[broadcaster_id]['description']])
+        return streamers

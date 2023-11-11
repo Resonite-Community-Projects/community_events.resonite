@@ -281,7 +281,13 @@ def render_main(tab):
         streams = raw_streams.split(chr(29).encode('utf-8'))
     streams = list(filter(None, streams))
     streams = [stream.decode('utf-8').split(chr(30)) for stream in streams]
-    return render_template('index.html', events=events, streams=streams, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
+    raw_streamers = rclient.get(f'streamers_v2')
+    streamers = []
+    if raw_streamers:
+        streamers = raw_streamers.split(chr(29).encode('utf-8'))
+    streamers = list(filter(None, streamers))
+    streamers = [streamer.decode('utf-8').split(chr(30)) for streamer in streamers]
+    return render_template('index.html', events=events, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
 
 @app.route("/")
 def index():

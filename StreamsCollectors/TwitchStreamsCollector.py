@@ -33,9 +33,19 @@ class TwitchStreamsCollector(StreamsCollector):
 
     def get_data(self):
         self.logger.info(f'Update {self.name} streams collector')
+
+        # Update streams collector
         str_streams = []
         streams = self.tclient.get_schedules()
         for stream in streams:
             str_streams.append(f"{separator[2]['field']}".join(stream))
         streams = f"{separator[2]['event']}".join(s for s in str_streams if s)
         self.rclient.client.set('stream_v2', streams.encode('utf-8'))
+
+        # Also update streamers collector
+        str_streamers = []
+        streamers = self.tclient.get_streamers()
+        for streamer in streamers:
+            str_streamers.append(f"{separator[2]['field']}".join(streamer))
+        streamers = f"{separator[2]['event']}".join(s for s in str_streamers if s)
+        self.rclient.client.set('streamers_v2', streamers.encode('utf-8'))
