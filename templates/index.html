@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>resonite-community.events</title>
+    <title>resonite-communities.com</title>
     <link rel="icon" href="data:image/jpeg;base64,{{ logo | safe }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
@@ -165,7 +165,7 @@
             <div class="column is-12">
               <div class="container content">
                 <img class="logo is-hidden-mobile" src="data:image/jpeg;base64,{{ userlogo | safe }}">
-                <h1 class="title">resonite-community.events</h1>
+                <h1 class="title">resonite-communities.com</h1>
                 <h2 class="subtitle">Resonite <strong>non</strong> Exhaustive Communites Events Aggregator</h2>
                 <h3 class="subsubtitle">— by GrayBoltWolf and Brodokk</h3>
               </div>
@@ -227,7 +227,7 @@
                   </div>
                   <div class="message-body" id="info">
                     <p>Want your group listed here? Any question?</p>
-                    <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-community.events</samp>?</p>
+                    <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-communities.com</samp>?</p>
                     <p>More info in <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
                   </div>
                 </article>
@@ -301,7 +301,7 @@
           </div>
 
           <div id="Streams" class="content-tab" style="display:{{tab|tab_display('Streams')}}">
-            
+
             {% for stream in streams %}
             <div class="container stream">
               <div class="card my-3">
@@ -349,8 +349,22 @@
 
               <br>
 
-              <p>For now the two domains <code>resonite.boltwolf.net</code> and <code>resonite-community.events</code> are delivering the same service run by the same group of person.</p>
+              <p>For now the two domains <code>resonite.boltwolf.net</code> and <code>resonite-communities.com</code> are delivering the same service run by the same group of person.</p>
               <h2>News</h2>
+
+              <div class="box">
+                <div class="content">
+                  <strong>Release 3.1</strong>
+                  &nbsp;
+                  <small>2023-11-11</small>
+                  <br>
+                  <p>
+                    <ul>
+                      <li>Change main domain from <code>resonite-community.events</code> to <code>resonite-communities.com</code></li>
+                    </ul>
+                  </p>
+                </div>
+              </div>
 
               <div class="box">
                 <div class="content">
@@ -500,8 +514,8 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        <strong>resonite-community.events</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
-        Website and API <a href="https://github.com/NeosVR-Community-Projects/community_events.neos">source code</a>.
+        <strong>Resonite communites</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
+        Website and API <a href="https://github.com/Resonite-Community-Projects/community_events.resonite">source code</a>.
       </p>
     </div>
   </footer>
@@ -534,7 +548,7 @@
       if (tabName.toLowerCase() != "events") {
         url += tabName.toLowerCase();
       }
-      window.history.pushState('resonite-community.events', 'resonite-community.events', url);
+      window.history.pushState('resonite-communities.com', 'resonite-communities.com', url);
     }
 
     // Manage info toggle
