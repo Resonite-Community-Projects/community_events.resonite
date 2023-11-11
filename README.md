@@ -104,6 +104,17 @@ guild_channel = "events"
 bot = xxxxxxxxxxxxxxxxxx
 ```
 
+### TwitchStreamsCollector
+
+This tools also give the ability to list planned Resonite streams from a
+selection of users.
+
+- `TWITCH_CLIENT_ID`: The Twitch client ID
+- `TWITCH_SECRET`: The Twitch client Secret
+- `TWITCH_STREAMS`: List of Twitch users to follow
+- `TWITCH_GAME_ID`: Resonite Twitch game ID (Default to current Resonite ID)
+- `TWITCH_RESONITE_ACCOUNT_NAME`: Official Resonite Twitch (Default to current Official Resonite Twitch Account)
+
 ## Docker
 
 As an example there is a compose file for start the full project really
