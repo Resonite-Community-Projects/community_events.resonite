@@ -51,9 +51,6 @@ class GoogleCalendarEventsCollector(EventsCollector):
                 self.logger.error(f"Ignore {self.name} for now. Google {bot_config.credentials_file} not found.")
                 continue
 
-            for community_name in bot_config.communities_name:
-                self.update_communities(community_name)
-
         self.init_sched()
 
     def parse_date(self, date):
