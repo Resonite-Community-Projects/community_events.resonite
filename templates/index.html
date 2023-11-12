@@ -298,6 +298,58 @@
               </div>
             </article>
             {% endfor %}
+
+            <article class="message is-dark">
+              <div class="message-header" id="info_toggle">
+                <p>Resonite communities followed</p>
+                <span class="icon">
+                  <i class="fas fa-angle-up" aria-hidden="true"></i>
+                </span>
+              </div>
+              <div class="message-body" id="info">
+                <article class="message is-info">
+                  <div class="message-body content">
+                    <p>Want your communities events listed here? Any questions? Check the <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                  </div>
+                </article>
+                <div class="columns is-multiline">
+                  {% for community in communities %}
+                  <div class="column is-one-quarter">
+                  <div class="card">
+                    <div class="card-image">
+                      <figure class="image is-3by3">
+                        {% if community[3] %}
+                        <img src="{{ community[3] }}" alt="Placeholder image">
+                        {% else %}
+                        <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder image">
+                        {% endif %}
+                      </figure>
+                    </div>
+                    <div class="card-content">
+                      <div class="media">
+                        <div class="media-content" style="height: 55px; overflow: hidden;">
+                          <p class="title is-4">{{ community[0] }}</p>
+                        </div>
+                      </div>
+
+                      {% if community[1] != 'None' %}
+                        <div class="content" style="height: 150px; overflow: hidden;">
+                          {{ community[1] | safe }}
+                        </div>
+                      {% else %}
+                      <div class="content" style="height: 150px; overflow: hidden;">
+                      </div>
+                      {% endif %}
+                      <footer class="card-footer">
+                        <a href="{{ community[2] }}" class="card-footer-item button is-info">Visit Discord</a>
+                      </footer>
+                    </div>
+                  </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </article>
           </div>
 
           <div id="Streams" class="content-tab" style="display:{{tab|tab_display('Streams')}}">
@@ -405,12 +457,13 @@
                 <div class="content">
                   <strong>Release 3.1</strong>
                   &nbsp;
-                  <small>2023-11-11</small>
+                  <small>2023-11-12</small>
                   <br>
                   <p>
                     <ul>
                       <li>Change main domain from <code>resonite-community.events</code> to <code>resonite-communities.com</code></li>
                       <li>Add list of resonite streamers followed</li>
+                      <li>Add list of resonite communities followed</li>
                       <li>Fix Resonite related streams not showing up</li>
                       <li>Small UI fixes</li>
                     </ul>

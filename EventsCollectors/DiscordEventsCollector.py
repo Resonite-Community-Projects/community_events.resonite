@@ -39,7 +39,6 @@ class DiscordEventsCollector(EventsCollector):
             },
             "required":[
                 "community_name",
-                "community_description",
                 "community_url",
                 "tags",
                 "guild_id"
@@ -54,8 +53,16 @@ class DiscordEventsCollector(EventsCollector):
 
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
-            self.update_communities(bot_config.community_name)
 
+    def get_updated_communities(self, communities):
+        for guild in self.bot.guilds:
+            for community in communities:
+                if community['name'] == guild.name:
+                    if not community['description']:
+                        community['description'] = str(guild.description)
+                    if not community['icon']:
+                        community['icon'] = str(guild.icon)
+        return communities
 
     def format_event(self, event, api_ver):
         location_web_session_url = self.get_location_web_session_url(event.description)

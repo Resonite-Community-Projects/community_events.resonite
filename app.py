@@ -287,7 +287,13 @@ def render_main(tab):
         streamers = raw_streamers.split(chr(29).encode('utf-8'))
     streamers = list(filter(None, streamers))
     streamers = [streamer.decode('utf-8').split(chr(30)) for streamer in streamers]
-    return render_template('index.html', events=events, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
+    communities = []
+    raw_communities = rclient.get(f'communities_v2')
+    if raw_communities:
+        communities = raw_communities.split(chr(29).encode('utf-8'))
+    communities = list(filter(None, communities))
+    communities = [community.decode('utf-8').split(chr(30)) for community in communities]
+    return render_template('index.html', events=events, communities=communities, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
 
 @app.route("/")
 def index():

@@ -60,7 +60,6 @@ class ApolloEventsCollector(EventsCollector):
 
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.guilds[bot_config['guild_id']] = bot_config
-            self.update_communities(bot_config.community_name)
 
     async def get_events(self, guild):
         channel = disnake.utils.get(self.bot.get_all_channels(), guild__id=guild.guild_id, name=guild.guild_channel)

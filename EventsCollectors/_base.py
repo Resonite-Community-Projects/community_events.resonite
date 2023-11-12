@@ -50,8 +50,10 @@ class EventsCollector(commands.Cog):
 
         communities_name = []
         communities_description = []
+        communities = {}
         for bot in self.config.BOTS.values():
             for config in bot:
+                community = {}
                 if 'community_name' in config:
                     communities_name.append(config.community_name)
                 elif 'communities_name' in config:
@@ -105,23 +107,35 @@ class EventsCollector(commands.Cog):
     def init_sched(self):
         self.logger.info(f'{self.name} events collector ready')
         self.sched.add_job(self.get_data,'interval', args=(self.dclient,), minutes=self.config['DISCORD_BOT_TOKEN_REFRESH_INTERVAL'])
+        self.update_communities()
         self.get_data(self.dclient)
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.init_sched()
 
-    def update_communities(self, communities_name):
-        communities_v2 = self.rclient.get('communities_v2')
-        if communities_v2:
-            communities_v2 = communities_v2.decode("utf-8").split(chr(29))
-        else:
-            communities_v2 = []
-        if isinstance(communities_name, str):
-            communities_name = [communities_name]
-        for community_name in communities_name:
-            communities_v2.append(community_name)
-        self.rclient.client.set('communities_v2', "`".join(communities_v2).encode('utf-8'))
+    def get_updated_communities(self, communities):
+        return []
+
+    def update_communities(self):
+        communities = []
+        for bot in self.config.BOTS.values():
+            for bot_config in bot:
+                community = {}
+                if 'community_name' in bot_config:
+                    community["name"] = bot_config.community_name if 'community_name' in bot_config else ''
+                    community["description"] = bot_config.community_description if 'community_description' in bot_config else ''
+                    community["url"] = bot_config.community_url if 'community_url' in bot_config else ''
+                    community["icon"] = bot_config.community_icon if 'community_icon' in bot_config else ''
+                    communities.append(community)
+        communities = self.get_updated_communities(communities)
+        str_communities = []
+        for community in communities:
+            str_communities.append(f"{separator[2]['field']}".join(list(community.values())))
+        communities = f"{separator[2]['event']}".join(s for s in str_communities if s)
+        if communities:
+            self.rclient.client.set('communities_v2', communities.encode('utf-8'))
+
 
     def get_aggregated_events(self, api_ver):
         for server in self.config.SERVERS_EVENT:
