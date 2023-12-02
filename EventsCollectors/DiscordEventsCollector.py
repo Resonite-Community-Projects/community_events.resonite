@@ -58,8 +58,10 @@ class DiscordEventsCollector(EventsCollector):
         for guild in self.bot.guilds:
             for community in communities:
                 if community['name'] == guild.name:
-                    if not community['description']:
+                    if guild.description:
                         community['description'] = str(guild.description)
+                    elif not guild.description and not community['description']:
+                        community['description'] = f"{guild.name} community!"
                     if not community['icon']:
                         community['icon'] = str(guild.icon)
         return communities

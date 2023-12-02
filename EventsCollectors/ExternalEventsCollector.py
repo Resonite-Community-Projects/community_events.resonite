@@ -21,7 +21,8 @@ class ExternalEventsCollector(EventsCollector):
         self.init_sched()
 
     def get_events(self):
-        external_communities = self.get_external_communities()
+        _external_communities = self.get_external_communities()
+        external_communities = [_external_community['name'] for _external_community in _external_communities]
         external_communities.extend(self.communities_name)
 
         _aggregated_events_v1 = self.get_aggregated_events(api_ver=1)

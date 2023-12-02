@@ -170,7 +170,13 @@ def get_aggregated_events_v2():
 
 @app.route("/v2/communities")
 def get_communities_v2():
-    return rclient.get('communities_v2') or ''
+    raw_communities = rclient.get(f'communities_v2')
+    communities = []
+    if raw_communities:
+        communities = raw_communities.split(chr(29).encode('utf-8'))
+        communities = list(filter(None, communities))
+        communities = [community.decode('utf-8').split(chr(30)) for community in communities]
+    return communities
 
 @app.route('/clean', methods=["POST"])
 def clean():

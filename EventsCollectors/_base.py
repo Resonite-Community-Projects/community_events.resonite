@@ -118,6 +118,7 @@ class EventsCollector(commands.Cog):
         return []
 
     def update_communities(self):
+        self.logger.info(f'Update {self.name} events collector communities')
         communities = []
         for bot in self.config.BOTS.values():
             for bot_config in bot:
@@ -129,15 +130,20 @@ class EventsCollector(commands.Cog):
                     community["icon"] = bot_config.community_icon if 'community_icon' in bot_config else ''
                     communities.append(community)
         communities = self.get_updated_communities(communities)
+        external_communities = self.get_external_communities()
+        if external_communities:
+            communities.extend(external_communities)
         str_communities = []
         for community in communities:
             str_communities.append(f"{separator[2]['field']}".join(list(community.values())))
-        communities = f"{separator[2]['event']}".join(s for s in str_communities if s)
-        if communities:
-            self.rclient.client.set('communities_v2', communities.encode('utf-8'))
+        str_communities = f"{separator[2]['event']}".join(s for s in str_communities if s)
+        if str_communities:
+            self.rclient.client.set('communities_v2', str_communities.encode('utf-8'))
+
 
 
     def get_aggregated_events(self, api_ver):
+        self.logger.info(f'Get {self.name} events collector external communities')
         for server in self.config.SERVERS_EVENT:
             try:
                 r = requests.get(server + f'/v{api_ver}/events')
@@ -161,7 +167,13 @@ class EventsCollector(commands.Cog):
         for server in self.config.SERVERS_EVENT:
             try:
                 _external_communities = requests.get(server + f'/v2/communities')
-                external_communities.extend(_external_communities.text.split('`'))
+                for _external_community in _external_communities.json():
+                    external_community = {}
+                    external_community["name"] = _external_community[0]
+                    external_community["description"] = _external_community[1]
+                    external_community["url"] = _external_community[2]
+                    external_community["icon"] = _external_community[3]
+                    external_communities.append(external_community)
             except Exception as err:
                 self.logger.error(f'Error: {err}')
 
