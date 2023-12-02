@@ -235,7 +235,7 @@
 
               <div class="column">
                 <button class="button is-large is-fullwidth is-dark js-copy-facet-url" style="display:none">
-                  <span>Save facet resonitedb url</span>
+                  <span>Copy facet resonitedb url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>
                   </span>
@@ -243,7 +243,7 @@
                 <div class="box nojs-copy-facet-url">
                   <p class="has-text-danger">You seems to have JavaScript disabled.</p>
                   <p>Link to download the facet:</p>
-                  <span>resrec:///U-GrayBoltWolf/R-6D21762A77D6D5F16D03C0163191BD068DCBA62DC7869C1C64E916ECDEFDEBC9</span>
+                  <span>{{ facet_url }}</span>
                 </div>
               </div>
             </div>
@@ -455,12 +455,13 @@
 
               <div class="box">
                   <div class="content">
-                    <strong>Release 3.1.1</strong>
+                    <strong>Release 3.2</strong>
                     &nbsp;
                     <small>2023-11-30</small>
                     <br>
                     <p>
                       <ul>
+                        <li>Config var for facet url</li>
                         <li>Fix external events update</li>
                         <li>Fix date on web client (no hardcoded year)</li>
                       </ul>
@@ -762,7 +763,7 @@
     var CopyFacetResoniteDBUrl = document.querySelector('.js-copy-facet-url');
 
     CopyFacetResoniteDBUrl.addEventListener('click', function(event) {
-      CopyFacetResoniteDBUrlToClipboard('resrec:///U-GrayBoltWolf/R-6D21762A77D6D5F16D03C0163191BD068DCBA62DC7869C1C64E916ECDEFDEBC9');
+      CopyFacetResoniteDBUrlToClipboard('{{ facet_url }}');
     });
 
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;

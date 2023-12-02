@@ -219,7 +219,7 @@ def parse_desciption(desc):
             "<a href='\\1'>\\1</a>",
             desc)
     except Exception:
-        loigger.error(traceback.format_exc())
+        logger.error(traceback.format_exc())
     desc = desc.replace('\n', '<br>')
     return desc
 
@@ -299,7 +299,7 @@ def render_main(tab):
         communities = raw_communities.split(chr(29).encode('utf-8'))
     communities = list(filter(None, communities))
     communities = [community.decode('utf-8').split(chr(30)) for community in communities]
-    return render_template('index.html', events=events, communities=communities, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
+    return render_template('index.html', facet_url=Config.FACET_URL, events=events, communities=communities, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
 
 @app.route("/")
 def index():
