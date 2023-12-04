@@ -233,6 +233,8 @@ chars before being lowered.
 
 ## Apollo bot
 
+**Depreciation notice:** No community is using this bot, the support would be dropped but would be readded if needed.
+
 The Apollo bot is a special case since this bot doesn't support a 'location' field this one must be added in the description in the
 following format: `Location: <event location>`. For a correct detection this field should be on his own line. Don't forget to put a
 carriage return if you add test after and put a space before the `L`.
