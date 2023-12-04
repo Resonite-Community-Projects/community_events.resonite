@@ -1,9 +1,10 @@
 # community_event.resonite
 
-Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for Resonite.
+Service for announcing Resonite events and stream from multiple source like Discord and Google Agenda on client like Resonite and Web Browsers.
 
-This tool has been write in a way that different  community can host their own server and can be connected to
+This tool has been write in a way that different communities can host their own server and can be connected to
 each other. There is a main instance available at [resonite-community.events](https://resonite-community.events).
+
 # Use
 
 This is the new version 2.0, not tested in production yet, please see the git tag for the version 1.0.
