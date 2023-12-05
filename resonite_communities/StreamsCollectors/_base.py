@@ -2,7 +2,7 @@ import logging
 
 from flask.logging import default_handler
 
-from utils import Config
+from resonite_communities.utils import Config
 
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '

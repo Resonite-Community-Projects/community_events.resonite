@@ -19,7 +19,10 @@ from flask.logging import default_handler
 from flask_discord import DiscordOAuth2Session, Unauthorized, DiscordOAuth2Scope
 from fenkeysmanagement import KeyManager
 
-from utils import Config
+from resonite_communities.utils import (
+    Config,
+    RedisClient,
+)
 
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '
@@ -82,8 +85,6 @@ def redirect_unauthorized(e):
 def logout():
     discord.revoke()
     return redirect(url_for(".index"))
-
-from utils import RedisClient
 
 rclient = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
 
@@ -247,7 +248,7 @@ def filter_tag(tags):
 def render_main(tab):
     if not Config.SHOW_WEBUI:
         return ''
-    with open("static/images/icon.png", "rb") as logo_file:
+    with open("resonite_communities/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
     aggregated_events=aggregated_events=request.args.get('aggregated_events', False)
     user=None
@@ -312,3 +313,32 @@ def about():
 @app.route("/streams")
 def streams():
     return render_main(tab="Streams")
+
+import multiprocessing
+
+from gunicorn.app.wsgiapp import WSGIApplication
+
+
+class StandaloneApplication(WSGIApplication):
+    def __init__(self, app_uri, options=None):
+        self.options = options or {}
+        self.app_uri = app_uri
+        super().__init__()
+
+    def load_config(self):
+        config = {
+            key: value
+            for key, value in self.options.items()
+            if key in self.cfg.settings and value is not None
+        }
+        for key, value in config.items():
+            self.cfg.set(key.lower(), value)
+
+
+def run():
+    options = {
+        "bind": "0.0.0.0:8000",
+        "workers": (multiprocessing.cpu_count() * 2) + 1,
+        #"worker_class": "uvicorn.workers.UvicornWorker",
+    }
+    StandaloneApplication("resonite_communities.app:app", options).run()

@@ -8,7 +8,7 @@ services:
   bots:
     image: community_event:latest
     restart: always
-    command: python bot.py
+    command: .venv/bin/run_bot
     depends_on:
       - "cache"
     volumes:
@@ -17,11 +17,11 @@ services:
   web:
     image: community_event:latest
     restart: always
-    command: gunicorn -w 4 -b 0.0.0.0:5000 app:app
+    command: .venv/bin/run_app
     depends_on:
       - "cache"
     volumes:
       - "./config.toml:/app/config.toml"
       - "./credentials.json:/app/credentials.json"
     ports:
-      - '5000:5000'
+      - '5000:8000'

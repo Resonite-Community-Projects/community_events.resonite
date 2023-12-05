@@ -4,10 +4,10 @@ import disnake
 import inspect
 from disnake.ext import commands
 
-import EventsCollectors
-import StreamsCollectors
-import EventsTransmitters
-from utils import RedisClient, Config, TwitchClient
+from resonite_communities import EventsCollectors
+from resonite_communities import StreamsCollectors
+from resonite_communities import EventsTransmitters
+from resonite_communities.utils import RedisClient, Config, TwitchClient
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask.logging import default_handler
@@ -48,6 +48,6 @@ for name, obj in inspect.getmembers(EventsTransmitters):
     if inspect.isclass(obj):
         obj(Config, sched, rclient)
 
-sched.start()
-
-bot.run(Config.DISCORD_BOT_TOKEN)
+def run():
+    sched.start()
+    bot.run(Config.DISCORD_BOT_TOKEN)
