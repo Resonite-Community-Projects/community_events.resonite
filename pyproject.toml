@@ -27,8 +27,8 @@ resonitepy = { git = "https://github.com/brodokk/resonitepy.git" }
 uvicorn = "^0.24.0.post1"
 
 [tool.poetry.scripts]
-run_app = "resonite_communities.app:run"
-run_bot = "resonite_communities.bot:run"
+web_client = "resonite_communities.server.web_client:run"
+signals_manager = "resonite_communities.server.signals_manager:run"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

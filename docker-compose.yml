@@ -8,7 +8,7 @@ services:
   bots:
     image: community_event:latest
     restart: always
-    command: .venv/bin/run_bot
+    command: .venv/bin/signals_manager
     depends_on:
       - "cache"
     volumes:
@@ -17,7 +17,7 @@ services:
   web:
     image: community_event:latest
     restart: always
-    command: .venv/bin/run_app
+    command: .venv/bin/web_client
     depends_on:
       - "cache"
     volumes:

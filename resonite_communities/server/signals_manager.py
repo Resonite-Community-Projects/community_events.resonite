@@ -4,9 +4,11 @@ import disnake
 import inspect
 from disnake.ext import commands
 
-from resonite_communities import EventsCollectors
-from resonite_communities import StreamsCollectors
-from resonite_communities import EventsTransmitters
+from resonite_communities.signals import (
+    events_collectors,
+    events_transmitters,
+    streams_collectors,
+)
 from resonite_communities.utils import RedisClient, Config, TwitchClient
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -34,17 +36,17 @@ bot = disnake.ext.commands.InteractionBot(intents=intents)
 
 sched = AsyncIOScheduler(daemon=True)
 
-for name, obj in inspect.getmembers(EventsCollectors):
+for name, obj in inspect.getmembers(events_collectors):
     if inspect.isclass(obj):
         events_collector = obj(bot, Config, sched, dclient, rclient)
         if events_collector.valide_config:
             bot.add_cog(events_collector)
 
-for name, obj in inspect.getmembers(StreamsCollectors):
+for name, obj in inspect.getmembers(streams_collectors):
     if inspect.isclass(obj):
         obj(Config, sched, rclient, tclient)
 
-for name, obj in inspect.getmembers(EventsTransmitters):
+for name, obj in inspect.getmembers(events_transmitters):
     if inspect.isclass(obj):
         obj(Config, sched, rclient)
 

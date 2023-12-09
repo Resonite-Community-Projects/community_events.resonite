@@ -39,7 +39,10 @@ re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
 re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="../templates",
+)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
 
@@ -300,7 +303,18 @@ def render_main(tab):
         communities = raw_communities.split(chr(29).encode('utf-8'))
     communities = list(filter(None, communities))
     communities = [community.decode('utf-8').split(chr(30)) for community in communities]
-    return render_template('index.html', facet_url=Config.FACET_URL, events=events, communities=communities, streams=streams, streamers=streamers, tab=tab, user=user, user_guilds=user_guilds, userlogo=logo_base64)
+    return render_template(
+        'index.html',
+        facet_url=Config.FACET_URL,
+        events=events,
+        communities=communities,
+        streams=streams,
+        streamers=streamers,
+        tab=tab,
+        user=user,
+        user_guilds=user_guilds,
+        userlogo=logo_base64,
+    )
 
 @app.route("/")
 def index():
@@ -341,4 +355,4 @@ def run():
         "workers": (multiprocessing.cpu_count() * 2) + 1,
         #"worker_class": "uvicorn.workers.UvicornWorker",
     }
-    StandaloneApplication("resonite_communities.app:app", options).run()
+    StandaloneApplication("resonite_communities.server.web_client:app", options).run()

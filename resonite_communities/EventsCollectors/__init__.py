@@ -1,6 +1,0 @@
-from .ExternalEventsCollector import ExternalEventsCollector
-from .DiscordEventsCollector import DiscordEventsCollector
-from .GoogleCalendarEventsCollector import GoogleCalendarEventsCollector
-from .ApolloEventsCollector import ApolloEventsCollector
-
-__all__ = [ExternalEventsCollector, DiscordEventsCollector, GoogleCalendarEventsCollector, ApolloEventsCollector]
