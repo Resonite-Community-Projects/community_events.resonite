@@ -1,5 +1,8 @@
 # community_event.resonite
 
+> [!WARNING]  
+> Refactor in progress, please look at the stable branch
+
 Service for announcing Resonite events and stream from multiple source like Discord and Google Agenda on client like Resonite and Web Browsers.
 
 This tool has been write in a way that different communities can host their own server and can be connected to
