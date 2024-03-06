@@ -157,7 +157,7 @@ class TwitchClient:
         if response.status_code == 200:
             broadcasters_followers = response.json()
         else:
-            logger.error(f"Can't connect to twitch: {response.status_code}")
+            logger.error(f"Can't connect to Twitch: {response.status_code}")
         return broadcasters_followers
 
     def _get_broadcasters_info(self):
@@ -166,10 +166,14 @@ class TwitchClient:
         for user_login in Config.TWITCH_STREAMS:
             b += f"&login={user_login}"
         b = b.lstrip("&")
-        response = requests.get(
-            f'https://api.twitch.tv/helix/users?{b}',
-            headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
-        )
+        try:
+            response = requests.get(
+                f'https://api.twitch.tv/helix/users?{b}',
+                headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
+            )
+        except AttributeError:
+            logger.error("There's an AttributeError being caused in _get_broadcasters_info. Likely missing oauth token. Skipping")
+            return
         if response.status_code == 200:
             users_data = response.json()
             for user in users_data['data']:
@@ -189,6 +193,9 @@ class TwitchClient:
     def get_schedules(self):
         dt_now = datetime.now(timezone.utc)
         events = []
+        if not self.broadcasters_info:
+            logger.info("We have no broadcasters. Skipping get_schedules")
+            return
         for broadcaster_id in self.broadcasters_info:
             response = requests.get(
                 f'https://api.twitch.tv/helix/schedule',

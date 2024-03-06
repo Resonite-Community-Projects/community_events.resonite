@@ -37,6 +37,9 @@ class TwitchStreamsCollector(StreamsCollector):
         # Update streams collector
         str_streams = []
         streams = self.tclient.get_schedules()
+        if not streams:
+            self.logger.info("We have no streams! Skip!")
+            return
         for stream in streams:
             str_streams.append(f"{separator[2]['field']}".join(stream))
         streams = f"{separator[2]['event']}".join(s for s in str_streams if s)
