@@ -112,11 +112,12 @@ For config, you need to use the key `[[BOTS.JSONEventsCollector]]` and have the 
 
 - `community_name`: str, The community name
 - `events_url`: str, The URL to get events from
-- `tags`: list, the list of tags for the community
 
 
 You can also add
-- `community_description`: str, The description of the community (optional)
+
+- `community_description`: str, The description of the community
+- `tags`: array, community tags
 
 
 Required keys in the JSON response:

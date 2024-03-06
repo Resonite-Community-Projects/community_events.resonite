@@ -36,6 +36,10 @@ class JSONEventsCollector(EventsCollector):
                 "description": "The name of the community",
                 "type": "string"
             },
+            "community_description": {
+                "description": "The description of the community",
+                "type": "string"
+            },
             "events_url":{
                 "description":"The URL to get events from",
                 "type": "string"
@@ -48,7 +52,6 @@ class JSONEventsCollector(EventsCollector):
         "required":[
             "community_name",
             "events_url",
-            "tags"
         ]
     }
 
