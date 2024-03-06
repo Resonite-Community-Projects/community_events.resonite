@@ -1,6 +1,5 @@
 import os
 import toml
-import pytz
 import requests
 import json
 from dateutil.parser import parse
