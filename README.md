@@ -149,7 +149,7 @@ An example response from the endpoint:
   {
     "name": "Example Name",
     "description": "Example description",
-    "location": "BigRedWolfy's session",
+    "location": "Example's session",
     "start_time": "2024-04-20T00:00:00+00:00",
     "end_time": "2024-04-20T02:00:00+00:00"
   }
