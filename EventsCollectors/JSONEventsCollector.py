@@ -108,7 +108,12 @@ class JSONEventsCollector(EventsCollector):
         for bot_config in getattr(self.config.BOTS, self.name, []):
             
             community_name = bot_config['community_name']
-            community_tags = bot_config['tags']
+
+            try:
+                community_tags = bot_config['tags']
+            except KeyError: # if no tags are specified, make them nothing
+                community_tags = []
+            
             self.logger.info(f"Processing events for {community_name} with events_url {bot_config['events_url']}")
 
             try:
