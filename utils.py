@@ -204,7 +204,11 @@ class TwitchClient:
             )
             if response.status_code == 200:
                 schedule_data = response.json()
-                for d in schedule_data['data']['segments']:
+                if not schedule_data['data']['segments']:
+                    segments = []
+                else:
+                    segments = schedule_data['data']['segments']
+                for d in segments:
                     if parse((d['start_time'])) > dt_now + timedelta(days=7):
                         continue
                     if (d['category'] and d['category']['id'] == Config.TWITCH_GAME_ID) or schedule_data['data']['broadcaster_name'] == Config.TWITCH_RESONITE_ACCOUNT_NAME:
