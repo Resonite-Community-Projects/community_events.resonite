@@ -104,6 +104,61 @@ guild_channel = "events"
 bot = xxxxxxxxxxxxxxxxxx
 ```
 
+### JSON
+
+Fetches events from JSON over http.
+
+For config, you need to use the key `[[BOTS.JSONEventsCollector]]` and have the following keys:
+
+- `community_name`: str, The community name
+- `events_url`: str, The URL to get events from
+
+
+You can also add
+
+- `community_description`: str, The description of the community
+- `tags`: array, community tags
+
+
+Required keys in the JSON response:
+
+- `name`: The name of the event
+- `description`: The event description
+- `start_time`: The start time of the event in an ISO timestamp (must be in UTC)
+- `end_time`: The end time of the event in an ISO timestamp (must be in UTC)
+- `location`: The location of the event
+
+
+#### Example config / response
+
+An example config to be put in `config.toml`:
+
+```
+[[BOTS.JSONEventsCollector]]
+community_name = "Example Name"
+community_description = "Example Description"
+events_url = "https://example.com/events_json"
+tags = ['example']
+```
+
+
+An example response from the endpoint:
+
+
+```
+[
+  {
+    "name": "Example Name",
+    "description": "Example description",
+    "location": "Example's session",
+    "start_time": "2024-04-20T00:00:00+00:00",
+    "end_time": "2024-04-20T02:00:00+00:00"
+  }
+]
+```
+
+
+
 ### TwitchStreamsCollector
 
 This tools also give the ability to list planned Resonite streams from a
