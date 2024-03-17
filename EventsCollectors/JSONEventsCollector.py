@@ -45,9 +45,6 @@ class JSONEventsCollector(EventsCollector):
         if not self.valide_config:
             return
 
-        for bot_config in getattr(self.config.BOTS, self.name, []):
-            self.logger.info(f"Bot config: {bot_config}")
-
     def format_event(self, event, api_ver, community_name, community_tags):
         name = event['name']
         community_name = community_name
