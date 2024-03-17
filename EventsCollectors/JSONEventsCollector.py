@@ -8,22 +8,6 @@ from disnake.ext import commands
 
 from ._base import EventsCollector
 
-### JSON Events collector
-
-# Minimum required values:
-# name: The name of the event
-# description: The description of the event
-# start_time: The start time of the event in the ISO format (UTC timezone) 
-# end_time: The end time of the event in the ISO format (UTC timezone) 
-# location: The location of the event
-
-# Example config:
-# [[BOTS.JSONEventsCollector]]
-# community_name = "Example Name"
-# community_description = "Example Description"
-# events_url = "https://example.com/events_json"
-# tags = ['example']
-
 
 class JSONEventsCollector(EventsCollector):
     jschema = {
@@ -60,7 +44,7 @@ class JSONEventsCollector(EventsCollector):
 
         if not self.valide_config:
             return
-        
+
         for bot_config in getattr(self.config.BOTS, self.name, []):
             self.logger.info(f"Bot config: {bot_config}")
 
@@ -106,14 +90,14 @@ class JSONEventsCollector(EventsCollector):
         self.logger.info(f'Update {self.name} events collector')
 
         for bot_config in getattr(self.config.BOTS, self.name, []):
-            
+
             community_name = bot_config['community_name']
 
             try:
                 community_tags = bot_config['tags']
-            except KeyError: # if no tags are specified, make them nothing
+            except KeyError:
                 community_tags = []
-            
+
             self.logger.info(f"Processing events for {community_name} with events_url {bot_config['events_url']}")
 
             try:
@@ -121,11 +105,9 @@ class JSONEventsCollector(EventsCollector):
                     bot_config['events_url']
                 )
             except:
-                # If the request fails, catch it.
                 self.logger.error(f"Exception on request for {community_name}")
                 continue
 
-            # If we didn't get a 200, just skip it.
             if response.status_code != 200:
                 self.logger.error(f"Got {response.status_code} from {community_name}, expecting 200. Skipping")
                 continue
