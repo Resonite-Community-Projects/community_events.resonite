@@ -117,6 +117,7 @@ class DiscordEventsCollector(EventsCollector):
             logging.error(f'{guild.name} not configured!')
             logging.error('Potential events duplication!')
             logging.error(f'Ignoring {guild.name} events update...')
+            return
         events = guild.scheduled_events
         _events_v1 = []
         _events_v2 = []
