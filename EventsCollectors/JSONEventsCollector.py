@@ -58,7 +58,7 @@ class JSONEventsCollector(EventsCollector):
         if api_ver == 1:
             event = self.sformat(
                 title = name,
-                description = description,
+                description = self._clean_text(description),
                 location_str = location,
                 start_time = start_time,
                 end_time = end_time,
