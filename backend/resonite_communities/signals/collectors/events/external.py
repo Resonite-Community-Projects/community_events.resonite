@@ -1,8 +1,10 @@
 from ._base import EventsCollector
 
+from resonite_communities.signals import SignalSchedulerType
+
 
 class ExternalEventsCollector(EventsCollector):
-    signal_type = 'external'
+    scheduler_type = SignalSchedulerType.APSCHEDULER
     jschema = {
             "$schema":"http://json-schema.org/draft-04/schema#",
             "title":"ApolloConfig",

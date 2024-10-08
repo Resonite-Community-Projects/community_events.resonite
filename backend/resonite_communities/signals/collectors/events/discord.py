@@ -1,9 +1,11 @@
 from disnake.ext import commands
 
+from resonite_communities.signals import SignalSchedulerType
+
 from ._base import EventsCollector
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
-    signal_type = 'discord'
+    scheduler_type = SignalSchedulerType.DISCORD
     jschema = {
             "$schema":"http://json-schema.org/draft-04/schema#",
             "title":"ApolloConfig",
