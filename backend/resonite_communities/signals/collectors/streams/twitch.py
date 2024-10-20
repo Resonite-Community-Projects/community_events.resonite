@@ -1,6 +1,6 @@
 from resonite_communities.signals import SignalSchedulerType
 
-from ._base import StreamsCollector
+from resonite_communities.signals.collectors.stream import StreamsCollector
 
 class TwitchStreamsCollector(StreamsCollector):
     scheduler_type = SignalSchedulerType.APSCHEDULER

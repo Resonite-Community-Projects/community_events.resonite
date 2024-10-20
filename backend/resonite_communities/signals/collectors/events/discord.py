@@ -2,7 +2,7 @@ from disnake.ext import commands
 
 from resonite_communities.signals import SignalSchedulerType
 
-from ._base import EventsCollector
+from resonite_communities.signals.collectors.event import EventsCollector
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
     scheduler_type = SignalSchedulerType.DISCORD
