@@ -4,6 +4,7 @@ from dateutil.parser import parse
 import dateutil
 import requests
 import pytz
+from copy import deepcopy
 
 import logging
 
@@ -102,7 +103,7 @@ class RedisClient:
         for new_event in new_events:
             events.append(new_event)
 
-        for event in events:
+        for event in deepcopy(events):
             try:
                 if parse(event_field(event, api_ver, 'end_time')).replace(tzinfo=pytz.UTC) < dt_now and event in events:
                     events.remove(event)
