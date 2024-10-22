@@ -1,5 +1,3 @@
-from typing import Any, Optional
-
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models import Signal as SignalModel
@@ -31,6 +29,9 @@ class Signal:
 
     def update(self, _filter_field, _filter_value, **data):
         return self.model.update(_filter_field, _filter_value, **data)
+
+    def upsert(self, _filter_field, _filter_value, **data):
+        return self.model.upsert(_filter_field, _filter_value, **data)
 
     def delete(self, **filter):
         return self.model.delete(**filter)

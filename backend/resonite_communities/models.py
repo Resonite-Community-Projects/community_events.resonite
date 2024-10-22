@@ -1,7 +1,9 @@
-#from sqlalchemy.exc import IntegrityError
-from signal import signal
+# TODO: This will need to be split in multiple files in a module at some point
+from enum import Enum
+from datetime import datetime
 from typing import Optional, Any
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import Session
@@ -64,6 +66,7 @@ class Signal:
             signal.add(**{'id': 44, 'name': 'aa'})
             signal.add(id=43, name="toto")
         """
+        data['created_at'] = datetime.utcnow()
         cls._validate_filter(data)
         with Session(engine) as session:
             signal_instance = cls(**data)
@@ -73,7 +76,7 @@ class Signal:
         return signal_instance
 
     @classmethod
-    def get(cls, **filters: Any):
+    def find(cls, **filters: Any):
         """
         Examples
             signal.get(name='toto')
@@ -86,8 +89,6 @@ class Signal:
             rows = session.exec(query).all()
             for row in rows:
                 instances.append(row[0])
-            if len(instances) == 1:
-                return instances[0]
             return instances
 
     @classmethod
@@ -104,6 +105,7 @@ class Signal:
 
             signal.update(_filter_field='name', _filter_value="toto", name='aaa')
         """
+        fields_to_update['updated_at'] = datetime.utcnow()
         cls._validate_filter(fields_to_update)
         with Session(engine) as session:
             instances = []
@@ -117,9 +119,26 @@ class Signal:
                 session.refresh(instance)
                 session.expunge(instance)
                 instances.append(instance)
-            if len(instances) == 1:
-                return instances[0]
             return instances
+
+    @classmethod
+    def upsert(
+        cls,
+        _filter_field: str,
+        _filter_value: Any,
+        **fields_to_update: Any
+    ):
+        cls._validate_filter(fields_to_update)
+        with Session(engine) as session:
+            # TODO: This will need to use the on_conflict_do_update sql method
+            # But this is not available yet in SQLModel
+            # See https://github.com/fastapi/sqlmodel/issues/59
+            try:
+                cls.add(**fields_to_update)
+            except IntegrityError:
+                cls.update(_filter_field, _filter_value, **fields_to_update)
+
+
 
     @classmethod
     def delete(cls, **filters: Optional[dict[str, Any]]):
@@ -135,10 +154,38 @@ class Signal:
             return deleted
 
 
+class EventStatus(str, Enum):
+    CANCELED = "CANCELED"
+    ACTIVE = "ACTIVE"
+    PENDING = "PENDING"
+    READY = "READY"
+
+
 class Event(Signal, SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    community_name: str | None = Field()
+    created_at: datetime = Field()
+    updated_at: datetime | None = Field()
+    created_at_external: datetime | None = Field()
+    updated_at_external: datetime | None = Field()
+    external_id: str = Field()
+    name: str = Field()
+    description: str = Field()
+    session_image: str  | None = Field()
+    location: str | None = Field()
+    location_web_session_url: str | None = Field()
+    location_session_url: str | None = Field()
+    start_time: datetime = Field()
+    end_time: datetime | None = Field()
+    community_url: str | None = Field()
+    community_name: str = Field()
+    community_external_id: str = Field()
+    tags: str | None = Field()
+    external_id: str = Field(unique=True)
+    scheduler_type: str = Field()
+    status: EventStatus = Field()
 
 class Stream(Signal, SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
+    created_at: datetime = Field()
+    updated_at: datetime = Field()
     name: str | None = Field()
