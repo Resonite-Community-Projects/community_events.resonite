@@ -1,10 +1,10 @@
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
-from resonite_communities.models import Signal as SignalModel
+from resonite_communities.models.base import BaseModel
 
 class Signal:
     scheduler_type = None
-    model = SignalModel
+    model = BaseModel
 
     def __init__(self):
         self.name = self.__class__.__name__

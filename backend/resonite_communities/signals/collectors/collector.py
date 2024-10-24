@@ -2,7 +2,7 @@ import jsonschema
 
 from resonite_communities.signals.signal import Signal
 
-from resonite_communities.models import Event
+from resonite_communities.models.signal import Event
 
 class Collector(Signal):
     jschema = None

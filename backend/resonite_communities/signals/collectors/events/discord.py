@@ -2,7 +2,7 @@ from datetime import datetime
 
 from disnake.ext import commands
 
-from resonite_communities.models import EventStatus
+from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
 

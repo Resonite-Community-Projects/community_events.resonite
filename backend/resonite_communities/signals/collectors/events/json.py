@@ -1,7 +1,7 @@
 from dateutil.parser import parse
 import requests
 
-from resonite_communities.models import EventStatus
+from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals.collectors.event import EventsCollector
 from resonite_communities.signals import SignalSchedulerType
 

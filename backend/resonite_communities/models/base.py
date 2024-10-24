@@ -1,20 +1,19 @@
-# TODO: This will need to be split in multiple files in a module at some point
-from enum import Enum
 from datetime import datetime
+
 from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import Session
-from sqlmodel import SQLModel, Field
+from sqlmodel import Session, SQLModel
+
 
 from resonite_communities.utils.logger import get_logger
 
 engine = create_engine("sqlite:///my_database.db")
 SessionLocale = sessionmaker(bind=engine)
 
-class Signal:
+class BaseModel(SQLModel):
 
     def __str__(self):
         """
@@ -154,40 +153,3 @@ class Signal:
                 session.delete(row[0])
                 session.commit()
             return deleted
-
-
-class EventStatus(str, Enum):
-    CANCELED = "CANCELED"
-    ACTIVE = "ACTIVE"
-    PENDING = "PENDING"
-    READY = "READY"
-
-
-class Event(Signal, SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    created_at: datetime = Field()
-    updated_at: datetime | None = Field()
-    created_at_external: datetime | None = Field()
-    updated_at_external: datetime | None = Field()
-    external_id: str = Field()
-    name: str = Field()
-    description: str = Field()
-    session_image: str  | None = Field()
-    location: str | None = Field()
-    location_web_session_url: str | None = Field()
-    location_session_url: str | None = Field()
-    start_time: datetime = Field()
-    end_time: datetime | None = Field()
-    community_url: str | None = Field()
-    community_name: str = Field()
-    community_external_id: str = Field()
-    tags: str | None = Field()
-    external_id: str = Field(unique=True)
-    scheduler_type: str = Field()
-    status: EventStatus = Field()
-
-class Stream(Signal, SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    created_at: datetime = Field()
-    updated_at: datetime = Field()
-    name: str | None = Field()

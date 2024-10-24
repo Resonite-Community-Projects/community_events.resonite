@@ -29,7 +29,7 @@ discord_client = disnake.Client()
 intents = disnake.Intents.all()
 bot = disnake.ext.commands.InteractionBot(intents=intents)
 
-from resonite_communities.models import engine
+from resonite_communities.models.base import engine
 
 from sqlmodel import SQLModel
 SQLModel.metadata.create_all(engine)
