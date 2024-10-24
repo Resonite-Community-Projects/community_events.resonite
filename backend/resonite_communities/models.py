@@ -7,9 +7,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import Session
-
-
 from sqlmodel import SQLModel, Field
+
+from resonite_communities.utils.logger import get_logger
 
 engine = create_engine("sqlite:///my_database.db")
 SessionLocale = sessionmaker(bind=engine)
@@ -129,13 +129,15 @@ class Signal:
         **fields_to_update: Any
     ):
         cls._validate_filter(fields_to_update)
-        with Session(engine) as session:
-            # TODO: This will need to use the on_conflict_do_update sql method
-            # But this is not available yet in SQLModel
-            # See https://github.com/fastapi/sqlmodel/issues/59
-            try:
-                cls.add(**fields_to_update)
-            except IntegrityError:
+        # TODO: This will need to use the on_conflict_do_update sql method
+        # But this is not available yet in SQLModel
+        # See https://github.com/fastapi/sqlmodel/issues/59
+        try:
+            cls.add(**fields_to_update)
+        except IntegrityError as exc:
+            if f'UNIQUE constraint failed: {cls.__name__.lower()}.{_filter_field}' not in str(exc):
+                get_logger(cls.__name__).error(exc)
+            else:
                 cls.update(_filter_field, _filter_value, **fields_to_update)
 
 

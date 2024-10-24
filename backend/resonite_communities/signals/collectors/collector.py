@@ -27,7 +27,7 @@ class Collector(Signal):
         """Validate signals configuration."""
         signals_config = getattr(self.config.SIGNALS, self.name, [])
         if not signals_config:
-            self.logger.warning(f"Ignoring events collector for now. No configuration found.")
+            self.logger.warning(f"Ignoring {self.name} events collector for now. No configuration found.")
             return False
         for signal_config in signals_config:
             try:

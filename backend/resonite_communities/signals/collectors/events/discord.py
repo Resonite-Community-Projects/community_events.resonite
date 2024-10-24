@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 
 from disnake.ext import commands
@@ -6,11 +5,6 @@ from disnake.ext import commands
 from resonite_communities.models import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
-
-# TODO: The domain should probably be customizable per community
-# TODO: Fix the syntax warning
-re_location_web_session_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
-re_location_session_url_match_compiled = re.compile('(lnl-nat|res-steam):\/\/([^\s]+)')
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
     scheduler_type = SignalSchedulerType.DISCORD
@@ -67,19 +61,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     self.guilds.setdefault(bot_config['guild_id'], {})
                     self.guilds.get(bot_config['guild_id'], {})['bot'] = guild_bot
                     self.guilds[bot_config['guild_id']]['config'] = bot_config
-
-
-    def get_location_web_session_url(self, description: str):
-        location_web_session_url_match = re.search(re_location_web_session_url_match_compiled, description)
-        if location_web_session_url_match:
-            return location_web_session_url_match.group()
-        return ''
-
-    def get_location_session_url(self, description: str):
-        location_session_url_match = re.search(re_location_session_url_match_compiled, description)
-        if location_session_url_match:
-            return location_session_url_match.group()
-        return ''
 
     def is_cancel(self, local_event):
         """ Check if an event is considered as canceled.
