@@ -2,6 +2,7 @@ from datetime import datetime
 
 from disnake.ext import commands
 
+from resonite_communities.models.community import Community
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
@@ -106,9 +107,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     location_session_url=self.get_location_session_url(event.description),
                     start_time=event.scheduled_start_time,
                     end_time=event.scheduled_end_time,
-                    community_url=community.url,
-                    community_name=event.guild.name,
-                    community_external_id=event.guild.id,
+                    community_id=Community.find(external_id=community.external_id)[0].id,
                     tags=",".join(community.tags),
                     external_id=event.id,
                     scheduler_type=self.scheduler_type.name,
@@ -117,7 +116,10 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 )
 
             events_id = [event.id for event in events]
-            for local_event in self.model.find(scheduler_type=self.scheduler_type.name, community_external_id=community.config['bot'].id):
+            for local_event in self.model.find(
+                    scheduler_type=self.scheduler_type.name,
+                    community_id=Community.find(external_id=community.external_id)[0].id
+            ):
                 if int(local_event.external_id) not in events_id and self.is_cancel(local_event):
                     self.model.update(
                         _filter_field='external_id',

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlmodel import Field, JSON
+from sqlmodel import Field, JSON, Relationship
 from sqlalchemy import Column
 
 from resonite_communities.models.base import BaseModel
@@ -16,6 +16,7 @@ class Community(BaseModel, table=True):
     url: str | None = Field()
     tags: list | None = Field(default=[], sa_column=Column(JSON))
     config: dict | None = Field(default={}, sa_column=Column(JSON))
+    events: list["Event"] = Relationship(back_populates="community")
 
     class Config:
         arbitrary_types_allowed = True

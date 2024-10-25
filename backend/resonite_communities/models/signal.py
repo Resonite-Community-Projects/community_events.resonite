@@ -1,9 +1,11 @@
 from enum import Enum
 from datetime import datetime
 
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 
 from resonite_communities.models.base import BaseModel
+from resonite_communities.models.community import Community
+
 
 class EventStatus(str, Enum):
     CANCELED = "CANCELED"
@@ -27,9 +29,8 @@ class Event(BaseModel, table=True):
     location_session_url: str | None = Field()
     start_time: datetime = Field()
     end_time: datetime | None = Field()
-    community_url: str | None = Field()
-    community_name: str = Field()
-    community_external_id: str = Field()
+    community_id: int = Field(foreign_key='community.id')
+    community: Community | None = Relationship(back_populates="events")
     tags: str | None = Field()
     external_id: str = Field(unique=True)
     scheduler_type: str = Field()

@@ -1,6 +1,7 @@
 from dateutil.parser import parse
 import requests
 
+from resonite_communities.models.community import Community
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals.collectors.event import EventsCollector
 from resonite_communities.signals import SignalSchedulerType
@@ -81,9 +82,7 @@ class JSONEventsCollector(EventsCollector):
                     location_session_url=event['session_url'],
                     start_time=parse(event['start_time']),
                     end_time=parse(event['end_time']),
-                    community_url=community.url,
-                    community_name=community.name,
-                    community_external_id=community.external_id,
+                    community_id=Community.find(external_id=community.external_id)[0].id,
                     tags=",".join(community.tags),
                     external_id=event['event_id'],
                     scheduler_type=self.scheduler_type.name,

@@ -39,11 +39,11 @@ communities_name = []
 communities_define_multiple_time = []
 for bots in Config.SIGNALS.values():
     for bot in bots:
-        if 'community_name' in bot and bot['community_name'] not in communities_name:
-            communities_name.append(bot['community_name'])
+        if 'name' in bot and bot['name'] not in communities_name:
+            communities_name.append(bot['name'])
         else:
-            if 'community_name' in bot and bot['community_name'] not in communities_define_multiple_time:
-                communities_define_multiple_time.append(bot['community_name'])
+            if 'name' in bot and bot['name'] not in communities_define_multiple_time:
+                communities_define_multiple_time.append(bot['name'])
 
 if communities_define_multiple_time:
     logger.error(f'The following communities have been defined too many time: {communities_define_multiple_time}')
