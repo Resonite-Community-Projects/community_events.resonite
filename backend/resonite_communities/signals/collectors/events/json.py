@@ -14,57 +14,58 @@ class JSONEventsCollector(EventsCollector):
         "description":"Config for JSON collector",
         "type":"object",
         "properties":{
-            "community_external_id": {
+            "external_id": {
                 "description": "The id of the community",
                 "type": "string"
             },
-            "community_name": {
+            "name": {
                 "description": "The name of the community",
                 "type": "string"
             },
-            "community_description": {
+            "description": {
                 "description": "The description of the community",
                 "type": "string"
             },
-            "events_url":{
+            "url":{
                 "description":"The URL to get events from",
                 "type": "string"
             },
             "tags":{
                 "description":"A list of tags",
                 "type": "array"
-            }
+            },
+            "config": {
+                "description": "Special configuration",
+                 "type": "object"
+             },
         },
         "required":[
-            "community_name",
-            "events_url",
+            "external_id",
+            "name",
+            "url",
+            "tags"
         ]
     }
 
     def __init__(self, config, scheduler):
         super().__init__(config, scheduler)
 
-        self.communities = []
-
-    def update_config(self):
-        for bot_config in getattr(self.config.SIGNALS, self.name, []):
-            self.communities.append(bot_config)
-
     def collect(self):
         self.logger.info('Update events collector from external source')
-        self.update_config()
+        self.update_communities()
         for community in self.communities:
-            self.logger.info(f"Processing events for {community['community_name']} from {community['events_url']}")
+            self.logger.info(f"Processing events for {community.name} from {community.config.events_url}")
 
             try:
-                response = requests.get(community['events_url'])
-            except:
-                self.logger.error(f"Exception on request for {community['community_name']}")
+                response = requests.get(community.config.events_url)
+            except Exception as error:
+                self.logger.error(f"Exception on request for {community.name}")
+                self.logger.error(error)
                 self.logger.error("Skipping")
                 continue
 
             if response.status_code != 200:
-                self.logger.error(f"Error {response.status_code} from {community['community_name']} server: {response.text}")
+                self.logger.error(f"Error {response.status_code} from {community.name} server: {response.text}")
                 self.logger.error("Skipping")
                 continue
 
@@ -80,9 +81,9 @@ class JSONEventsCollector(EventsCollector):
                     location_session_url=event['session_url'],
                     start_time=parse(event['start_time']),
                     end_time=parse(event['end_time']),
-                    community_url=community.community_url,
-                    community_name=community.community_name,
-                    community_external_id=community.community_external_id,
+                    community_url=community.url,
+                    community_name=community.name,
+                    community_external_id=community.external_id,
                     tags=",".join(community.tags),
                     external_id=event['event_id'],
                     scheduler_type=self.scheduler_type.name,
