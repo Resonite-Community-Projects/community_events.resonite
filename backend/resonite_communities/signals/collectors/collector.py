@@ -15,5 +15,5 @@ class Collector(Signal):
     def init_scheduler(self):
         # You **must** call this method in your collector __init__ method
         self.logger.info('Events collector ready')
-        self.scheduler.add_job(self.collect,'interval', minutes=self.config.discord_refresh_interval)
+        self.scheduler.add_job(self.collect,'interval', minutes=self.config.REFRESH_INTERVAL)
         self.collect()

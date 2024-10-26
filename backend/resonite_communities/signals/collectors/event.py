@@ -13,8 +13,6 @@ class EventsCollector(Collector):
     def __init__(self, config, scheduler):
         super().__init__(config, scheduler)
 
-        self.config.discord_refresh_interval = self.config['DISCORD_BOT_TOKEN_REFRESH_INTERVAL']
-
     def get_location_web_session_url(self, description: str):
         location_web_session_url_match = re.search(re_location_web_session_url_match_compiled, description)
         if location_web_session_url_match:
