@@ -10,9 +10,6 @@ re_location_session_url_match_compiled = re.compile('(lnl-nat|res-steam):\/\/([^
 
 class EventsCollector(Collector):
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
-
     def get_location_web_session_url(self, description: str):
         location_web_session_url_match = re.search(re_location_web_session_url_match_compiled, description)
         if location_web_session_url_match:

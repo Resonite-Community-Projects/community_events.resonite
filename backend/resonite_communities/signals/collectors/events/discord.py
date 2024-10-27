@@ -6,47 +6,25 @@ from resonite_communities.models.community import Community
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
+from resonite_communities.signals.signal import gen_schema
+
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
     scheduler_type = SignalSchedulerType.DISCORD
-    jschema = {
-            "$schema":"http://json-schema.org/draft-04/schema#",
-            "title":"ApolloConfig",
-            "description":"Config for Discord",
-            "type":"object",
-            "properties":{
-                "external_id":{
-                    "description":"The discord guild id of the community",
-                    "type": "integer"
-                },
-                "name": {
-                    "description": "The name of the community",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "The description of a community",
-                    "type": "string"
-                },
-                "url": {
-                    "description": "The website of the community",
-                    "type": "string"
-                },
-                "tags": {
-                    "description": "A list of tags",
-                    "type": "array"
-                },
-                "config": {
-                    "description": "Special configuration",
-                    "type": "object"
-                },
-            },
-            "required":[
-                "external_id",
-                "name",
-                "url",
-                "tags"
-            ]
-        }
+    jschema = gen_schema(
+        title = "DiscordConfig",
+        description = "The discord configuration of a server.",
+        property_external_id = "The discord guild id of the Discord server.",
+        property_name = "The name of the Discord server.",
+        property_description = "The description of the Discord server.",
+        property_url = "The invite link of the Discord server.",
+        property_tags = "The tags about this Discord server.",
+        property_config = "The special configuration of this Discord server.",
+        properties_required = [
+            "external_id",
+            "name",
+        ]
+    )
 
     def __init__(self, config, scheduler):
         super().__init__(config, scheduler)

@@ -5,48 +5,16 @@ from resonite_communities.models.community import Community
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals.collectors.event import EventsCollector
 from resonite_communities.signals import SignalSchedulerType
+from resonite_communities.signals.signal import gen_schema
 
 
 class JSONEventsCollector(EventsCollector):
     scheduler_type = SignalSchedulerType.APSCHEDULER
-    jschema = {
-        "$schema":"http://json-schema.org/draft-04/schema#",
-        "title":"JsonEventsConfig",
-        "description":"Config for JSON collector",
-        "type":"object",
-        "properties":{
-            "external_id": {
-                "description": "The id of the community",
-                "type": "string"
-            },
-            "name": {
-                "description": "The name of the community",
-                "type": "string"
-            },
-            "description": {
-                "description": "The description of the community",
-                "type": "string"
-            },
-            "url":{
-                "description":"The URL to get events from",
-                "type": "string"
-            },
-            "tags":{
-                "description":"A list of tags",
-                "type": "array"
-            },
-            "config": {
-                "description": "Special configuration",
-                 "type": "object"
-             },
-        },
-        "required":[
-            "external_id",
-            "name",
-            "url",
-            "tags"
-        ]
-    }
+    jschema = gen_schema(
+        title = "JSONConfig",
+        description = "The configuration of an external source in JSON.",
+        property_external_id_type = "string",
+    )
 
     def __init__(self, config, scheduler):
         super().__init__(config, scheduler)

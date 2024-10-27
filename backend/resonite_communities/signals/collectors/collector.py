@@ -3,7 +3,6 @@ from resonite_communities.signals.signal import Signal
 from resonite_communities.models.signal import Event
 
 class Collector(Signal):
-    jschema = None
 
     def __init__(self, config, scheduler):
         super().__init__(config, scheduler)

@@ -5,8 +5,65 @@ from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
 
+def gen_schema(
+    title: str,
+    description: str,
+    property_external_id: str = "The id of the community",
+    property_external_id_type: str = "integer",
+    property_name: str = "The name of the community.",
+    property_name_type: str = "string",
+    property_description: str = "The description of the community.",
+    property_description_type: str = "string",
+    property_url: str = "The link related to the community.",
+    property_url_type: str = "string",
+    property_tags: str = "The tags related to the community.",
+    property_tags_type: str = "array",
+    property_config: str = "The config related to the community",
+    property_config_type: str = "object",
+    properties_required: list = [
+            "external_id",
+            "name",
+            "url",
+            "tags",
+    ],
+):
+    return {
+            "$schema": "http://json-schema.org/draft-04/schema#",
+            "title": title,
+            "description": description,
+            "type": "object",
+            "properties": {
+                "external_id":{
+                    "description": property_external_id,
+                    "type": property_external_id_type,
+                },
+                "name": {
+                    "description": property_name,
+                    "type": property_name_type,
+                },
+                "description": {
+                    "description": property_description,
+                    "type": property_description_type,
+                },
+                "url": {
+                    "description": property_url,
+                    "type": property_url_type,
+                },
+                "tags": {
+                    "description": property_tags,
+                    "type": property_tags_type,
+                },
+                "config": {
+                    "description": property_config,
+                    "type": property_config_type,
+                },
+            },
+            "required": properties_required,
+        }
+
 class Signal:
     scheduler_type = None
+    jschema = None
     model = BaseModel
 
     def __init__(self, config, scheduler):
@@ -22,9 +79,8 @@ class Signal:
 
         self.valid_config = self._validate_signals_config()
         if self.valid_config:
+            self.update_communities()
             self.logger.info(f'Initialised events collector')
-
-        self.update_communities()
 
     def _validate_scheduler_type(self):
         if not self.scheduler_type:
@@ -61,7 +117,7 @@ class Signal:
                 monitored=False,
                 external_id=str(community['external_id']),
                 platform=self.name,
-                tags=community['tags'],
+                tags=community.tags('tags', []),
                 config=community.get('config', {})
             )
             Community.upsert(
