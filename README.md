@@ -3,7 +3,7 @@
 Small API for getting the events in multiple discord servers and Google Agenda with easier parsing for Resonite.
 
 This tool has been write in a way that different  community can host their own server and can be connected to
-each other. There is a main instance available at [resonite-community.events](https://resonite-community.events).
+each other. There is a main instance available at [resonite-communities.com](https://resonite-communities.com/).
 # Use
 
 This is the new version 2.0, not tested in production yet, please see the git tag for the version 1.0.
