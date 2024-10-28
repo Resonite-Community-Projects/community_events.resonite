@@ -1,3 +1,4 @@
+from resonite_communities.models.community import CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 
 from resonite_communities.signals.collectors.stream import StreamsCollector
@@ -6,6 +7,7 @@ from resonite_communities.signals.signal import gen_schema
 
 class TwitchStreamsCollector(StreamsCollector):
     scheduler_type = SignalSchedulerType.APSCHEDULER
+    platform = CommunityPlatform.TWITCH
     jschema = gen_schema(
         title="TwitchConfig",
         description="The Twitch configuration of a streamer.",

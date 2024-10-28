@@ -1,6 +1,12 @@
 from enum import Enum
 
-class SignalSchedulerType(Enum):
+class CEEnum(str, Enum):
+
+    @classmethod
+    def valid_values(cls):
+        return '\n- '.join([''] + [f"{cls.__name__}.{member.name}: '{cls.__name__}.{member.value}'" for member in cls])
+
+class SignalSchedulerType(CEEnum):
     """
     Enum representing the different scheduling types for signal collectors and transmitters.
 
@@ -23,10 +29,3 @@ class SignalSchedulerType(Enum):
 
     Signals with this type will be integrated into Disnake bot as cogs.
     """
-
-    def __str__(self):
-        return self.value
-
-    @classmethod
-    def valid_types(cls):
-        return '\n- '.join([''] + [f"{cls.__name__}.{member.name}: '{cls.__name__}.{member.value}'" for member in cls])

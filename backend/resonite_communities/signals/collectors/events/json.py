@@ -1,7 +1,7 @@
 from dateutil.parser import parse
 import requests
 
-from resonite_communities.models.community import Community
+from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals.collectors.event import EventsCollector
 from resonite_communities.signals import SignalSchedulerType
@@ -10,6 +10,7 @@ from resonite_communities.signals.signal import gen_schema
 
 class JSONEventsCollector(EventsCollector):
     scheduler_type = SignalSchedulerType.APSCHEDULER
+    platform = CommunityPlatform.JSON
     jschema = gen_schema(
         title = "JSONConfig",
         description = "The configuration of an external source in JSON.",

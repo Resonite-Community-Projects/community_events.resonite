@@ -1,6 +1,6 @@
 import jsonschema
 
-from resonite_communities.models.community import Community
+from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
@@ -63,6 +63,7 @@ def gen_schema(
 
 class Signal:
     scheduler_type = None
+    platform = None
     jschema = None
     model = BaseModel
 
@@ -74,6 +75,8 @@ class Signal:
         self.communities = []
 
         self._validate_scheduler_type()
+
+        self._validate_platform()
 
         self._validate_jschema()
 
@@ -88,7 +91,16 @@ class Signal:
         if self.scheduler_type not in SignalSchedulerType:
             raise ValueError(
                 f"\n\nThe collector {self.name} have a non declared scheduler type: {self.scheduler_type}!"
-                f"\nValid types are: {SignalSchedulerType.valid_types()}"
+                f"\nValid types are: {SignalSchedulerType.valid_values()}"
+            )
+
+    def _validate_platform(self):
+        if not self.platform:
+            raise ValueError(f"The collector {self.name} must have a declared platform!")
+        if self.platform not in CommunityPlatform:
+            raise ValueError(
+                f"\n\nThe collector {self.name} have a non declared platform: {self.platform}!"
+                f"\nValid platforms are: {CommunityPlatform.valid_values()}"
             )
 
     def _validate_jschema(self):
@@ -116,7 +128,7 @@ class Signal:
                 name=community['name'],
                 monitored=False,
                 external_id=str(community['external_id']),
-                platform=self.name,
+                platform=self.platform,
                 tags=community.get('tags', []),
                 config=community.get('config', {})
             )

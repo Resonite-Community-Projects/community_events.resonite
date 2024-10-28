@@ -144,7 +144,10 @@ class BaseModel(SQLModel):
         try:
             cls.add(**fields_to_update)
         except IntegrityError as exc:
-            if f'UNIQUE constraint failed: {cls.__name__.lower()}.{_filter_field}' not in str(exc):
+            if not isinstance(_filter_field, list):
+                _filter_field = [_filter_field]
+            constraints_ = [f"{cls.__name__.lower()}.{field}" for field in _filter_field]
+            if f'UNIQUE constraint failed: {", ".join(constraints_)}' not in str(exc):
                 get_logger(cls.__name__).error(exc)
             else:
                 cls.update(_filter_field, _filter_value, **fields_to_update)

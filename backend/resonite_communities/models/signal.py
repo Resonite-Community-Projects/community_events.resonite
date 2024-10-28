@@ -1,13 +1,13 @@
-from enum import Enum
 from datetime import datetime
 
 from sqlmodel import Field, Relationship
 
 from resonite_communities.models.base import BaseModel
 from resonite_communities.models.community import Community
+from resonite_communities.signals import CEEnum
 
 
-class EventStatus(str, Enum):
+class EventStatus(CEEnum):
     CANCELED = "CANCELED"
     ACTIVE = "ACTIVE"
     PENDING = "PENDING"

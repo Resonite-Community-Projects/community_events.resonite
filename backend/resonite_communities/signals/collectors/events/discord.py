@@ -2,7 +2,7 @@ from datetime import datetime
 
 from disnake.ext import commands
 
-from resonite_communities.models.community import Community
+from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
@@ -11,6 +11,7 @@ from resonite_communities.signals.signal import gen_schema
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
     scheduler_type = SignalSchedulerType.DISCORD
+    platform = CommunityPlatform.DISCORD
     jschema = gen_schema(
         title = "DiscordConfig",
         description = "The discord configuration of a server.",
