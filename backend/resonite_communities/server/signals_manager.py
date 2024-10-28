@@ -23,7 +23,7 @@ logger = get_logger('community_events')
 
 # Clients initialization
 redis_client = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
-twitch_client = TwitchClient(client_id=Config.TWITCH_CLIENT_ID, secret=Config.TWITCH_SECRET)
+twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
 discord_client = disnake.Client()
 
 intents = disnake.Intents.all()

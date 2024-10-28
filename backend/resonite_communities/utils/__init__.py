@@ -109,7 +109,7 @@ class TwitchClient:
 
         self._auth()
         self.broadcasters = {}
-        self.broadcasters_info = self._get_broadcasters_info()
+        #self.broadcasters_info = self._get_broadcasters_info()
 
     def _auth(self):
         response = requests.post(
@@ -140,14 +140,10 @@ class TwitchClient:
             logger.error(f"Can't connect to twitch: {response.status_code}")
         return broadcasters_followers
 
-    def _get_broadcasters_info(self):
+    def _get_broadcasters_info(self, streamer):
         broadcasters_info = []
-        b = ""
-        for user_login in Config.TWITCH_STREAMS:
-            b += f"&login={user_login}"
-        b = b.lstrip("&")
         response = requests.get(
-            f'https://api.twitch.tv/helix/users?{b}',
+            f'https://api.twitch.tv/helix/users?login={streamer}',
             headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
         )
         if response.status_code == 200:
