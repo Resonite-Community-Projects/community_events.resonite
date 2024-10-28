@@ -93,8 +93,8 @@ class BaseModel(SQLModel):
     @classmethod
     def update(
         cls,
-        _filter_field: str,
-        _filter_value: Any,
+        _filter_field: str | list[str],
+        _filter_value: Any | list[Any],
         **fields_to_update: Any
     ):
         """
@@ -104,11 +104,21 @@ class BaseModel(SQLModel):
 
             signal.update(_filter_field='name', _filter_value="toto", name='aaa')
         """
+        # TODO: this would be interesting to let the user use the _apply_filter with like a Filter object instead
         fields_to_update['updated_at'] = datetime.utcnow()
         cls._validate_filter(fields_to_update)
         with Session(engine) as session:
             instances = []
-            statement = select(cls).where(getattr(cls, _filter_field) == _filter_value)
+            if not isinstance(_filter_field, list):
+                _filter_field = [_filter_field]
+            if not isinstance(_filter_value, list):
+                _filter_value = [_filter_value]
+            if len(_filter_value) != len(_filter_value):
+                raise ValueError('Their should be the same amount of fields and values.')
+            filters = []
+            for pos in range(0, len(_filter_field)):
+                filters.append(getattr(cls, _filter_field[pos]) == _filter_value[pos])
+            statement = select(cls).where(*filters)
             rows = session.exec(statement).all()
             for row in rows:
                 instance = row[0]
@@ -123,8 +133,8 @@ class BaseModel(SQLModel):
     @classmethod
     def upsert(
         cls,
-        _filter_field: str,
-        _filter_value: Any,
+        _filter_field: str | list[str],
+        _filter_value: Any | list[Any],
         **fields_to_update: Any
     ):
         cls._validate_filter(fields_to_update)

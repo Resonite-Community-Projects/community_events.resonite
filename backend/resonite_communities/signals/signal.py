@@ -117,12 +117,12 @@ class Signal:
                 monitored=False,
                 external_id=str(community['external_id']),
                 platform=self.name,
-                tags=community.tags('tags', []),
+                tags=community.get('tags', []),
                 config=community.get('config', {})
             )
             Community.upsert(
-                _filter_field='external_id',
-                _filter_value=community.external_id,
+                _filter_field=['external_id', 'platform'],
+                _filter_value=[community.external_id, community.platform],
                 **community.dict()
             )
             self.communities.append(community)
