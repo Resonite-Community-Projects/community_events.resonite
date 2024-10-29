@@ -1,4 +1,7 @@
-from resonite_communities.models.community import CommunityPlatform
+from dateutil.parser import parse
+
+from resonite_communities.models.community import CommunityPlatform, Community
+from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals import SignalSchedulerType
 
 from resonite_communities.signals.collectors.stream import StreamsCollector
@@ -28,21 +31,29 @@ class TwitchStreamsCollector(StreamsCollector):
         super().update_communities()
 
         for streamer in self.communities:
-            broadcaster = self.config.clients.twitch.get_broadcaster_info(streamer)
-            if not any(b.get('id') == broadcaster['id'] for b in self.broadcasters):
+            broadcaster = dict()
+            broadcaster['config'] = streamer
+            broadcaster['twitch'] = self.config.clients.twitch.get_broadcaster_info(streamer)
+            if not any(b.get('id') == broadcaster['twitch']['id'] for b in self.broadcasters):
                 self.broadcasters.append(broadcaster)
 
     def collect(self):
-        self.logger.info(f'Update streams collector IN MODULE')
+        self.logger.info('Update streams collector')
         self.update_communities()
 
-        streams = []
-
         for broadcaster in self.broadcasters:
-            broadcaster_streams = self.config.clients.twitch.get_schedule(broadcaster)
+            broadcaster_streams = self.config.clients.twitch.get_schedule(broadcaster['twitch'])
             for broadcaster_stream in broadcaster_streams:
-                streams.append(broadcaster_stream)
+                self.model.upsert(
+                    _filter_field='external_id',
+                    _filter_value=broadcaster_stream['id'],
+                    name=broadcaster_stream['title'],
+                    start_time=parse(broadcaster_stream['start_time']),
+                    end_time=parse(broadcaster_stream['end_time']),
+                    community_id=Community.find(external_id=broadcaster['config'].external_id)[0].id,
+                    tags=",".join(broadcaster['config'].tags),
+                    external_id=broadcaster_stream['id'],
+                    scheduler_type=self.scheduler_type.name,
+                    status=EventStatus.READY,
+                )
 
-        for stream in streams:
-            # TODO: save in database instead of logging them
-            self.logger.error(stream)

@@ -25,6 +25,7 @@ class Community(BaseModel, table=True):
     tags: list | None = Field(default=[], sa_column=Column(JSON))
     config: dict | None = Field(default={}, sa_column=Column(JSON))
     events: list["Event"] = Relationship(back_populates="community")
+    streams: list["Stream"] = Relationship(back_populates="community")
 
     class Config:
         arbitrary_types_allowed = True

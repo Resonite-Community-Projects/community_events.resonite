@@ -83,7 +83,7 @@ class Signal:
         self.valid_config = self._validate_signals_config()
         if self.valid_config:
             self.update_communities()
-            self.logger.info(f'Initialised events collector')
+            self.logger.info(f'Initialised {self.name} collector')
 
     def _validate_scheduler_type(self):
         if not self.scheduler_type:
