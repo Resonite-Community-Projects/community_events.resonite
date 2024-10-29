@@ -22,10 +22,27 @@ class TwitchStreamsCollector(StreamsCollector):
             "name",
         ]
     )
+    broadcasters = []
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
+    def update_communities(self):
+        super().update_communities()
+
+        for streamer in self.communities:
+            broadcaster = self.config.clients.twitch.get_broadcaster_info(streamer)
+            if not any(b.get('id') == broadcaster['id'] for b in self.broadcasters):
+                self.broadcasters.append(broadcaster)
 
     def collect(self):
         self.logger.info(f'Update streams collector IN MODULE')
+        self.update_communities()
 
+        streams = []
+
+        for broadcaster in self.broadcasters:
+            broadcaster_streams = self.config.clients.twitch.get_schedule(broadcaster)
+            for broadcaster_stream in broadcaster_streams:
+                streams.append(broadcaster_stream)
+
+        for stream in streams:
+            # TODO: save in database instead of logging them
+            self.logger.error(stream)
