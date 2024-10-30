@@ -1,8 +1,11 @@
 import json
+from datetime import datetime
 from enum import Enum
 
 from dacite.types import is_instance
 from fastapi import FastAPI, APIRouter, Depends, Response, HTTPException, Request
+
+from resonite_communities.models.signal import Event, Stream
 
 app = FastAPI()
 
@@ -59,8 +62,7 @@ def get_filtered_events(
     host: str,
     version: str,
 ):
-    # TODO: correctly get the information from the database
-    events = [{"id": 1, "name": "Event 1", "tags": []}, {"id": 2, "name": "Event 2", "tags": ["private"]}]
+    events = Event.find()
 
     PUBLIC_DOMAIN = "events.com"
     PRIVATE_DOMAIN = "private.events.com"
@@ -68,29 +70,45 @@ def get_filtered_events(
     filtered_events = []
 
     if host == PUBLIC_DOMAIN:
-        filtered_events = [event for event in events if 'private' not in event['tags']]
+        filtered_events = [event for event in events if 'private' not in event.tags]
     elif host == PRIVATE_DOMAIN:
         filtered_events = events
     else:
         raise HTTPException(status_code=400, detail=f"Unsupported domain: {host}")
 
+    if version != "v1":
+        streams = Stream.find()
+
+        print(streams)
+
+        filtered_events.extend(streams)
+
     versioned_events = []
     for event in filtered_events:
         if version == "v1":
             versioned_events.append({
-                "id": event['id'],
-                "name": event['name'],
+                "name": event.name,
+                "description": event.description,
+                "session_image": event.session_image,
+                "location_str": event.location,
+                "location_web_session_url": event.location_web_session_url,
+                "location_session_url": event.location_session_url,
+                "start_time": event.start_time,
+                "end_time": event.end_time,
+                "community_name": event.community.name, # TODO: Connect this to a session
+                "community_url": event.community.url,
             })
         elif version == "v2":
             versioned_events.append({
-                "id": event['id'],
-                "name": event['name'],
-                "tags": event['tags'],
+                "name": event.name,
+                "start_time": event.start_time,
+                "end_time": event.end_time,
+                "tags": event.tags,
             })
         else:
             raise HTTPException(status_code=400, detail="Unsupported version")
 
-    return filtered_events
+    return versioned_events
 
 separators = {
     "v1": {"field": "`", "object": "\n"},
@@ -119,6 +137,12 @@ def format_dict_list(data, version):
         formatted_items.append(field_separator.join(formatted_values))
     return object_separator.join(formatted_items)
 
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()  # Convert to ISO 8601 string
+        return super().default(obj)
+
 def generate_events_response(
         version: str,
         format_type: FormatType = Depends(set_default_format),
@@ -132,7 +156,7 @@ def generate_events_response(
             )
         case FormatType.JSON:
             return Response(
-                json.dumps(events),
+                json.dumps(events, cls=JSONEncoder),
                 media_type="application/json",
             )
         case _:
