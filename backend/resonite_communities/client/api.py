@@ -1,6 +1,8 @@
 import json
 from enum import Enum
-from fastapi import FastAPI, APIRouter, Depends, Response, HTTPException, Query, Request
+
+from dacite.types import is_instance
+from fastapi import FastAPI, APIRouter, Depends, Response, HTTPException, Request
 
 app = FastAPI()
 
@@ -39,8 +41,8 @@ class FormatType(str, Enum):
     JSON = "JSON"
 
 def set_default_format(
-    format_type: FormatType | None = Query(None),
     version: str = "v1",
+    format_type: FormatType | None = None,
 ):
     if not format_type:
         match version:
@@ -49,7 +51,7 @@ def set_default_format(
             case _:
                 format_type = FormatType.JSON
     else:
-        format_type = FormatType.JSON
+        format_type = FormatType(format_type)
 
     return format_type
 
@@ -90,30 +92,66 @@ def get_filtered_events(
 
     return filtered_events
 
+separators = {
+    "v1": {"field": "`", "object": "\n"},
+    "v2": {"field": chr(30), "object": chr(29)},
+}
+
+def format_dict_list(data, version):
+    if version not in separators:
+        raise ValueError("Unsported version.")
+    field_separator = separators[version]['field']
+    object_separator = separators[version]['object']
+
+    formatted_items = []
+    for item in data:
+        formatted_values = []
+        for value in item.values():
+            # Convert list to a more usable text format
+            if isinstance(value, list):
+                formatted_values.append(",".join(map(str, value)))
+            elif is_instance(value, dict):
+                # We do not support dict
+                # Silently pass to the next value
+                continue
+            else:
+                formatted_values.append(str(value))
+        formatted_items.append(field_separator.join(formatted_values))
+    return object_separator.join(formatted_items)
+
 def generate_events_response(
+        version: str,
         format_type: FormatType = Depends(set_default_format),
-        events: list[dict] = Depends(get_filtered_events)
+        events: list[dict] = Depends(get_filtered_events),
 ):
-    # TODO: Correctly return the information in the wanted format
     match format_type:
         case FormatType.TEXT:
-            return Response(json.dumps(events), media_type="text/plain")
+            return Response(
+                format_dict_list(events, version),
+                media_type="text/plain",
+            )
         case FormatType.JSON:
-            return Response(json.dumps(events), media_type="application/json")
+            return Response(
+                json.dumps(events),
+                media_type="application/json",
+            )
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
 @router_v1.get("/events")
-def get_events_v1(request: Request, format_type: FormatType = Depends(lambda: set_default_format(version="v1"))):
+def get_events_v1(request: Request, format_type: FormatType = None):
+    format_type = set_default_format(version="v1", format_type=format_type)
     return generate_events_response(
-        format_type=format_type,
-        events=get_filtered_events(request.url.hostname, "v1")
+        version="v1",
+        format_type=set_default_format(version="v1", format_type=format_type),
+        events=get_filtered_events(request.url.hostname, "v1"),
     )
 
 @router_v2.get("/events")
-def get_events_v2(request: Request, format_type: FormatType = Depends(lambda: set_default_format(version="v2"))):
+def get_events_v2(request: Request, format_type: FormatType = None):
     return generate_events_response(
-        format_type=format_type,
+        version="v2",
+        format_type=set_default_format(version="v2", format_type=format_type),
         events=get_filtered_events(request.url.hostname, "v2")
     )
 app.include_router(router_v1)
