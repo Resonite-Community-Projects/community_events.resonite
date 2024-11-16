@@ -253,22 +253,22 @@
               <div class="card my-3">
                 <header class="card-header">
                     <div class="card-header-title is-flex is-flex-direction-column is-align-items-flex-start">
-                        <p>{{ event[0] }}</p>
-                        <div class="tags is-flex">{{ event[10]|tags|safe }}</div>
+                        <p>{{ event.name }}</p>
+                        <div class="tags is-flex">{{ event.tags|tags|safe }}</div>
                     </div>
                     <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
                         <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
                         <div class="date my-3 mx-4 is-flex">
-                          <p class="start">{{ event[6]|formatdatetime }}</p>
+                          <p class="start">{{ event.start_time|formatdatetime }}</p>
                           <p class="mobile-separator">-</p>
-                          <p class="end">{{ event[7]|formatdatetime }}</p>
+                          <p class="end">{{ event.end_time|formatdatetime }}</p>
                         </div>
                     </div>
                 </header>
-                <div class="card-content columns" style="background-image: url({{ event[2] }});">
+                <div class="card-content columns" style="background-image: url({{ event.session_image }});">
                   <div class="content column is-three-fifths">
-                    <p class="subtitle"">
-                      {{ event[1]|parse|safe }}
+                    <p class="subtitle">
+                      {{ event.name|parse|safe }}
                     </p>
                     <div class="more">
                       <p>
@@ -279,8 +279,8 @@
                       </p>
                     </div>
                   </div>
-                  {% if event[2]  %}
-                  <img class="column" src="{{ event[2] }}">
+                  {% if event.session_image  %}
+                  <img class="column" src="{{ event.session_image }}">
                   {% endif %}
                 </div>
               </div>
@@ -318,30 +318,30 @@
                   <div class="card">
                     <div class="card-image">
                       <figure class="image is-3by3">
-                        {% if community[3] %}
-                        <img src="{{ community[3] }}" alt="Placeholder image">
+                        {% if community.logo %}
+                        <img src="{{ community.logo }}" alt="Community logo">
                         {% else %}
-                        <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder image">
+                        <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
                         {% endif %}
                       </figure>
                     </div>
                     <div class="card-content">
                       <div class="media">
                         <div class="media-content" style="height: 55px; overflow: hidden;">
-                          <p class="title is-4">{{ community[0] }}</p>
+                          <p class="title is-4">{{ community.name }}</p>
                         </div>
                       </div>
 
-                      {% if community[1] != 'None' %}
+                      {% if community.description != 'None' %}
                         <div class="content" style="height: 150px; overflow: hidden;">
-                          {{ community[1] | safe }}
+                          {{ community.description | safe }}
                         </div>
                       {% else %}
                       <div class="content" style="height: 150px; overflow: hidden;">
                       </div>
                       {% endif %}
                       <footer class="card-footer">
-                        <a href="{{ community[2] }}" class="card-footer-item button is-info">Visit Discord</a>
+                        <a href="{{ community.url }}" class="card-footer-item button is-info">Visit Discord</a>
                       </footer>
                     </div>
                   </div>

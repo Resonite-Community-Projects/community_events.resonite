@@ -79,8 +79,6 @@ def get_filtered_events(
     if version != "v1":
         streams = Stream.find()
 
-        print(streams)
-
         filtered_events.extend(streams)
 
     versioned_events = []
@@ -140,7 +138,7 @@ def format_dict_list(data, version):
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime):
-            return obj.isoformat()  # Convert to ISO 8601 string
+            return obj.isoformat()
         return super().default(obj)
 
 def generate_events_response(

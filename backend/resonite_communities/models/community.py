@@ -20,6 +20,8 @@ class Community(BaseModel, table=True):
     external_id: str = Field()
     platform: CommunityPlatform = Field()
     name: str = Field()
+    logo: str | None = Field()
+    description: str | None = Field()
     monitored: bool = Field()
     url: str | None = Field()
     tags: list | None = Field(default=[], sa_column=Column(JSON))

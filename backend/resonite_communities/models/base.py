@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select, create_engine, inspect, desc, asc
+from sqlalchemy.orm import sessionmaker, RelationshipProperty, joinedload
 from sqlmodel import Session, SQLModel
 
 
@@ -80,10 +80,26 @@ class BaseModel(SQLModel):
         Examples
             signal.get(name='toto')
         """
+        order_by = filters.pop('__order_by', None)
         cls._validate_filter(filters)
         with Session(engine) as session:
             instances = []
             query = select(cls)
+
+            # Include other model
+            for rel_name, rel_attr in inspect(cls).relationships.items():
+                if isinstance(rel_attr, RelationshipProperty):
+                    query = query.options(joinedload(rel_attr))
+
+            # Ordering
+            if order_by:
+                for field in order_by:
+                    is_descending = field.startswith('-')
+                    field_name = field[1:] if is_descending else field
+                    if hasattr(cls, field_name):
+                        query = query.order_by(desc(getattr(cls, field_name)) if is_descending else asc(getattr(cls, field_name)))
+                    else:
+                        raise ValueError(f"Field '{field_name}' does not exist in model '{cls.__name__}'")
             query = cls._apply_filter(query, filters)
             rows = session.exec(query).all()
             for row in rows:
