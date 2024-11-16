@@ -20,6 +20,7 @@ from flask.logging import default_handler
 from fastapi.responses import JSONResponse
 from fenkeysmanagement import KeyManager
 from jinja2 import Environment, FileSystemLoader
+from sqlalchemy import case
 from starlette.templating import Jinja2Templates
 
 from resonite_communities.models.community import CommunityPlatform, Community
@@ -119,8 +120,16 @@ def render_main(request, tab):
     with open("resonite_communities/client/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
     user=None
-    events = Event().find(__order_by=['start_time'], start_time__gtr_eq=datetime.utcnow())
-    streams = Stream().find(__order_by=['start_time'], start_time__gtr_eq=datetime.utcnow())
+
+    # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
+    # If end_time is available, it will be used; otherwise, fallback to start_time.
+    event_visibility_filter = case(
+        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
+        else_=Event.start_time  # Otherwise, fallback to start_time
+    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+
+    events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
+    streams = Stream().find(__order_by=['start_time'], end_time__gtr_eq=datetime.utcnow())
     streamers = []
     communities = []
     #streamers = Community().find(community_platform=(CommunityPlatform.TWITCH,))

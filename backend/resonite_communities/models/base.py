@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, create_engine, inspect, desc, asc
+from sqlalchemy import select, create_engine, inspect, desc, asc, BinaryExpression
 from sqlalchemy.orm import sessionmaker, RelationshipProperty, joinedload
 from sqlmodel import Session, SQLModel
 
@@ -26,36 +26,69 @@ class BaseModel(SQLModel):
     def _validate_filter(cls, object: dict):
         """Validate that filter keys exist as attributes on the model."""
         for key in object.keys():
+            if isinstance(key, str) and key.startswith("__"):
+                continue
             key = key.split('__')[0]
             if not hasattr(cls, key):
                 raise ValueError(f"Invalid filter field '{key}' for model '{cls.__name__}'")
 
     @classmethod
-    def _apply_filter(cls, query, filters: dict[str, Any]):
-        for field_operator, value in filters.items():
-            field_operator = field_operator.split('__')
-            field = field_operator[0]
-            operator = 'eq'
-            if len(field_operator) > 1:
-                operator = field_operator[1]
+    def _apply_simple_filter(cls, query, filters: dict[str, Any]):
+        for filter_name, filter_value in list(filters.items()):
+            if "__" in filter_name or filter_name.startswith("__"):
+                continue
 
-            if operator == 'eq':
-                query = query.where(getattr(cls, field) == value)
-            if operator == 'neq':
-                query = query.where(getattr(cls, field) != value)
-            if operator == 'gtr':
-                query = query.where(getattr(cls, field) > value)
-            if operator == 'less':
-                query = query.where(getattr(cls, field) < value)
-            if operator == 'gtr_eq':
-                query = query.where(getattr(cls, field) >= value)
-            if operator == 'less_eq':
-                query = query.where(getattr(cls, field) <= value)
-            if operator == 'like':
-                query = query.where(getattr(cls, field).like(value))
+            column = getattr(cls, filter_name, None)
+            query = query.filter(column == filter_value)
+            filters.pop(filter_name)
+        return query
+
+    @classmethod
+    def _apply_operator_filter(cls, query, filters: dict[str, Any]):
+        for filter_name, filter_value in list(filters.items()):
+            if "__" not in filter_name or filter_name.startswith("__"):
+                continue
+
+            field, operator = filter_name.split('__', 1)
+
+            match operator:
+                case 'eq':
+                    query = query.where(getattr(cls, field) == filter_value)
+                case 'neq':
+                    query = query.where(getattr(cls, field) != filter_value)
+                case 'gtr':
+                    query = query.where(getattr(cls, field) > filter_value)
+                case 'less':
+                    query = query.where(getattr(cls, field) < filter_value)
+                case 'gtr_eq':
+                    query = query.where(getattr(cls, field) >= filter_value)
+                case 'less_eq':
+                    query = query.where(getattr(cls, field) <= filter_value)
+                case 'like':
+                    query = query.where(getattr(cls, field).like(filter_value))
             #else:
             #    raise ValueError(f"Unsupported operator '{operator}")
+            filters.pop(filter_name)
         return query
+
+    @classmethod
+    def _apply_special_directive(cls, query, filters: dict[str, Any]):
+        order_by = filters.pop('__order_by', None)
+        custom_filter = filters.pop('__custom_filter', None)
+
+        if order_by:
+            for field in order_by:
+                is_descending = field.startswith('-')
+                field_name = field[1:] if is_descending else field
+                if hasattr(cls, field_name):
+                    query = query.order_by(
+                        desc(getattr(cls, field_name)) if is_descending else asc(getattr(cls, field_name)))
+
+        if isinstance(custom_filter, BinaryExpression):
+            query = query.where(custom_filter)
+
+        return query
+
 
     @classmethod
     def add(cls, **data: Any):
@@ -77,10 +110,19 @@ class BaseModel(SQLModel):
     @classmethod
     def find(cls, **filters: Any):
         """
+        Generic find method for querying the database with flexible filters.
+        Filters can be:
+        - Simple match: {"field_name": value}
+        - Operator-based: {"field_name__operator": value}
+        - Special directives: {"__order_by": ["field1", "-field2"]}
+        - Custom filter: {"__custom_filter": <sqlalchemy.sql.expression>}
+
         Examples
-            signal.get(name='toto')
+            signal.find(name='Fluffy event')  # Simple match
+            signal.find(start_time__gtr_eq=datetime.now())  # Operator based match
+            signal.find(__order_by = "start_time")  # Special directive match
+            signal.find(__custom_filter = case(...)  # Custom filter match
         """
-        order_by = filters.pop('__order_by', None)
         cls._validate_filter(filters)
         with Session(engine) as session:
             instances = []
@@ -91,16 +133,10 @@ class BaseModel(SQLModel):
                 if isinstance(rel_attr, RelationshipProperty):
                     query = query.options(joinedload(rel_attr))
 
-            # Ordering
-            if order_by:
-                for field in order_by:
-                    is_descending = field.startswith('-')
-                    field_name = field[1:] if is_descending else field
-                    if hasattr(cls, field_name):
-                        query = query.order_by(desc(getattr(cls, field_name)) if is_descending else asc(getattr(cls, field_name)))
-                    else:
-                        raise ValueError(f"Field '{field_name}' does not exist in model '{cls.__name__}'")
-            query = cls._apply_filter(query, filters)
+            query = cls._apply_simple_filter(query, filters)
+            query = cls._apply_operator_filter(query, filters)
+            query = cls._apply_special_directive(query, filters)
+
             rows = session.exec(query).all()
             for row in rows:
                 instances.append(row[0])
