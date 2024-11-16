@@ -5,7 +5,7 @@ import re
 import time
 import traceback
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 import requests
@@ -129,7 +129,10 @@ def render_main(request, tab):
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
     events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
-    streams = Stream().find(__order_by=['start_time'], end_time__gtr_eq=datetime.utcnow())
+    streams = Stream().find(
+        __order_by=['start_time'],
+        end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
+    )
     streamers = []
     communities = []
     #streamers = Community().find(community_platform=(CommunityPlatform.TWITCH,))

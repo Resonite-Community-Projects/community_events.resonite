@@ -364,19 +364,19 @@
               <div class="card my-3">
                 <header class="card-header">
                     <figure  class="image is-128x128 is-center">
-                      <img src="{{ stream[4] }}" alt="Image">
+                      <img src="{{ stream.community.logo }}" alt="Image">
                     </figure >
                     <div class="card-header-title">
-                      <p>{{ stream[0] }}</p>
+                      <p>{{ stream.name }}</p>
                       <br>
-                      <p class="subtitle">Streamed by {{ stream[3] }}</p>
+                      <p class="subtitle">Streamed by {{ stream.community.name }}</p>
                     </div>
-                    <a class="button is-info" href="https://www.twitch.tv/{{ stream[3] }}">Visit channel</a>
+                    <a class="button is-info" href="https://www.twitch.tv/{{ stream.community.name }}">Visit channel</a>
                     <div class="date info is-flex is-flex-direction-row is-justify-content-center is-align-items-center">
                         <i class="fas fa-circle-info" title="Dates are in UTC timezone"></i>
                         <div class="date my-3 mx-4 is-flex">
-                          <p class="start">{{ stream[1]|formatdatetime }}</p>
-                          <p class="end">{{ stream[2]|formatdatetime }}</p>
+                          <p class="start">{{ stream.start_time|formatdatetime }}</p>
+                          <p class="end">{{ stream.end_time|formatdatetime }}</p>
                         </div>
                     </div>
                 </header>
