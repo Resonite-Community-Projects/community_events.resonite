@@ -420,22 +420,26 @@
                   <div class="card">
                     <div class="card-image">
                       <figure class="image is-3by3">
-                        <img src="{{ streamer[2] }}" alt="Placeholder image">
+                        <img src="{{ streamer.logo }}" alt="Placeholder image">
                       </figure>
                     </div>
                     <div class="card-content">
                       <div class="media">
                         <div class="media-content">
-                          <p class="title is-4">{{ streamer[0] }}</p>
-                          <p class="subtitle is-6">{{ streamer[1] }} followers</p>
+                          <p class="title is-4">{{ streamer.name }}</p>
+                          <p class="subtitle is-6">{{ streamer.members_count }} followers</p>
                         </div>
                       </div>
 
+                      {% if streamer.description != None %}
                       <div class="content" style="height: 250px; overflow: hidden;">
-                        {{ streamer[3] | urlize }}
+                        {{ streamer.description | urlize }}
                       </div>
+                      {% else %}
+                       <div class="content" style="height: 150px; overflow: hidden;"></div>
+                      {% endif %}
                       <footer class="card-footer">
-                        <a href="https://www.twitch.tv/{{ streamer[0] }}" class="card-footer-item button is-info">Visit channel</a>
+                        <a href="https://www.twitch.tv/{{ streamer.name }}" class="card-footer-item button is-info">Visit channel</a>
                       </footer>
                     </div>
                   </div>

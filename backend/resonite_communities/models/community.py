@@ -24,6 +24,7 @@ class Community(BaseModel, table=True):
     description: str | None = Field()
     monitored: bool = Field()
     url: str | None = Field()
+    members_count: int | None = Field(default=0)
     tags: list | None = Field(default=[], sa_column=Column(JSON))
     config: dict | None = Field(default={}, sa_column=Column(JSON))
     events: list["Event"] = Relationship(back_populates="community")
