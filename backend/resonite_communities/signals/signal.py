@@ -130,6 +130,7 @@ class Signal:
                 monitored=False,
                 external_id=str(community['external_id']),
                 platform=self.platform,
+                url=community.get('url', None),
                 tags=community.get('tags', []),
                 config=community.get('config', {})
             )

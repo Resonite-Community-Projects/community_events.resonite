@@ -66,6 +66,8 @@ class BaseModel(SQLModel):
                     query = query.where(getattr(cls, field) <= filter_value)
                 case 'like':
                     query = query.where(getattr(cls, field).like(filter_value))
+                case 'in':
+                    query = query.where(getattr(cls, field).in_(filter_value))
             #else:
             #    raise ValueError(f"Unsupported operator '{operator}")
             filters.pop(filter_name)

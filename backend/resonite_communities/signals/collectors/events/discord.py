@@ -45,6 +45,19 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 if community.external_id == str(guild_bot.id):
                     community.monitored = True
                     community.config['bot'] = guild_bot
+                    # TODO: Fix this, I should not have to re set all the mandatory fields
+                    # TODO: This should also have a fallback to the local configuration if their is no information or the other way around
+                    Community.upsert(
+                        _filter_field=['external_id', 'platform'],
+                        _filter_value=[community.external_id, CommunityPlatform.DISCORD],
+                        name=guild_bot.name,
+                        monitored=False,
+                        external_id=str(guild_bot.id),
+                        platform=self.platform,
+                        logo=guild_bot.icon.url if guild_bot.icon else "",
+                        description=guild_bot.description if guild_bot.description else None,
+                        url=community.url if community.url else None,
+                    )
                     break
 
     def is_cancel(self, local_event):

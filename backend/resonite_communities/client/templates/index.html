@@ -332,7 +332,7 @@
                         </div>
                       </div>
 
-                      {% if community.description != 'None' %}
+                      {% if community.description != None %}
                         <div class="content" style="height: 150px; overflow: hidden;">
                           {{ community.description | safe }}
                         </div>
@@ -340,9 +340,15 @@
                       <div class="content" style="height: 150px; overflow: hidden;">
                       </div>
                       {% endif %}
+                      {% if community.url != None %}
                       <footer class="card-footer">
                         <a href="{{ community.url }}" class="card-footer-item button is-info">Visit Discord</a>
                       </footer>
+                      {% else %}
+                      <footer class="card-footer">
+                        <a href="#" class="card-footer-item button is-info" disabled>Visit Discord</a>
+                      </footer>
+                      {% endif %}
                     </div>
                   </div>
                   </div>

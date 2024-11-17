@@ -133,10 +133,8 @@ def render_main(request, tab):
         __order_by=['start_time'],
         end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
     )
-    streamers = []
-    communities = []
-    #streamers = Community().find(community_platform=(CommunityPlatform.TWITCH,))
-    #communities = Community().find(community_platform=(CommunityPlatform.DISCORD, CommunityPlatform.JSON))
+    streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
+    communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
     return templates.TemplateResponse(
         request = request,
         name = 'index.html',
