@@ -122,6 +122,7 @@ class Signal:
         return True
 
     def update_communities(self):
+        # TODO: This should probably be on it's on thread, to do less request to the different APIs.
         self.communities = []
         for community in getattr(self.config.SIGNALS, self.name, []):
             community = Community(

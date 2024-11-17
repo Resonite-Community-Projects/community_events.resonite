@@ -137,7 +137,7 @@ class BaseModel(SQLModel):
             query = cls._apply_operator_filter(query, filters)
             query = cls._apply_special_directive(query, filters)
 
-            rows = session.exec(query).all()
+            rows = session.exec(query).unique().all()
             for row in rows:
                 instances.append(row[0])
             return instances

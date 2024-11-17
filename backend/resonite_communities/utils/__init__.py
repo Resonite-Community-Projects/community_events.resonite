@@ -161,7 +161,7 @@ class TwitchClient:
         if not self.ready:
             return broadcaster_info
         response = requests.get(
-            f'https://api.twitch.tv/helix/users?login={streamer.external_id}',
+            f'https://api.twitch.tv/helix/users?login={streamer.external_id.lower()}',
             headers={'Client-ID': self.client_id, 'Authorization': f"Bearer {self._oauth_token}"}
         )
         if response.status_code == 200:

@@ -34,6 +34,16 @@ class TwitchStreamsCollector(StreamsCollector):
             broadcaster = dict()
             broadcaster['config'] = streamer
             broadcaster['twitch'] = self.config.clients.twitch.get_broadcaster_info(streamer)
+            # TODO: Fix this, I should not have to re set all the mandatory fields
+            Community.upsert(
+                _filter_field=['external_id', 'platform'],
+                _filter_value=[broadcaster['twitch']['login'], CommunityPlatform.TWITCH],
+                name=str(broadcaster['twitch']['login']),
+                monitored=False,
+                external_id=str(broadcaster['twitch']['login']),
+                platform=self.platform,
+                logo=broadcaster['twitch']['profile_image_url'],
+            )
             if not any(b.get('id') == broadcaster['twitch']['id'] for b in self.broadcasters):
                 self.broadcasters.append(broadcaster)
 
