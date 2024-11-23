@@ -31,7 +31,8 @@ colorlog = "^6.8.2"
 fastapi = {extras = ["standard"], version = "^0.115.4"}
 
 [tool.poetry.scripts]
-web_client = "resonite_communities.client.web_client:run"
+web_client = "resonite_communities.clients.web.app:run"
+api_client = "resonite_communities.clients.api.app:run"
 signals_manager = "resonite_communities.server.signals_manager:run"
 
 [build-system]

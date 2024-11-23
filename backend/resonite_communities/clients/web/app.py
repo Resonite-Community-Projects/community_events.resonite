@@ -16,6 +16,7 @@ from jinja2 import Environment, FileSystemLoader
 from sqlalchemy import case
 from starlette.templating import Jinja2Templates
 
+from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.models.signal import Event, Stream
 from resonite_communities.utils import Config
@@ -174,26 +175,6 @@ def streams(request: Request):
     return render_main(request=request, tab="Streams")
 
 import multiprocessing
-
-from gunicorn.app.base import BaseApplication
-
-class StandaloneApplication(BaseApplication):
-    def __init__(self, app, options=None):
-        self.options = options or {}
-        self.app = app
-        super().__init__()
-
-    def load_config(self):
-        config = {
-            key: value
-            for key, value in self.options.items()
-            if key in self.cfg.settings and value is not None
-        }
-        for key, value in config.items():
-            self.cfg.set(key.lower(), value)
-
-    def load(self):
-        return self.app
 
 
 def run():

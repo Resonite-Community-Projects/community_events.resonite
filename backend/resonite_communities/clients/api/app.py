@@ -1,10 +1,12 @@
 import json
+import multiprocessing
 from datetime import datetime
 from enum import Enum
 
 from dacite.types import is_instance
 from fastapi import FastAPI, APIRouter, Depends, Response, HTTPException, Request
 
+from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
 
 app = FastAPI()
@@ -178,3 +180,11 @@ def get_events_v2(request: Request, format_type: FormatType = None):
     )
 app.include_router(router_v1)
 app.include_router(router_v2)
+
+def run():
+    options = {
+        "bind": "0.0.0.0:8000",
+        "workers": (multiprocessing.cpu_count() * 2) + 1,
+        "worker_class": "uvicorn.workers.UvicornWorker",
+    }
+    StandaloneApplication(app, options).run()
