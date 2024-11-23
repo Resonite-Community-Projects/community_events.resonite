@@ -18,6 +18,10 @@
     <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
 
     <style>
+      .hero.is-small .hero-body {
+          padding: 0em 1.5rem;
+      }
+
       .content h3.subsubtitle {
         margin-top: -1.25rem;
         color: rgba(240, 240, 240, 0.9);
@@ -27,6 +31,8 @@
         float: left;
         max-width: 7.5em;
         padding-right: 1em;
+        top: -14px;
+        position: inherit;
       }
 
       .event, .stream {
@@ -165,16 +171,15 @@
             <div class="column is-12">
               <div class="container content">
                 <img class="logo is-hidden-mobile" src="data:image/jpeg;base64,{{ userlogo | safe }}">
-                <h1 class="title">resonite-communities.com</h1>
-                <h2 class="subtitle">Resonite <strong>non</strong> Exhaustive Communites Events Aggregator</h2>
-                <h3 class="subsubtitle">— by GrayBoltWolf and Brodokk</h3>
+                <h1 class="title">Resonite Communities</h1>
+                <h2 class="subtitle"><strong>Non</strong> Exhaustive Communites Events Aggregator</h2>
               </div>
             </div>
           </div>
         </div>
 
-        {% if user %}
         <div class="container box user-info login is-flex">
+        {% if user %}
           <div class="is-flex is-flex-direction-column m-1">
             <figure class="image pfp is-96x96 m-1">
               <img class="is-rounded has-background-info" src='{{user.avatar_url}}' />
@@ -194,8 +199,15 @@
               {% endfor %}
             </div>
           </div>
-        </div>
+        {% else %}
+          <div class="container has-text-centered">
+              <p class="m-1">To see private events from communities you are part of you must login.</p>
+              <a href="{{ discord_auth_url }}" class="button is-info">
+                  Login with Discord
+              </a>
+          </div>
         {% endif %}
+        </div>
 
         <div class="hero-foot">
           <nav class="tabs is-boxed is-fullwidth is-large">

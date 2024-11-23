@@ -1,34 +1,24 @@
 import os
-import json
 import logging
 import re
-import time
 import traceback
 import base64
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
-import pytz
-import requests
-import timeago
-import toml
-from apscheduler.schedulers.background import BackgroundScheduler
-import dateutil
-from dateutil.parser import parse
+from aiohttp.log import client_logger
+from discord.utils import oauth_url
 from fastapi import FastAPI, Request
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from fastapi_discord import DiscordOAuthClient, RateLimited, Unauthorized, User
+from fastapi_discord.config import DISCORD_OAUTH_AUTHENTICATION_URL
 from flask.logging import default_handler
-from fastapi.responses import JSONResponse
-from fenkeysmanagement import KeyManager
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy import case
 from starlette.templating import Jinja2Templates
 
 from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.models.signal import Event, Stream
-from resonite_communities.utils import (
-    Config,
-    RedisClient,
-)
+from resonite_communities.utils import Config
 
 formatter = logging.Formatter(
     '[%(asctime)s] [%(module)s] '
@@ -95,7 +85,6 @@ def filter_tag(tags):
         html_tags += f"<span class='tag is-info m-1'>{tag}</span>"
     return html_tags
 
-
 env.filters["formatdatetime"] = format_datetime
 env.filters["detect_location"] = detect_resonite_url
 env.filters["detect_community"] = detect_resonite_community
@@ -107,12 +96,32 @@ env.filters["tags"] = filter_tag
 templates = Jinja2Templates(env=env)
 
 app = FastAPI()
+discord = DiscordOAuthClient(
+    client_id=Config.Discord.client.id,
+    client_secret=Config.Discord.client.secret,
+    redirect_uri=Config.Discord.client.redirect_uri,
+    scopes=("identify", "guilds"),
+)
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    await discord.init()
+    yield
+
+@app.get("/login")
+async def login():
+    return {"url": discord.oauth_login_url}
+
+@app.get("/callback")
+async def callback(code: str):
+    token, refresh_token = await discord.get_access_token(code)
+    return {"access_token": token, "refresh_token": refresh_token}
+
 logger = logging.getLogger('uvicorn.error')
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "true"
 
 app.secret_key = Config.SECRET_KEY
-#app.config["DISCORD_BOT_TOKEN"] = Config.DISCORD_CLIENT_BOT_TOKEN
 
 def render_main(request, tab):
     if not Config.SHOW_WEBUI:
@@ -148,6 +157,7 @@ def render_main(request, tab):
             'user' : user,
             'user_guilds' : [],
             'userlogo' : logo_base64,
+            'discord_auth_url': discord.oauth_login_url,
         }
     )
 
