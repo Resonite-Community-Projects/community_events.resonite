@@ -28,7 +28,11 @@ celery = "^5.3.6"
 toml = "^0.10.2"
 sqlmodel = "^0.0.21"
 colorlog = "^6.8.2"
-fastapi = {extras = ["standard"], version = "^0.115.4"}
+fastapi = {extras = ["standard"], version = "^0.115.5"}
+
+fastapi-users = {extras = ["sqlalchemy"], version = "^14.0.0"}
+asyncpg = "^0.30.0"
+aiosqlite = "^0.20.0"
 
 [tool.poetry.scripts]
 web_client = "resonite_communities.clients.web.app:run"

@@ -3,14 +3,9 @@ import logging
 import re
 import traceback
 import base64
-from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
-from aiohttp.log import client_logger
-from discord.utils import oauth_url
 from fastapi import FastAPI, Request
-from fastapi_discord import DiscordOAuthClient, RateLimited, Unauthorized, User
-from fastapi_discord.config import DISCORD_OAUTH_AUTHENTICATION_URL
 from flask.logging import default_handler
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy import case
@@ -36,7 +31,7 @@ re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites
 re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+)[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])')
 re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
-env = Environment(loader=FileSystemLoader("resonite_communities/client/templates"))
+env = Environment(loader=FileSystemLoader("resonite_communities/clients/web/templates"))
 
 def format_datetime(value, format="%d %b %I:%M %p"):
     if value:
@@ -97,26 +92,6 @@ env.filters["tags"] = filter_tag
 templates = Jinja2Templates(env=env)
 
 app = FastAPI()
-discord = DiscordOAuthClient(
-    client_id=Config.Discord.client.id,
-    client_secret=Config.Discord.client.secret,
-    redirect_uri=Config.Discord.client.redirect_uri,
-    scopes=("identify", "guilds"),
-)
-
-@asynccontextmanager
-async def lifespan(_app: FastAPI):
-    await discord.init()
-    yield
-
-@app.get("/login")
-async def login():
-    return {"url": discord.oauth_login_url}
-
-@app.get("/callback")
-async def callback(code: str):
-    token, refresh_token = await discord.get_access_token(code)
-    return {"access_token": token, "refresh_token": refresh_token}
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -127,7 +102,7 @@ app.secret_key = Config.SECRET_KEY
 def render_main(request, tab):
     if not Config.SHOW_WEBUI:
         return ''
-    with open("resonite_communities/client/static/images/icon.png", "rb") as logo_file:
+    with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
     user=None
 
@@ -158,7 +133,7 @@ def render_main(request, tab):
             'user' : user,
             'user_guilds' : [],
             'userlogo' : logo_base64,
-            'discord_auth_url': discord.oauth_login_url,
+            #'discord_auth_url': discord.oauth_login_url,
         }
     )
 
