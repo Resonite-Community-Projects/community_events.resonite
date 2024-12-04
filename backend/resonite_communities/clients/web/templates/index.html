@@ -88,6 +88,16 @@
         padding: 3px;
       }
 
+      .warning-message {
+        background-color: #FFF4E5;
+        border: 1px solid #FFA726;
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 0.85em;
+        margin: 10px auto;
+        color: #AE6800;
+    }
+
       @media (min-width: 769px) {
         .event .card-content {
           background-image: none !important;
@@ -190,14 +200,20 @@
             <p class="m-1">Connected as <span class="tag has-text-info">{{user.name}}</span></p>
             {% if user_guilds %}
             <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
+                <div>
+                {% for user_guild in user_guilds['guilds'] %}
+                    <span class="tag is-info m-1">{{ user_guild }}</span>
+                {% endfor %}
+                </div>
+                {% if user_guilds['retry_after'] %}
+                <div class="warning-message">
+                    Some communities have not been checked, please try to logout and then login again in {{ user_guilds['retry_after']|format_seconds}}.
+                </div>
+                {% endif %}
             {% else %}
-            <p class="m-1">You are not part of any communities sadly.</p>
+            <p class="m-1">You are not part of any communities with private events sadly.</p>
             {% endif %}
-            <div>
-              {% for user_guild in user_guilds %}
-              <span class="tag is-info m-1">{{ user_guild }}</span>
-              {% endfor %}
-            </div>
+
           </div>
         {% else %}
           <div class="container has-text-centered">

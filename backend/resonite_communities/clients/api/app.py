@@ -2,53 +2,14 @@ import json
 import multiprocessing
 from datetime import datetime
 from enum import Enum
-from contextlib import asynccontextmanager
 
 from dacite.types import is_instance
-from fastapi import FastAPI, APIRouter, Depends, Response, HTTPException, Request
+from fastapi import APIRouter, Depends, Response, HTTPException, Request, FastAPI
 
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
 
-from resonite_communities.auth.users import fastapi_users, auth_backend
-from resonite_communities.auth.db import (
-    User,
-    create_db_and_tables,
-)
-from resonite_communities.auth.schemas import UserCreate, UserRead
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # TODO: Replace with alembic
-    await create_db_and_tables()
-    yield
-
-app = FastAPI(lifespan=lifespan)
-
-current_active_user = fastapi_users.current_user(active=True)
-
-# Auth route /login and /logout
-
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"],
-)
-
-# Register route /register
-
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
-
-@app.get(
-    '/test',
-)
-def test(user: User = Depends(current_active_user)):
-    return f'Hello {user.email}!'
-
+app = FastAPI()
 
 router_v1 = APIRouter(prefix='/v1')
 router_v2 = APIRouter(prefix='/v2')
