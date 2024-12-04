@@ -1,3 +1,4 @@
+import asyncio
 import os
 import disnake
 import inspect
@@ -45,7 +46,7 @@ Config.clients.discord = discord_client
 Config.clients.twitch = twitch_client
 Config.clients.redis = redis_client
 
-def run():
+async def main():
 
     # Load collectors
     logger.info('Loading collectors...')
@@ -84,7 +85,10 @@ def run():
 
     # Stat Discord bot
     logger.info('Starting Discord bots...')
-    bot.run(Config.DISCORD_BOT_TOKEN)
+    await bot.start(Config.DISCORD_BOT_TOKEN)
 
     # End process
     logger.info('Stopping...')
+
+def run():
+    asyncio.run(main())
