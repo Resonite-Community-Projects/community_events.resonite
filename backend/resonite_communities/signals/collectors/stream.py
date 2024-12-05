@@ -4,8 +4,8 @@ from resonite_communities.models.signal import Stream
 
 class StreamsCollector(Collector):
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
+    def __init__(self, config, services, scheduler):
+        super().__init__(config, services, scheduler)
         self.model = Stream()
 
     def _validate_jschema(self):

@@ -33,7 +33,7 @@ class TwitchStreamsCollector(StreamsCollector):
         for streamer in self.communities:
             broadcaster = dict()
             broadcaster['config'] = streamer
-            broadcaster['twitch'] = self.config.clients.twitch.get_broadcaster_info(streamer)
+            broadcaster['twitch'] = self.services.twitch.get_broadcaster_info(streamer)
             # TODO: Fix this, I should not have to re set all the mandatory fields
             Community.upsert(
                 _filter_field=['external_id', 'platform'],
@@ -53,7 +53,7 @@ class TwitchStreamsCollector(StreamsCollector):
         self.update_communities()
 
         for broadcaster in self.broadcasters:
-            broadcaster_streams = self.config.clients.twitch.get_schedule(broadcaster['twitch'])
+            broadcaster_streams = self.services.twitch.get_schedule(broadcaster['twitch'])
             for broadcaster_stream in broadcaster_streams:
                 self.model.upsert(
                     _filter_field='external_id',

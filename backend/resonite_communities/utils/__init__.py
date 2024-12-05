@@ -1,11 +1,9 @@
-from operator import itemgetter
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
+
 from dateutil.parser import parse
 import dateutil
 import requests
 import pytz
-
-import logging
 
 import redis
 from easydict import EasyDict as edict
@@ -200,3 +198,6 @@ class TwitchClient:
         for broadcaster_id in self.broadcasters_info:
             streamers.append([self.broadcasters[broadcaster_id]['login'], str(self.broadcasters[broadcaster_id]['followers']['total']), self.broadcasters[broadcaster_id]['profile_image_url'], self.broadcasters[broadcaster_id]['description']])
         return streamers
+
+Services = edict()
+Services.discord = edict()

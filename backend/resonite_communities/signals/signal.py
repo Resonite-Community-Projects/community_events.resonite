@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import jsonschema
 
 from resonite_communities.models.community import Community, CommunityPlatform
@@ -67,10 +69,11 @@ class Signal:
     jschema = None
     model = BaseModel
 
-    def __init__(self, config, scheduler):
+    def __init__(self, config, services, scheduler):
         self.name = self.__class__.__name__
         self.logger = get_logger(self.name)
         self.config = config
+        self.services = services
         self.scheduler = scheduler
         self.communities = []
 
@@ -124,15 +127,15 @@ class Signal:
     def update_communities(self):
         # TODO: This should probably be on it's on thread, to do less request to the different APIs.
         self.communities = []
-        for community in getattr(self.config.SIGNALS, self.name, []):
+        for signal in deepcopy(getattr(self.config.SIGNALS, self.name, [])):
             community = Community(
-                name=community['name'],
+                name=signal['name'],
                 monitored=False,
-                external_id=str(community['external_id']),
+                external_id=str(signal['external_id']),
                 platform=self.platform,
-                url=community.get('url', None),
-                tags=community.get('tags', []),
-                config=community.get('config', {})
+                url=signal.get('url', None),
+                tags=signal.get('tags', []),
+                config=signal.get('config', {})
             )
             Community.upsert(
                 _filter_field=['external_id', 'platform'],

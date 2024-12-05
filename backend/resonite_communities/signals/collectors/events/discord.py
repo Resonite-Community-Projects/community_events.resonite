@@ -27,8 +27,8 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         ]
     )
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
+    def __init__(self, config, services, scheduler):
+        super().__init__(config, services, scheduler)
 
         self.guilds = {}
 
@@ -40,7 +40,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         # TODO: I should check and warn for:
         # - We are in a discord community server BUT it's not configured
         # - A community is configured BUT we are not in the discord community server
-        for guild_bot in self.config.bot.guilds:
+        for guild_bot in self.services.discord.bot.guilds:
             for community in self.communities:
                 if community.external_id == str(guild_bot.id):
                     community.monitored = True

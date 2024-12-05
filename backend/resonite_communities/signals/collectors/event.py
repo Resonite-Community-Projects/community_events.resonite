@@ -11,8 +11,8 @@ re_location_session_url_match_compiled = re.compile('(lnl-nat|res-steam):\/\/([^
 
 class EventsCollector(Collector):
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
+    def __init__(self, config, services, scheduler):
+        super().__init__(config, services, scheduler)
         self.model = Event()
 
     def get_location_web_session_url(self, description: str):

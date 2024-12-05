@@ -14,6 +14,7 @@ from resonite_communities.signals import (
 from resonite_communities.utils import (
     RedisClient,
     Config,
+    Services,
     TwitchClient,
 )
 
@@ -40,11 +41,11 @@ SQLModel.metadata.create_all(engine)
 # Scheduler initialization
 scheduler = AsyncIOScheduler(daemon=True)
 
-# Register clients to Config
-Config.bot = bot
-Config.clients.discord = discord_client
-Config.clients.twitch = twitch_client
-Config.clients.redis = redis_client
+# Register clients
+Services.discord.bot = bot
+Services.discord.client = discord_client
+Services.twitch = twitch_client
+Services.redis = redis_client
 
 async def main():
 
@@ -52,7 +53,7 @@ async def main():
     logger.info('Loading collectors...')
     #return
     for name, obj in inspect.getmembers(collectors, predicate=inspect.isclass):
-        signal_collector = obj(Config, scheduler)
+        signal_collector = obj(Config, Services, scheduler)
 
         if not signal_collector.valid_config:
             logger.warning(f'Skipping {name} due to invalid configuration.')

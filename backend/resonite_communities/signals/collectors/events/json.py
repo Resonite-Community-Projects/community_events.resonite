@@ -17,8 +17,8 @@ class JSONEventsCollector(EventsCollector):
         property_external_id_type = "string",
     )
 
-    def __init__(self, config, scheduler):
-        super().__init__(config, scheduler)
+    def __init__(self, config, services, scheduler):
+        super().__init__(config, services, scheduler)
 
     def collect(self):
         self.logger.info('Update events collector from external source')
