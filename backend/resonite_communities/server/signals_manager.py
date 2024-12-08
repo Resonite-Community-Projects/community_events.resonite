@@ -30,6 +30,7 @@ discord_client = disnake.Client()
 
 intents = disnake.Intents.all()
 bot = disnake.ext.commands.InteractionBot(intents=intents)
+ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
 
 from resonite_communities.models.base import engine
 
@@ -43,6 +44,7 @@ scheduler = AsyncIOScheduler(daemon=True)
 
 # Register clients
 Services.discord.bot = bot
+Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
 Services.discord.client = discord_client
 Services.twitch = twitch_client
 Services.redis = redis_client
@@ -63,6 +65,9 @@ async def main():
             case SignalSchedulerType.DISCORD:
                 logger.info(f'Setting up {signal_collector.name} collector as Discord bot.')
                 bot.add_cog(signal_collector)
+                # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
+                # Ugly add a cog to a bot with another token
+                ad_bot.add_cog(obj(Config, Services, scheduler, True))
             case SignalSchedulerType.APSCHEDULER:
                 logger.info(f'Setting up {signal_collector.name} collector as scheduled.')
                 signal_collector.init_scheduler()
@@ -86,7 +91,10 @@ async def main():
 
     # Stat Discord bot
     logger.info('Starting Discord bots...')
-    await bot.start(Config.DISCORD_BOT_TOKEN)
+    await asyncio.gather(
+        bot.start(Config.DISCORD_BOT_TOKEN),
+        ad_bot.start(Config.AD_DISCORD_BOT_TOKEN),
+    )
 
     # End process
     logger.info('Stopping...')

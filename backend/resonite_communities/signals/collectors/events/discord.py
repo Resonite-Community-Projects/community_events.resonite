@@ -27,7 +27,14 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         ]
     )
 
-    def __init__(self, config, services, scheduler):
+    def __init__(self, config, services, scheduler, ad_bot=False):
+        self.connected_communities = {}
+        self.configured_communities = {}
+
+        # FIXME: Remove this variable when removing AD_DISCORD_BOT_TOKEN
+        # Don't forget to also remove the param of the init func
+        self.ad_bot = ad_bot
+
         super().__init__(config, services, scheduler)
 
         self.guilds = {}
@@ -37,11 +44,62 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
     def update_communities(self):
         super().update_communities()
+
+        # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
+        # aka keep only self.services.discord.bot
+        if self.ad_bot:
+            discord_bot = self.services.discord.ad_bot
+        else:
+            discord_bot = self.services.discord.bot
+
         # TODO: I should check and warn for:
         # - We are in a discord community server BUT it's not configured
         # - A community is configured BUT we are not in the discord community server
-        for guild_bot in self.services.discord.bot.guilds:
+        name = f"{self.name}{' AD' if self.ad_bot else ''}"
+
+        print(f'------------:: {name} ::--------------')
+        print(':: Connected to the following discord community')
+        for guild_bot in discord_bot.guilds:
+            self.connected_communities[guild_bot.id] = guild_bot.name
+            print(f"{guild_bot.name} ({guild_bot.id})")
+
+        if self.connected_communities:
+            print('')
+            print(':: Configured discord community:')
+            for signal in getattr(self.config.SIGNALS, self.name, []):
+                # FIXME: Remove all this test when removing AD_DISCORD_BOT_TOKEN
+                # keep only the print + self.configured_commu...
+                if self.ad_bot and 'nsfw' in signal.tags:
+                    print(f"{signal['name']} ({signal['external_id']})")
+                    self.configured_communities[signal['external_id']] = signal['name']
+                elif not self.ad_bot and 'nsfw' not in signal.tags:
+                    print(f"{signal['name']} ({signal['external_id']})")
+                    self.configured_communities[signal['external_id']] = signal['name']
+
+            # TODO: Update the database to say that they are monitored, this would be the best
+            print('')
+            print('')
+            print('::Community connected but not configured:')
+            for connected_community_id, connected_community_name in self.connected_communities.items():
+                if connected_community_id not in self.configured_communities.keys():
+                    print(f"{connected_community_name} ({connected_community_id})")
+
+            print('')
+            print('::Communities configured but not connected:')
+            for configured_community_id, configured_community_name in self.configured_communities.items():
+                if configured_community_id not in self.connected_communities.keys():
+                    print(f"{configured_community_name} ({configured_community_id})")
+        print('------------------------------')
+
+        for guild_bot in discord_bot.guilds:
             for community in self.communities:
+
+                # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
+                if self.ad_bot and 'nsfw' not in community.tags:
+                    continue
+                elif not self.ad_bot and 'nsfw' in community.tags:
+                    continue
+
                 if community.external_id == str(guild_bot.id):
                     community.monitored = True
                     community.config['bot'] = guild_bot
@@ -51,7 +109,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[community.external_id, CommunityPlatform.DISCORD],
                         name=guild_bot.name,
-                        monitored=False,
+                        monitored=community.monitored,
                         external_id=str(guild_bot.id),
                         platform=self.platform,
                         logo=guild_bot.icon.url if guild_bot.icon else "",
