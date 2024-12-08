@@ -259,8 +259,6 @@ def render_main(request: Request, tab: str):
         cookie_data = json.loads(cookie_data_str)
         private_events_access_communities = cookie_data["private_events_access_communities"]
         user = cookie_data["user"]
-    if not Config.SHOW_WEBUI:
-        return ''
     with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
 

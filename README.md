@@ -18,8 +18,6 @@ Most of the configuration of this tool are available in the `config.toml` file a
 keys are available:
 
 - `DISCORD_BOT_TOKEN`: The bot token, in a string format.
-- `SERVERS_EVENT`: A list of string URL of other events server to aggregate in the format of 'scheme://host:port'
-- `SHOW_WEBUI`: Enable or now the WebUI, depend if the tool will be used as an API only or no.
 - `FACET_URL`: The URL of the facet to be copied for Resonite
 
 The different source of information are separated in modules. Each module have is own configuration per
