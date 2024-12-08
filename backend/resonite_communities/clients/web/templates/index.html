@@ -98,6 +98,17 @@
         color: #AE6800;
     }
 
+      .monitor-status {
+        width: 100%;
+        top: -0.1em;
+        position: relative;
+      }
+
+      .monitor-status .tag {
+          width: 100%;
+          border-radius: unset;
+      }
+
       @media (min-width: 769px) {
         .event .card-content {
           background-image: none !important;
@@ -352,11 +363,20 @@
                         <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
                         {% endif %}
                       </figure>
+                      <div class="monitor-status">
+                        {% if community.monitored %}
+                        <p class="tag is-success is-light">Events tracked.</p>
+                        {% else %}
+                        <p class="tag is-warning is-light">Events not tracked.</p>
+                        {% endif %}
+                      </div>
                     </div>
                     <div class="card-content">
                       <div class="media">
                         <div class="media-content" style="height: 55px; overflow: hidden;">
+
                           <p class="title is-4">{{ community.name }}</p>
+
                         </div>
                       </div>
 
