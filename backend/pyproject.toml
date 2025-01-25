@@ -29,8 +29,7 @@ toml = "^0.10.2"
 sqlmodel = "^0.0.21"
 colorlog = "^6.8.2"
 fastapi = {extras = ["standard"], version = "^0.115.5"}
-
-fastapi-users = {extras = ["oauth", "sqlalchemy"], version = "^14.0.0"}
+fastapi-users = {extras = ["oauth", "sqlalchemy"], version = "^14.0.1"}
 asyncpg = "^0.30.0"
 aiosqlite = "^0.20.0"
 pytz = "^2024.2"

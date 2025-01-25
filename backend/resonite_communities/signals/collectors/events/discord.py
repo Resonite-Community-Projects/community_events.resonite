@@ -72,7 +72,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 if self.ad_bot and 'nsfw' in signal.tags:
                     print(f"{signal['name']} ({signal['external_id']})")
                     self.configured_communities[signal['external_id']] = signal['name']
-                elif not self.ad_bot and 'nsfw' not in signal.tags:
+                if not self.ad_bot and 'sfw' in signal.tags:
                     print(f"{signal['name']} ({signal['external_id']})")
                     self.configured_communities[signal['external_id']] = signal['name']
 

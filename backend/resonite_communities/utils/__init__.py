@@ -29,6 +29,8 @@ logger.handlers[0].setFormatter(formatter)
 
 from resonite_communities.utils.logger import get_logger
 
+logger = get_logger('community_events')
+
 with open('config.toml', 'r') as f:
     config = toml.load(f)
 

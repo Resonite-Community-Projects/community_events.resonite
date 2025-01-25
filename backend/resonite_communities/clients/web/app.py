@@ -218,15 +218,17 @@ async def callback(request: Request):
     user = {"name": user_data["username"], "avatar_url": user_data["avatar_url"]}
     guilds = get_user_guilds(access_token)
 
-    private_events_access_communities = {'retry_after': 0, 'guilds': []}
+    private_events_access_communities = {'guilds': []}
     for guild in guilds:
+        if guild['name'] in private_events_access_communities['guilds']:
+            continue
         for configured_guild in Config.SIGNALS.DiscordEventsCollector:
             if str(configured_guild['external_id']) == str(guild['id']):
                 private_role_id = configured_guild.get('config', {}).get('private_role_id')
                 if private_role_id:
-                    user_roles = get_user_roles_in_guild_safe(access_token, guild['id'])
-                    if private_events_access_communities['retry_after'] < user_roles['retry_after']:
-                        private_events_access_communities['retry_after'] = user_roles['retry_after']
+                    user_roles = get_user_roles_in_guild_safe(
+                        access_token, guild['id']
+                    )
                     for user_role in user_roles['ids']:
                         if str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')):
                             private_events_access_communities['guilds'].append(guild['name'])

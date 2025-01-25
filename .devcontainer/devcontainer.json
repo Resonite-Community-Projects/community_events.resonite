@@ -1,0 +1,48 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-in-docker
+{
+	"name": "Docker in Docker",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/base:debian",
+
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2.2.1": {
+			"version": "latest",
+			"moby": false,
+			"azureDnsAutoDetection": false,
+			"disableIp6tables": true
+		},
+		"ghcr.io/devcontainers/features/python:1": {
+			"version": "3.12"
+		},
+		"ghcr.io/devcontainers-extra/features/poetry:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"njpwerner.autodocstring",
+				"pinage404.better-readability-extension-pack",
+				"streetsidesoftware.code-spell-checker",
+				"cweijan.vscode-database-client2",
+				"cweijan.dbclient-jdbc",
+				"tamasfe.even-better-toml",
+				"donjayamanne.git-extension-pack",
+				"Gruntfuggly.todo-tree",
+				"shardulm94.trailing-spaces",
+				"WakaTime.vscode-wakatime"
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [8000]
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "docker --version",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

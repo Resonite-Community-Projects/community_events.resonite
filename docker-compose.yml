@@ -17,7 +17,7 @@ services:
       - "./credentials.json:/app/credentials.json"
   web:
     #image: community_event:latest
-    build: .
+    build: backend
     restart: always
     command: poetry run web_client
     depends_on:
