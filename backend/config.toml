@@ -1,23 +1,39 @@
-# Neos Events Dev bot
-DISCORD_BOT_TOKEN = ''
-DISCORD_BOT_TOKEN_REFRESH_INTERVAL = 5
-# Neos events to aggrerate, in the format of 'scheme://host:port'
-SERVERS_EVENT = []
-SHOW_WEBUI = true
-CLOUDVAR_RESONITE_USER = ""
-CLOUDVAR_RESONITE_PASS = ""
-CLOUDVAR_BASE_NAME = ""
-CLOUDVAR_GENERAL_NAME = ""
+# Resonite Events bot
+DISCORD_BOT_TOKEN = "ChangeMe"
 
-PRIVATE_DISCORDS = []
-SECRET_KEY = ""
-DISCORD_CLIENT_ID = ""
-DISCORD_CLIENT_SECRET = ""
-DISCORD_REDIRECT_URI = ""
-DISCORD_CLIENT_BOT_TOKEN = ""
+# Resonite AD Events bot
+AD_DISCORD_BOT_TOKEN = "ChangeMe"
 
-TWITCH_CLIENT_ID = ""
-TWITCH_SECRET = ""
-TWITCH_STREAMS = ""
-TWITCH_GAME_ID = "1184012414"
-TWITCH_RESONITE_ACCOUNT_NAME = "ResoniteApp"
+REFRESH_INTERVAL = 2
+
+CLOUDVAR_RESONITE_USER = "ChangeMe"
+CLOUDVAR_RESONITE_PASS = "ChangeMe"
+CLOUDVAR_BASE_NAME = "ChangeMe"
+CLOUDVAR_GENERAL_NAME = "All"
+
+SECRET_KEY = "ChangeMe"
+
+FACET_URL = 'ChangeMe'
+
+[Discord]
+client_bot_token = "ChangeMe"
+[Discord.client]
+id = 100000000000000000
+secret = "ChangeMe"
+redirect_uri = "http://localhost:8000/auth/callback"
+
+[Twitch]
+client_id = "ChangeMe"
+secret = "ChangeMe"
+streams = [
+    'resoniteapp',
+]
+game_id = '1184012414'
+account_name = 'ResoniteApp'
+
+[[SIGNALS.DiscordEventsCollector]]
+external_id = 100000000000000000
+name = "My Discord Community"
+description = "A community of people who love to chat and play games together."
+url = "https://www.discord.gg/my-community"
+tags = ['sfw']
