@@ -4,8 +4,6 @@
 
 - [x] Fully connect the Discord auth with fastapi-users
 - [x] Clean code the merge between discord and fastapi-users and commit
-- [ ] Seems like the logout doesn't delete all the accesstoken in the end
-- [ ] Add an admistrator role
 - [ ] Hide all NSFW events to any users unless
   - [ ] They are connected
   - [ ] The configured discord role id in `private_role_id` match on of the use role
