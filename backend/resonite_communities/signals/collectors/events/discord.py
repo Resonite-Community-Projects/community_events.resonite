@@ -57,39 +57,39 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         # - A community is configured BUT we are not in the discord community server
         name = f"{self.name}{' AD' if self.ad_bot else ''}"
 
-        print(f'------------:: {name} ::--------------')
-        print(':: Connected to the following discord community')
-        for guild_bot in discord_bot.guilds:
-            self.connected_communities[guild_bot.id] = guild_bot.name
-            print(f"{guild_bot.name} ({guild_bot.id})")
+        #print(f'------------:: {name} ::--------------')
+        #print(':: Connected to the following discord community')
+        #for guild_bot in discord_bot.guilds:
+        #    self.connected_communities[guild_bot.id] = guild_bot.name
+        #    print(f"{guild_bot.name} ({guild_bot.id})")
 
-        if self.connected_communities:
-            print('')
-            print(':: Configured discord community:')
-            for signal in getattr(self.config.SIGNALS, self.name, []):
-                # FIXME: Remove all this test when removing AD_DISCORD_BOT_TOKEN
-                # keep only the print + self.configured_commu...
-                if self.ad_bot and 'nsfw' in signal.tags:
-                    print(f"{signal['name']} ({signal['external_id']})")
-                    self.configured_communities[signal['external_id']] = signal['name']
-                if not self.ad_bot and 'sfw' in signal.tags:
-                    print(f"{signal['name']} ({signal['external_id']})")
-                    self.configured_communities[signal['external_id']] = signal['name']
+        #if self.connected_communities:
+        #    print('')
+        #    print(':: Configured discord community:')
+        #    for signal in getattr(self.config.SIGNALS, self.name, []):
+        #        # FIXME: Remove all this test when removing AD_DISCORD_BOT_TOKEN
+        #        # keep only the print + self.configured_commu...
+        #        if self.ad_bot and 'nsfw' in signal.tags:
+        #            print(f"{signal['name']} ({signal['external_id']})")
+        #            self.configured_communities[signal['external_id']] = signal['name']
+        #        if not self.ad_bot and 'sfw' in signal.tags:
+        #            print(f"{signal['name']} ({signal['external_id']})")
+        #            self.configured_communities[signal['external_id']] = signal['name']
 
-            # TODO: Update the database to say that they are monitored, this would be the best
-            print('')
-            print('')
-            print('::Community connected but not configured:')
-            for connected_community_id, connected_community_name in self.connected_communities.items():
-                if connected_community_id not in self.configured_communities.keys():
-                    print(f"{connected_community_name} ({connected_community_id})")
+        #    # TODO: Update the database to say that they are monitored, this would be the best
+        #    print('')
+        #    print('')
+        #    print('::Community connected but not configured:')
+        #    for connected_community_id, connected_community_name in self.connected_communities.items():
+        #        if connected_community_id not in self.configured_communities.keys():
+        #            print(f"{connected_community_name} ({connected_community_id})")
 
-            print('')
-            print('::Communities configured but not connected:')
-            for configured_community_id, configured_community_name in self.configured_communities.items():
-                if configured_community_id not in self.connected_communities.keys():
-                    print(f"{configured_community_name} ({configured_community_id})")
-        print('------------------------------')
+        #    print('')
+        #    print('::Communities configured but not connected:')
+        #    for configured_community_id, configured_community_name in self.configured_communities.items():
+        #        if configured_community_id not in self.connected_communities.keys():
+        #            print(f"{configured_community_name} ({configured_community_id})")
+        #print('------------------------------')
 
         for guild_bot in discord_bot.guilds:
             for community in self.communities:
@@ -146,6 +146,21 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
             # Add or Update events
             for event in events:
+
+                tags = [tag for tag in community.tags if tag != 'sfw' and tag != 'nsfw']
+
+                # We first need to check if a community have it's public and private events on
+                # the same discord server. We use config.private_channel_id which is the
+                # correspond discord audio channel id. In discord there is no other way to hide
+                # event to users who don't have the correct role.
+                if community.config.get('private_channel_id', None):
+                    if community.config['private_channel_id'] == event.channel_id:
+                        tags.append('nsfw')
+                # In the case this is not configured and the community have the 'nsfw' tag we assume
+                # they only run private events.
+                elif 'nsfw' in community.tags:
+                    tags.append('nsfw')
+
                 self.model.upsert(
                     _filter_field='external_id',
                     _filter_value=event.id,
@@ -158,7 +173,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     start_time=event.scheduled_start_time,
                     end_time=event.scheduled_end_time,
                     community_id=Community.find(external_id=community.external_id)[0].id,
-                    tags=",".join(community.tags),
+                    tags=",".join(tags),
                     external_id=event.id,
                     scheduler_type=self.scheduler_type.name,
                     status=EventStatus.READY,

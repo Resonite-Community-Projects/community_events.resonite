@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, create_engine, inspect, desc, asc, BinaryExpression
+from sqlalchemy import select, create_engine, inspect, desc, asc, BinaryExpression, ClauseElement
 from sqlalchemy.orm import sessionmaker, RelationshipProperty, joinedload
 from sqlmodel import Session, SQLModel
 
@@ -86,7 +86,7 @@ class BaseModel(SQLModel):
                     query = query.order_by(
                         desc(getattr(cls, field_name)) if is_descending else asc(getattr(cls, field_name)))
 
-        if isinstance(custom_filter, BinaryExpression):
+        if isinstance(custom_filter, ClauseElement):
             query = query.where(custom_filter)
 
         return query
