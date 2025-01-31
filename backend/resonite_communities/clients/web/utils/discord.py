@@ -39,4 +39,9 @@ def get_user_roles_in_guild_safe(access_token, guild_id):
     url = f"https://discord.com/api/v10/users/@me/guilds/{guild_id}/member"
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
-    return {"ids": response.json()["roles"]}
+    if not "roles" in response.json():
+        print(response.json())
+        roles = []
+    else:
+        roles = response.json()["roles"]
+    return {"ids": roles}

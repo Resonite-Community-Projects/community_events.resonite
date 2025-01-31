@@ -2,6 +2,9 @@
 
 > On things that need to be done before thinking doing any release
 
+- [x] Fully connect the Discord auth with fastapi-users
+- [x] Clean code the merge between discord and fastapi-users and commit
+- [ ] Seems like the logout doesn't delete all the accesstoken in the end
 - [ ] Add an admistrator role
 - [ ] Hide all NSFW events to any users unless
   - [ ] They are connected

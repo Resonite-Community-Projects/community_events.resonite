@@ -212,7 +212,7 @@
             {% if user_guilds %}
             <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
                 <div>
-                {% for user_guild in user_guilds['guilds'] %}
+                {% for user_guild in user_guilds %}
                     <span class="tag is-info m-1">{{ user_guild }}</span>
                 {% endfor %}
                 </div>

@@ -120,7 +120,7 @@ from contextlib import asynccontextmanager
 import secrets
 
 
-current_active_user = fastapi_users.current_user(active=True)
+current_active_user = fastapi_users.current_user(active=True, optional=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -129,26 +129,10 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-
-# Auth route /login and /logout
-
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"],
-)
-
-# Register route /register
-
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
+app.secret_key = Config.SECRET_KEY
 
 # Discord stuff
 from httpx_oauth.clients.discord import DiscordOAuth2
-
 
 discord_oauth = DiscordOAuth2(
     client_id=str(Config.Discord.client.id),
@@ -173,94 +157,59 @@ async def login(provider: str):
     state = secrets.token_urlsafe(16)
     encoded_state = base64.urlsafe_b64encode(json.dumps({"state": state, "provider": provider}).encode()).decode()
 
+    from fastapi_users.router.oauth import generate_state_token
+    state_data: dict[str, str] = {}
+    state_token = generate_state_token(state_data, Config.SECRET)
+
     authorization_url = await oauth_client["client"].get_authorization_url(
         redirect_uri=oauth_client["redirect_uri"],
-        state = encoded_state,
+        state=state_token,
     )
     return RedirectResponse(authorization_url)
 
+from resonite_communities.auth.db import User
+from fastapi import Depends
+from fastapi_users import models
+from fastapi_users.authentication import Strategy
 
-
-@app.get('/auth/callback')
-async def callback(request: Request):
-    code = request.query_params.get("code")
-    encoded_state = request.query_params.get("state")
-
-    if not code or not encoded_state:
-        return JSONResponse({"error": "Missing code or state"}, status_code=400)
-
-    try:
-        decoded_state = base64.urlsafe_b64decode(encoded_state).decode()
-        state_data = json.loads(decoded_state)
-        provider = state_data["provider"]
-        state = state_data["state"]
-    except Exception as e:
-        return JSONResponse({"error": "Failed to decode state", "details": str(e)}, status_code=400)
-
-    if not provider:
-        return JSONResponse({"error": "No provider found in state"}, status_code=400)
-
-    oauth_client = oauth_clients.get(provider)
-    if not oauth_client:
-        return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
-
-    token = await oauth_client["client"].get_access_token(code, redirect_uri=oauth_client["redirect_uri"])
-    access_token = token.get("access_token")
-
-    if not access_token:
-        return JSONResponse({"error": "Failed to retrieve access token"}, status_code=400)\
-
+@app.get('/logout')
+async def logout(
+    request: Request,
+    user: User = Depends(current_active_user),
+    strategy: Strategy[models.UP, models.ID] = Depends(auth_backend.get_strategy),
+):
+    token = request.cookies.get("fastapiusersauth")
     response = RedirectResponse(url="/")
-
-    # TODO: Need to think harder about that the rate limit on this is really really bad
-
-    user_data = get_current_user(access_token)
-    user = {"name": user_data["username"], "avatar_url": user_data["avatar_url"]}
-    guilds = get_user_guilds(access_token)
-
-    private_events_access_communities = {'guilds': []}
-    for guild in guilds:
-        if guild['name'] in private_events_access_communities['guilds']:
-            continue
-        for configured_guild in Config.SIGNALS.DiscordEventsCollector:
-            if str(configured_guild['external_id']) == str(guild['id']):
-                private_role_id = configured_guild.get('config', {}).get('private_role_id')
-                if private_role_id:
-                    user_roles = get_user_roles_in_guild_safe(
-                        access_token, guild['id']
-                    )
-                    for user_role in user_roles['ids']:
-                        if str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')):
-                            private_events_access_communities['guilds'].append(guild['name'])
-
-    cookie_data = {
-        "user": user,
-        "private_events_access_communities": private_events_access_communities,
-    }
-
-    # TODO: The data in this token MUST BE ENCRYPTED!
-    response.set_cookie(
-        key="user_data",
-        value=json.dumps(cookie_data),
-        httponly=True,
-        secure=False,
-        max_age=600
-    )
-
+    await auth_backend.logout(strategy, user, token)
+    response.delete_cookie("fastapiusersauth")
     return response
+
+app.include_router(
+    fastapi_users.get_oauth_router(
+        discord_oauth,
+        auth_backend,
+        Config.SECRET,
+    ),
+    prefix="/auth/discord",
+    tags=["auth"],
+)
 
 logger = logging.getLogger('uvicorn.error')
 
-app.secret_key = Config.SECRET_KEY
+async def render_main(request: Request, user: User, tab: str):
+    user_auth = None
 
-def render_main(request: Request, tab: str):
-    cookie_data_str = request.cookies.get("user_data")
-    private_events_access_communities = []
-    user = None
-    if cookie_data_str:
-        cookie_data = json.loads(cookie_data_str)
-        private_events_access_communities = cookie_data["private_events_access_communities"]
-        user = cookie_data["user"]
+    if user:
+        import contextlib
+        from resonite_communities.auth.db import DiscordAccount, get_async_session
+        get_async_session_context = contextlib.asynccontextmanager(get_async_session)
+
+        async with get_async_session_context() as session:
+            for user_oauth_account in user.oauth_accounts:
+                if user_oauth_account.oauth_name == "discord":
+                    user_auth = await session.get(DiscordAccount, user_oauth_account.discord_account_id)
+                    break
+
     with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
 
@@ -279,6 +228,7 @@ def render_main(request: Request, tab: str):
     )
     streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
     communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+    from copy import deepcopy
     return templates.TemplateResponse(
         request = request,
         name = 'index.html',
@@ -289,24 +239,26 @@ def render_main(request: Request, tab: str):
             'streams' : streams,
             'streamers' : streamers,
             'tab' : tab,
-            'user' : user,
-            'user_guilds' : private_events_access_communities,
+            'user' : deepcopy(user_auth) if user_auth else None,
+            'user_guilds' : deepcopy(user_auth.accessible_communities_events) if user_auth else [],
             'userlogo' : logo_base64,
             'discord_auth_url': '/auth/login/discord',
         }
     )
 
 @app.get("/")
-async def index(request: Request):
-    return render_main(request=request, tab="Events")
+async def index(request: Request, user: User = Depends(current_active_user)):
+    return await render_main(request=request, user=user, tab="Events")
 
 @app.get("/about")
-async def about(request: Request):
-    return render_main(request=request, tab="About")
+async def about(request: Request, user: User = Depends(current_active_user)):
+    return render_main(request=request, user=user, tab="About")
 
 @app.get("/streams")
-async def streams(request: Request):
-    return render_main(request=request, tab="Streams")
+async def streams(request: Request, user: User = Depends(current_active_user)):
+    return render_main(request=request, user=user, tab="Streams")
+
+
 
 import multiprocessing
 
