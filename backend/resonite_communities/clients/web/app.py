@@ -229,7 +229,7 @@ async def render_main(request: Request, user: User, tab: str):
             Event.tags.ilike('%public%'), # All public events
             and_( # Private events that the user has access to
                 Event.tags.ilike('%private%'),
-                Event.community_id.in_(user_auth.accessible_communities_events)
+                Event.community_id.in_(user_auth.user_communities)
             )
         )
 
@@ -246,9 +246,7 @@ async def render_main(request: Request, user: User, tab: str):
     )
     streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
     communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
-    # TODO: rename accessible_communities_events to user_communities
-    # TODO: Add support of retry_after in user_auth to show on the frontend if the user is rate limited
-    user_communities = Community().find(id__in=user_auth.accessible_communities_events) if user_auth else []
+    user_communities = Community().find(id__in=user_auth.user_communities) if user_auth else []
     from copy import deepcopy
     return templates.TemplateResponse(
         request = request,
@@ -262,6 +260,7 @@ async def render_main(request: Request, user: User, tab: str):
             'tab' : tab,
             'user' : deepcopy(user_auth) if user_auth else None,
             'user_communities' : user_communities,
+            'retry_after' : user_auth.discord_update_retry_after if user_auth else None,
             'userlogo' : logo_base64,
             'discord_auth_url': '/auth/login/discord',
         }

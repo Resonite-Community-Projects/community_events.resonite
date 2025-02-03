@@ -1,5 +1,7 @@
 import requests
 
+from resonite_communities.utils import get_logger
+
 
 def get_current_user(access_token):
     url = "https://discord.com/api/v10/users/@me"
@@ -39,9 +41,12 @@ def get_user_roles_in_guild_safe(access_token, guild_id):
     url = f"https://discord.com/api/v10/users/@me/guilds/{guild_id}/member"
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
-    if not "roles" in response.json():
-        print(response.json())
-        roles = []
-    else:
+    roles = []
+    retry_after = 0
+    if "roles" in response.json():
         roles = response.json()["roles"]
-    return {"ids": roles}
+    if "retry_after" in response.json():
+        retry_after = response.json()["retry_after"]
+    if not roles and not retry_after:
+        get_logger("get_user_roles_in_guild_safe").error("Something is wrong when getting user roles in guild!")
+    return roles, retry_after

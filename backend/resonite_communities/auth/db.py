@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountTableUUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
-from sqlalchemy import Column, ForeignKey, UUID, String, JSON
+from sqlalchemy import Column, ForeignKey, UUID, String, JSON, Integer
 from fastapi_users_db_sqlalchemy.access_token import (
     SQLAlchemyAccessTokenDatabase,
     SQLAlchemyBaseAccessTokenTableUUID,
@@ -28,7 +28,8 @@ class DiscordAccount(Base):
     id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
     name: Mapped[str] = Column(String)
     avatar_url: Mapped[str] = Column(String)
-    accessible_communities_events: Mapped[list[str]] = Column(JSON)
+    user_communities: Mapped[list[str]] = Column(JSON)
+    discord_update_retry_after: Mapped[list[int]] = Column(Integer)
     oauth_account = relationship('OAuthAccount', back_populates='discord_account', uselist=False)
 
 

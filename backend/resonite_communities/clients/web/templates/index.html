@@ -216,9 +216,9 @@
                     <span class="tag is-info m-1">{{ user_guild.name }}</span>
                 {% endfor %}
                 </div>
-                {% if user_communities['retry_after'] %}
+                {% if retry_after %}
                 <div class="warning-message">
-                    Some communities have not been checked, please try to logout and then login again in {{ user_communities['retry_after']|format_seconds}}.
+                    Some communities have not been checked, please try to logout and then login again in {{ retry_after|format_seconds}}.
                 </div>
                 {% endif %}
             {% else %}

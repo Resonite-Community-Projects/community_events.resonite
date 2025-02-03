@@ -10,7 +10,7 @@
   - [x] The user have access to a community, in this case only the private event of this community are showed
 - [x] Verify the support of the JSON signal
 - [x] Seems like the Private communities and/or private events are not showed as tracked on the web page
-- [ ] Put back the support of the rate-limit stuff
+- [x] Put back the support of the rate-limit stuff
 - [ ] The stream signal collector seems to not work
 - [ ] For better testing add a way for the admistrator to view the events as
   - [ ] A connected user and part of somes communities but not other

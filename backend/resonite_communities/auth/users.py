@@ -91,7 +91,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
         communities = {community.external_id:community.id for community in Community().find()}
 
-        private_events_access_communities = {'guilds': []}
+        private_events_access_communities = {'guilds': [], 'retry_after': 0}
         for guild in guilds:
             if guild['name'] in private_events_access_communities['guilds']:
                 continue
@@ -100,15 +100,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
                     private_role_id = configured_guild.get(
                         'config', {}).get('private_role_id')
                     if private_role_id:
-                        user_roles = get_user_roles_in_guild_safe(
+                        user_roles, retry_after = get_user_roles_in_guild_safe(
                             access_token, guild['id']
                         )
-                        print(user_roles)
-                        if "ids" not in user_roles:
-                            continue
-                        for user_role in user_roles['ids']:
+                        if retry_after > private_events_access_communities['retry_after']:
+                            private_events_access_communities['retry_after'] = retry_after
+                        for user_role in user_roles:
                             if str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')):
-                                print(f"User {user_data['username']} has access to {guild['name']}")
                                 private_events_access_communities['guilds'].append(
                                     communities[guild['id']]
                                 )
@@ -130,14 +128,16 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             if oauth_account_db.discord_account_id and discord_account_db:
                     discord_account_db.name = user_data["username"]
                     discord_account_db.avatar_url = user_data["avatar_url"]
-                    discord_account_db.accessible_communities_events = private_events_access_communities["guilds"]
+                    discord_account_db.user_communities = private_events_access_communities["guilds"]
+                    discord_account_db.discord_update_retry_after = private_events_access_communities["retry_after"]
                     session.add(discord_account_db)
                     await session.commit()
             else:
                 discord_account = DiscordAccount(
                     name=user_data["username"],
                     avatar_url=user_data["avatar_url"],
-                    accessible_communities_events=private_events_access_communities['guilds']
+                    user_communities=private_events_access_communities['guilds'],
+                    discord_update_retry_after = private_events_access_communities["retry_after"],
                 )
                 session.add(discord_account)
 
