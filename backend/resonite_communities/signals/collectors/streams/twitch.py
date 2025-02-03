@@ -28,20 +28,17 @@ class TwitchStreamsCollector(StreamsCollector):
     broadcasters = []
 
     def update_communities(self):
-        super().update_communities()
 
         for streamer in self.communities:
             broadcaster = dict()
             broadcaster['config'] = streamer
             broadcaster['twitch'] = self.services.twitch.get_broadcaster_info(streamer)
-            # TODO: Fix this, I should not have to re set all the mandatory fields
             Community.upsert(
                 _filter_field=['external_id', 'platform'],
                 _filter_value=[streamer.external_id, CommunityPlatform.TWITCH],
                 name=streamer.name,
                 monitored=streamer.monitored,
                 external_id=streamer.external_id,
-                platform=self.platform,
                 members_count=broadcaster['twitch']['followers']['total'],
                 logo=broadcaster['twitch']['profile_image_url'],
             )

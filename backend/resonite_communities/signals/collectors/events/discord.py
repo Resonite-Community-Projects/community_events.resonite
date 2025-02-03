@@ -43,7 +43,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             return
 
     def update_communities(self):
-        super().update_communities()
 
         # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
         # aka keep only self.services.discord.bot
@@ -101,20 +100,14 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     continue
 
                 if community.external_id == str(guild_bot.id):
-                    community.monitored = True
                     community.config['bot'] = guild_bot
-                    # TODO: Fix this, I should not have to re set all the mandatory fields
                     # TODO: This should also have a fallback to the local configuration if their is no information or the other way around
                     Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[community.external_id, CommunityPlatform.DISCORD],
-                        name=guild_bot.name,
-                        monitored=community.monitored,
-                        external_id=str(guild_bot.id),
-                        platform=self.platform,
+                        monitored=True,
                         logo=guild_bot.icon.url if guild_bot.icon else "",
                         description=guild_bot.description if guild_bot.description else None,
-                        url=community.url if community.url else None,
                     )
                     break
 
@@ -149,17 +142,28 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
                 tags = [tag for tag in community.tags if tag != 'public' and tag != 'private']
 
-                # We first need to check if a community have it's public and private events on
-                # the same discord server. We use config.private_channel_id which is the
-                # correspond discord audio channel id. In discord there is no other way to hide
-                # event to users who don't have the correct role.
-                if community.config.get('private_channel_id', None):
-                    if community.config['private_channel_id'] == event.channel_id:
-                        tags.append('private')
-                # In the case this is not configured and the community have the 'private' tag we assume
-                # they only run private events.
+                # We do different check based if a community is public or private
+                if 'public' in community.tags:
+                    # We check if the event is private
+                    if community.config.get('private_channel_id', None):
+                        if community.config['private_channel_id'] == event.channel_id:
+                            tags.append('private')
+                    # If there is no private events channel id configured we assume this event is public
+                    if 'private' not in tags and 'public' not in tags:
+                        tags.append('public')
                 elif 'private' in community.tags:
-                    tags.append('private')
+                    # We check if the event is public
+                    if community.config.get('public_channel_id', None):
+                        if community.config['public_channel_id'] == event.channel_id:
+                            tags.append('public')
+                    # If there is no public events channel id configured we assume this event is private
+                    if 'public' not in tags and 'private' not in tags:
+                        tags.append('private')
+                else:
+                    # We don't assume anything, we log an error and skip all the events of this community
+                    self.logger.error(f"Community {community.name} have no tags, skipping all events")
+                    self.logger.error(f"Please add 'public' or 'private' tag to this community")
+                    break
 
                 self.model.upsert(
                     _filter_field='external_id',

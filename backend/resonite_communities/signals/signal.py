@@ -85,7 +85,7 @@ class Signal:
 
         self.valid_config = self._validate_signals_config()
         if self.valid_config:
-            self.update_communities()
+            self.init_update_communities()
             self.logger.info(f'Initialised {self.name} collector')
 
     def _validate_scheduler_type(self):
@@ -124,8 +124,7 @@ class Signal:
                 return False
         return True
 
-    def update_communities(self):
-        # TODO: This should probably be on it's on thread, to do less request to the different APIs.
+    def init_update_communities(self):
         self.communities = []
         for signal in deepcopy(getattr(self.config.SIGNALS, self.name, [])):
             community = Community(
@@ -143,6 +142,9 @@ class Signal:
                 **community.dict()
             )
             self.communities.append(community)
+
+    def update_communities(self):
+        raise ValueError("Not implemented")
 
     def add(self, **data):
         return self.model.add(**data)

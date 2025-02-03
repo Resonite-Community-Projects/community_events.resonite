@@ -20,6 +20,14 @@ class JSONEventsCollector(EventsCollector):
     def __init__(self, config, services, scheduler):
         super().__init__(config, services, scheduler)
 
+    def update_communities(self):
+        for community in self.communities:
+            Community.upsert(
+                _filter_field=['external_id', 'platform'],
+                _filter_value=[community.external_id, CommunityPlatform.JSON],
+                monitored=True,
+            )
+
     def collect(self):
         self.logger.info('Update events collector from external source')
         self.update_communities()
