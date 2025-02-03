@@ -209,16 +209,16 @@
           </div>
           <div class="is-flex-direction-column m-1">
             <p class="m-1">Connected as <span class="tag has-text-info">{{user.name}}</span></p>
-            {% if user_guilds %}
+            {% if user_communities %}
             <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
                 <div>
-                {% for user_guild in user_guilds %}
-                    <span class="tag is-info m-1">{{ user_guild }}</span>
+                {% for user_guild in user_communities %}
+                    <span class="tag is-info m-1">{{ user_guild.name }}</span>
                 {% endfor %}
                 </div>
-                {% if user_guilds['retry_after'] %}
+                {% if user_communities['retry_after'] %}
                 <div class="warning-message">
-                    Some communities have not been checked, please try to logout and then login again in {{ user_guilds['retry_after']|format_seconds}}.
+                    Some communities have not been checked, please try to logout and then login again in {{ user_communities['retry_after']|format_seconds}}.
                 </div>
                 {% endif %}
             {% else %}

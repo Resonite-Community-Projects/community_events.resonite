@@ -87,6 +87,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         guilds = get_user_guilds(access_token)
 
         from resonite_communities.utils import Config
+        from resonite_communities.models.community import Community
+
+        communities = {community.external_id:community.id for community in Community().find()}
 
         private_events_access_communities = {'guilds': []}
         for guild in guilds:
@@ -107,7 +110,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
                             if str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')):
                                 print(f"User {user_data['username']} has access to {guild['name']}")
                                 private_events_access_communities['guilds'].append(
-                                    guild['name'])
+                                    communities[guild['id']]
+                                )
 
         from resonite_communities.auth.db import (
             DiscordAccount,

@@ -69,10 +69,10 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         #    for signal in getattr(self.config.SIGNALS, self.name, []):
         #        # FIXME: Remove all this test when removing AD_DISCORD_BOT_TOKEN
         #        # keep only the print + self.configured_commu...
-        #        if self.ad_bot and 'nsfw' in signal.tags:
+        #        if self.ad_bot and 'private' in signal.tags:
         #            print(f"{signal['name']} ({signal['external_id']})")
         #            self.configured_communities[signal['external_id']] = signal['name']
-        #        if not self.ad_bot and 'sfw' in signal.tags:
+        #        if not self.ad_bot and 'public' in signal.tags:
         #            print(f"{signal['name']} ({signal['external_id']})")
         #            self.configured_communities[signal['external_id']] = signal['name']
 
@@ -95,9 +95,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             for community in self.communities:
 
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
-                if self.ad_bot and 'nsfw' not in community.tags:
+                if self.ad_bot and 'private' not in community.tags:
                     continue
-                elif not self.ad_bot and 'nsfw' in community.tags:
+                elif not self.ad_bot and 'private' in community.tags:
                     continue
 
                 if community.external_id == str(guild_bot.id):
@@ -147,7 +147,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             # Add or Update events
             for event in events:
 
-                tags = [tag for tag in community.tags if tag != 'sfw' and tag != 'nsfw']
+                tags = [tag for tag in community.tags if tag != 'public' and tag != 'private']
 
                 # We first need to check if a community have it's public and private events on
                 # the same discord server. We use config.private_channel_id which is the
@@ -155,11 +155,11 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 # event to users who don't have the correct role.
                 if community.config.get('private_channel_id', None):
                     if community.config['private_channel_id'] == event.channel_id:
-                        tags.append('nsfw')
-                # In the case this is not configured and the community have the 'nsfw' tag we assume
+                        tags.append('private')
+                # In the case this is not configured and the community have the 'private' tag we assume
                 # they only run private events.
-                elif 'nsfw' in community.tags:
-                    tags.append('nsfw')
+                elif 'private' in community.tags:
+                    tags.append('private')
 
                 self.model.upsert(
                     _filter_field='external_id',

@@ -4,11 +4,12 @@
 
 - [x] Fully connect the Discord auth with fastapi-users
 - [x] Clean code the merge between discord and fastapi-users and commit
-- [ ] Hide all NSFW events to any users unless
-  - [ ] They are connected
-  - [ ] The configured discord role id in `private_role_id` match on of the use role
-  - [ ] If no `private_role_id` the user is part of this discord server
-  - [ ] The user have the role administrator
+- [ ] Hide all private events unless
+  - [x] They are connected
+  - [x] The user have the role administrator
+  - [x] The user have access to a community, in this case only the private event of this community are showed
+- [ ] Verify the support of the JSON signal
+- [ ] Seems like the Private communities and/or private events are not showed as tracked on the web page
 - [ ] For better testing add a way for the admistrator to view the events as
   - [ ] A connected user and part of somes communities but not other
   - [ ] A connected user that is part of no communities

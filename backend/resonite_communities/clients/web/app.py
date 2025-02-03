@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from flask.logging import default_handler
 from jinja2 import Environment, FileSystemLoader
-from sqlalchemy import case, and_
+from sqlalchemy import case, and_, not_, or_
 from starlette.templating import Jinja2Templates
 
 from resonite_communities.clients import StandaloneApplication
@@ -155,7 +155,6 @@ async def login(provider: str):
         return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
 
     state = secrets.token_urlsafe(16)
-    encoded_state = base64.urlsafe_b64encode(json.dumps({"state": state, "provider": provider}).encode()).decode()
 
     from fastapi_users.router.oauth import generate_state_token
     state_data: dict[str, str] = {}
@@ -221,12 +220,24 @@ async def render_main(request: Request, user: User, tab: str):
         else_=Event.start_time  # Otherwise, fallback to start_time
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
-    nsfw_filter = ~Event.tags.ilike('%nsfw%') # Exclude events with 'nsfw' tag, case-insensitive
-    event_visibility_filter = and_(time_filter, nsfw_filter)
-
-    if user and (user.is_superuser):
+    if user and user.is_superuser:
+        # Superuser see all events
         event_visibility_filter = time_filter
-        event_visibility_filter = and_(event_visibility_filter, community_filter)
+    elif user:
+        # Authenticated users see public events and private events from communities they have access to
+        community_filter = or_(
+            Event.tags.ilike('%public%'), # All public events
+            and_( # Private events that the user has access to
+                Event.tags.ilike('%private%'),
+                Event.community_id.in_(user_auth.accessible_communities_events)
+            )
+        )
+
+        event_visibility_filter = and_(time_filter, community_filter)
+    else:
+        # Only public events for non authenticated users
+        private_filter = not_(Event.tags.ilike('%private%'))
+        event_visibility_filter = and_(time_filter, private_filter)
 
     events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
     streams = Stream().find(
@@ -235,6 +246,9 @@ async def render_main(request: Request, user: User, tab: str):
     )
     streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
     communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+    # TODO: rename accessible_communities_events to user_communities
+    # TODO: Add support of retry_after in user_auth to show on the frontend if the user is rate limited
+    user_communities = Community().find(id__in=user_auth.accessible_communities_events) if user_auth else []
     from copy import deepcopy
     return templates.TemplateResponse(
         request = request,
@@ -247,7 +261,7 @@ async def render_main(request: Request, user: User, tab: str):
             'streamers' : streamers,
             'tab' : tab,
             'user' : deepcopy(user_auth) if user_auth else None,
-            'user_guilds' : deepcopy(user_auth.accessible_communities_events) if user_auth else [],
+            'user_communities' : user_communities,
             'userlogo' : logo_base64,
             'discord_auth_url': '/auth/login/discord',
         }
