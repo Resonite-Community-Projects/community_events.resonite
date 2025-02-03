@@ -38,4 +38,12 @@ external_id = 100000000000000000
 name = "My Discord Community"
 description = "A community of people who love to chat and play games together."
 url = "https://www.discord.gg/my-community"
-tags = ['sfw']
+tags = ['public']
+
+[[SIGNALS.JSONEventsCollector]]
+external_id = "json_1"
+name = "External events"
+description = "A community outside of Discord that hosts events."
+url = ""
+tags = ['mentors', 'public']
+config.events_url = "http://example.com/events_json"
