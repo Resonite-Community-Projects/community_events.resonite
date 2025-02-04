@@ -100,12 +100,13 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     continue
 
                 if community.external_id == str(guild_bot.id):
+                    community.monitored = True
                     community.config['bot'] = guild_bot
                     # TODO: This should also have a fallback to the local configuration if their is no information or the other way around
                     Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[community.external_id, CommunityPlatform.DISCORD],
-                        monitored=True,
+                        monitored=community.monitored,
                         logo=guild_bot.icon.url if guild_bot.icon else "",
                         description=guild_bot.description if guild_bot.description else None,
                     )

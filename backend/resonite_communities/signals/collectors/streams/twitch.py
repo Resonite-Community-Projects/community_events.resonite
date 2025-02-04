@@ -32,7 +32,11 @@ class TwitchStreamsCollector(StreamsCollector):
         for streamer in self.communities:
             broadcaster = dict()
             broadcaster['config'] = streamer
-            broadcaster['twitch'] = self.services.twitch.get_broadcaster_info(streamer)
+            try:
+                broadcaster['twitch'] = self.services.twitch.get_broadcaster_info(streamer)
+            except ValueError as exc:
+                self.logger.error(exc)
+                continue
             Community.upsert(
                 _filter_field=['external_id', 'platform'],
                 _filter_value=[streamer.external_id, CommunityPlatform.TWITCH],

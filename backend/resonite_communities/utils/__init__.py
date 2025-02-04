@@ -167,7 +167,7 @@ class TwitchClient:
         if response.status_code == 200:
             users_data = response.json()
             if len(users_data['data']) != 1:
-                raise ValueError('Too many users found for this external_id!')
+                raise ValueError(f'Too many users found for the external_id {streamer.external_id}')
             broadcaster_info = users_data['data'][0]
             broadcaster_info['followers'] = self._get_broadcaster_followers(users_data['data'][0]['id'])
         else:
