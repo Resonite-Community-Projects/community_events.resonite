@@ -1,0 +1,12 @@
+.mdx-hero__content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.md-sidebar {
+    visibility: hidden;
+    opacity: 0;
+    z-index: -1;
+}

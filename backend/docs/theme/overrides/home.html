@@ -1,0 +1,26 @@
+
+  {% extends "base.html" %}
+  {% block styles %}
+    {{ super() }}
+    <link href="{{ 'theme/stylesheets/page.css'|url }}" rel="stylesheet">
+  {% endblock %}
+  {% block tabs %}
+    {{ super() }}
+    <style>.md-header{position:initial}.md-main__inner{margin:0}.md-content{display:none}@media screen and (min-width:60em){.md-sidebar--secondary{display:none}}@media screen and (min-width:76.25em){.md-sidebar--primary{display:none}}</style>
+    <section class="mdx-container">
+      <div class="md-grid md-typeset">
+        <div class="mdx-hero">
+          <div class="mdx-hero__content">
+            <h1>Service for announcing Resonite events and stream from multiple source like Discord and Twitch to clients like Resonite and Web Browsers.</h1>
+            <a href="{{ 'GettingStarted/getting-started/' | url }}" title="Getting Started" class="md-button md-button--primary">
+              Getting Started
+            </a>
+            <a href="{{ 'support/' | url }}" title="Support" class="md-button">
+              Support
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  {% endblock %}
+  {% block content %}{% endblock %}

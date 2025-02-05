@@ -11,10 +11,23 @@
 - [x] Verify the support of the JSON signal
 - [x] Seems like the Private communities and/or private events are not showed as tracked on the web page
 - [x] Put back the support of the rate-limit stuff
-- [ ] The stream signal collector seems to not work
+- [x] The stream signal collector seems to not work
+- [x] Redo the doc on a website instead with mkdocs
 - [ ] For better testing add a way for the admistrator to view the events as
+  - JUST think about a simple and nice way to do that in the code, i know i can just uncheck the option to go from super admin to simple user but this mean that i also to touch stuff in the database to remove some community to my user
+  - Maybe add a bit of documentation on the subject? General documentation is needed anyway...
   - [ ] A connected user and part of somes communities but not other
   - [ ] A connected user that is part of no communities
   - [ ] A non connected user
+- [ ] Make possible to start all the clients together (web and http api) on default port
+  - [ ] add an option to change host and port
+  - [ ] Update the documentation in consequence in "Developer Guide" > "Usage"
 - [ ] Check the behavior for the API: text and json
+  - [ ] Also update the documentation "Client Integration" at the same time
 - [ ] Go a check of all the TODO and FIXME
+- [ ] Set up the new stack for production (and preproduction) with docker container and such
+  - [ ] Update the documentation in "Developer Guide" > "Server Installation"
+  - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
+- [ ] Set up the deployment in preproduction (beta.resonite-communities.com) as well as the documentation (docs.beta.resonite-communities.com)
+- [ ] Update the documentation to explain more the architecture part as well as the usage guide
+  - [ ] Update the url documentation to `docs.beta.resonite-communities.com` in the README

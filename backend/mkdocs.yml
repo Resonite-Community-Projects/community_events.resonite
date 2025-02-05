@@ -1,0 +1,56 @@
+site_name: Resonite Communities Doc
+#site_url: https://docs.resonite-communities.com/
+repo_name: Resonite-Community-Projects/community_events.resonite
+extra_css:
+  - theme/stylesheets/extra.css
+theme:
+  name: material
+  custom_dir: docs/theme/overrides
+  icon:
+    admonition:
+      construction: material/hammer
+  features:
+    - navigation.instant
+    - navigation.instant.process
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      auto_title: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+nav:
+  - Home:
+    - index.md
+  - Getting Started:
+    - GettingStarted/getting-started.md
+  - Usage:
+    - Usage/community-configuration.md
+    - Usage/client-configuration.md
+    - Usage/facet-configuration.md
+  - Client Integration:
+    - ClientIntegration/http-api-usage.md
+  - Developer Guide:
+    - DeveloperGuide/development.md
+    - DeveloperGuide/installation.md
+    - DeveloperGuide/usage.md
+    - DeveloperGuide/server-configuration.md
+    - DeveloperGuide/server-installation.md
+    - DeveloperGuide/architecture.md
+  - Support:
+    - support.md
