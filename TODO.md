@@ -13,12 +13,12 @@
 - [x] Put back the support of the rate-limit stuff
 - [x] The stream signal collector seems to not work
 - [x] Redo the doc on a website instead with mkdocs
-- [ ] For better testing add a way for the admistrator to view the events as
+- [x] For better testing add a way for the admistrator to view the events as
   - JUST think about a simple and nice way to do that in the code, i know i can just uncheck the option to go from super admin to simple user but this mean that i also to touch stuff in the database to remove some community to my user
   - Maybe add a bit of documentation on the subject? General documentation is needed anyway...
-  - [ ] A connected user and part of somes communities but not other
-  - [ ] A connected user that is part of no communities
-  - [ ] A non connected user
+  - [x] A connected user and part of somes communities but not other
+  - [x] A connected user that is part of no communities
+  - [x] A non connected user
 - [ ] Make possible to start all the clients together (web and http api) on default port
   - [ ] add an option to change host and port
   - [ ] Update the documentation in consequence in "Developer Guide" > "Usage"
