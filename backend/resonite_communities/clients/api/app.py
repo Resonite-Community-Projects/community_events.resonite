@@ -6,9 +6,12 @@ from enum import Enum
 
 from dacite.types import is_instance
 from fastapi import APIRouter, Depends, Response, HTTPException, Request, FastAPI
+from sqlalchemy import and_, not_
 
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
+from resonite_communities.models.community import Community
+from resonite_communities.utils import Config
 
 app = FastAPI()
 
@@ -64,47 +67,54 @@ def set_default_format(
 def get_filtered_events(
     host: str,
     version: str,
+    communities: str,
 ):
-    events = Event.find()
+    signals = []
 
-    PUBLIC_DOMAIN = "events.com"
-    PRIVATE_DOMAIN = "private.events.com"
+    communities_filter = True
+    if communities:
+        communities = [community for community in communities.split(",")]
+        communities_filter = Event.community.has(Community.name.in_(communities))
 
-    filtered_events = []
-
-    if host == PUBLIC_DOMAIN:
-        filtered_events = [event for event in events if 'private' not in event.tags]
-    elif host == PRIVATE_DOMAIN:
-        filtered_events = events
+    if host == Config.PUBLIC_DOMAIN:
+        domain_filter = not_(Event.tags.ilike("%private%"))
+    elif host == Config.PRIVATE_DOMAIN:
+        domain_filter = True
     else:
-        raise HTTPException(status_code=400, detail=f"Unsupported domain: {host}")
+        msg = f"Unsupported domain: {host}."
+        if ".local" in Config.PUBLIC_DOMAIN and ".local" in Config.PRIVATE_DOMAIN:
+            msg += " You need to configure your hosts file for access to the locally to the HTTP API."
+            msg += " See https://docs.resonite-communities.com/DeveloperGuide/server-configuration/"
+        raise HTTPException(status_code=400, detail=msg)
+
+    signals.extend(Event.find(__custom_filter=and_(communities_filter, domain_filter)))
 
     if version != "v1":
         streams = Stream.find()
 
-        filtered_events.extend(streams)
+        signals.extend(streams)
 
     versioned_events = []
-    for event in filtered_events:
+    for signal in signals:
         if version == "v1":
             versioned_events.append({
-                "name": event.name,
-                "description": event.description,
-                "session_image": event.session_image,
-                "location_str": event.location,
-                "location_web_session_url": event.location_web_session_url,
-                "location_session_url": event.location_session_url,
-                "start_time": event.start_time,
-                "end_time": event.end_time,
-                "community_name": event.community.name, # TODO: Connect this to a session
-                "community_url": event.community.url,
+                "name": signal.name,
+                "description": signal.description,
+                "session_image": signal.session_image,
+                "location_str": signal.location,
+                "location_web_session_url": signal.location_web_session_url,
+                "location_session_url": signal.location_session_url,
+                "start_time": signal.start_time,
+                "end_time": signal.end_time,
+                "community_name": signal.community.name, # TODO: Connect this to a session
+                "community_url": signal.community.url,
             })
         elif version == "v2":
             versioned_events.append({
-                "name": event.name,
-                "start_time": event.start_time,
-                "end_time": event.end_time,
-                "tags": event.tags,
+                "name": signal.name,
+                "start_time": signal.start_time,
+                "end_time": signal.end_time,
+                "tags": signal.tags,
             })
         else:
             raise HTTPException(status_code=400, detail="Unsupported version")
@@ -164,20 +174,20 @@ def generate_events_response(
             raise HTTPException(status_code=400, detail="Unsupported format")
 
 @router_v1.get("/events")
-def get_events_v1(request: Request, format_type: FormatType = None):
+def get_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     format_type = set_default_format(version="v1", format_type=format_type)
     return generate_events_response(
         version="v1",
         format_type=set_default_format(version="v1", format_type=format_type),
-        events=get_filtered_events(request.url.hostname, "v1"),
+        events=get_filtered_events(request.url.hostname, "v1", communities),
     )
 
 @router_v2.get("/events")
-def get_events_v2(request: Request, format_type: FormatType = None):
+def get_events_v2(request: Request, format_type: FormatType = None, communities: str = ""):
     return generate_events_response(
         version="v2",
         format_type=set_default_format(version="v2", format_type=format_type),
-        events=get_filtered_events(request.url.hostname, "v2")
+        events=get_filtered_events(request.url.hostname, "v2", communities)
     )
 app.include_router(router_v1)
 app.include_router(router_v2)

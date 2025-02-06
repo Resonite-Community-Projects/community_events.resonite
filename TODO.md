@@ -22,8 +22,9 @@
 - [x] Make possible to start all the clients together (web and http api) on default port
   - [x] add an option to change host and port
   - [x] Update the documentation in consequence in "Developer Guide" > "Usage"
-- [ ] Check the behavior for the API: text and json
-  - [ ] Also update the documentation "Client Integration" at the same time
+- [x] Check the behavior for the API: text and json
+  - [x] Also update the documentation "Client Integration" at the same time
+- [ ] Fix the fact that the web interface and the API return only the event for Resonite and nothing else
 - [ ] Go a check of all the TODO and FIXME
 - [ ] Set up the new stack for production (and preproduction) with docker container and such
   - [ ] Update the documentation in "Developer Guide" > "Server Installation"

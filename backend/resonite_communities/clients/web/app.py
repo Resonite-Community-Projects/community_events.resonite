@@ -291,7 +291,7 @@ def run():
         "--address",
         type=str,
         default="0.0.0.0:8001",
-        help="Bind address (default: 0.0.0.0:8002\1)",
+        help="Bind address (default: 0.0.0.0:8001)",
         metavar="<IP:PORT>"
     )
 

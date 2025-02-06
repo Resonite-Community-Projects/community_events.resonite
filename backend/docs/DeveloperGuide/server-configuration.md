@@ -6,20 +6,44 @@ The configuration is splited in different parts. A general configuration as well
 
     When the configuration is changed you **must** restart all the services.
 
+Most of the configuration of this tool are available in the `config.toml` file.
+
 ## General
 
-Most of the configuration of this tool are available in the `config.toml` file and the following configuration keys are available:
+- `SECRET_KEY`: str, The secret key use to handle the authentication system
+- `REFRESH_INTERVAL`: int, The number of minute between each refresh interval of the signals
+- `SECRET`: str, The secret key use to handle the authentication system
+- `PUBLIC_DOMAIN`: str, The domain used by the HTTP API do show only the public events
+- `PRIVATE_DOMAIN`: str, The domain used by the HTTP API to show only the private events
+
+!!! note "About the domains"
+
+    To be able to use the HTTP API locally you need to configure your hosts file on your file system with the following domain:
+
+    Depending on your Operating System this would either by `/etc/hosts` for linux or `C:\Windows\System32\drivers\etc\hosts` for Windows. Be careful that modifing this file require you to be administrator of you computer.
+
+    ```hosts title="hosts"
+    127.0.0.1 resonite-communities.local
+    127.0.0.1 private.resonite-communities.local
+    ```
+
+    You can change the second-level domain but there is a check on the top-level domain `.local` in the code, even if this is just to show an tip message.
+
+## Resonite
+
+- `FACET_URL`: str, The Resonite public folder url where the facet is store
+
+## Discord
 
 - `DISCORD_BOT_TOKEN`: str, The Discord bot for public event
 - `AD_DISCORD_BOT_TOKEN`: str, The Discord bot for private event (See why it's deprecated)
-- `REFRESH_INTERVAL`: int, The number of minute between each refresh interval of the signals
-- `SECRET_KEY`: str, The secret key use to handle the authentication system
-- `FACET_URL`: str, The Resonite public folder url where the facet is store
-- `SECRET`: str, The secret key use to handle the authentication system
 - `Discord.client_bot_token`: str, The Discord bot token
 - `Discord.client.id`: int, the id of the Discord client
 - `Discord.client.secret` str, the secret of the Discord client
 - `Discord.client.redirect_uri`: str, the callback url for Discord API to call when finishing the authentification process on their end.
+
+## Twitch
+
 - `Twitch.client_id`: str, The client id for Twitch
 - `Twitch.secret`: str, The secret for Twitch
 - `Twitch.game_id`: str, The Resonite Twitch game id to follow
