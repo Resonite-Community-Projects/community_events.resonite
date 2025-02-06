@@ -1,3 +1,4 @@
+import argparse
 import json
 import multiprocessing
 from datetime import datetime
@@ -182,8 +183,20 @@ app.include_router(router_v1)
 app.include_router(router_v2)
 
 def run():
+    parser = argparse.ArgumentParser(description="Run the server")
+    parser.add_argument(
+        "-a",
+        "--address",
+        type=str,
+        default="0.0.0.0:8000",
+        help="Bind address (default: 0.0.0.0:8000)",
+        metavar="<IP:PORT>"
+    )
+
+    args = parser.parse_args()
+
     options = {
-        "bind": "0.0.0.0:8000",
+        "bind": args.address,
         "workers": (multiprocessing.cpu_count() * 2) + 1,
         "worker_class": "uvicorn.workers.UvicornWorker",
     }

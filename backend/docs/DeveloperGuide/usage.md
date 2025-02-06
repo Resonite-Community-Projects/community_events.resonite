@@ -30,6 +30,8 @@ poetry run api_client
 
 Accessible at [http://localhost:8000/](http://localhost:8000/).
 
+**Note:** You can use the option `-a <IP:PORT>` to change the host and port the HTTP API client will listen
+
 ## Website
 
 To start an instance of the web client use:
@@ -40,13 +42,16 @@ poetry run web_client
 
 Accessible at [http://localhost:8001/](http://localhost:8001/).
 
+**Note:** You can use the option `-a <IP:PORT>` to change the host and port the Website client will listen
 
 ## Documentation
 
 To start an instance of the documentation use:
 
 ```console
-poetry run mkdocs serve -a 0.0.0.0:800
+poetry run docs serve
 ```
 
 Accessible at [http://localhost:8002](http://localhost:8002)
+
+**Note:** You can use the option `-a <IP:PORT>` to change the host and port the Documentation will listen

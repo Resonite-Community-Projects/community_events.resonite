@@ -19,9 +19,9 @@
   - [x] A connected user and part of somes communities but not other
   - [x] A connected user that is part of no communities
   - [x] A non connected user
-- [ ] Make possible to start all the clients together (web and http api) on default port
-  - [ ] add an option to change host and port
-  - [ ] Update the documentation in consequence in "Developer Guide" > "Usage"
+- [x] Make possible to start all the clients together (web and http api) on default port
+  - [x] add an option to change host and port
+  - [x] Update the documentation in consequence in "Developer Guide" > "Usage"
 - [ ] Check the behavior for the API: text and json
   - [ ] Also update the documentation "Client Integration" at the same time
 - [ ] Go a check of all the TODO and FIXME

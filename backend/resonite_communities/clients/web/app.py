@@ -1,3 +1,4 @@
+import argparse
 import logging
 import re
 import traceback
@@ -284,8 +285,20 @@ import multiprocessing
 
 
 def run():
+    parser = argparse.ArgumentParser(description="Run the server")
+    parser.add_argument(
+        "-a",
+        "--address",
+        type=str,
+        default="0.0.0.0:8001",
+        help="Bind address (default: 0.0.0.0:8002\1)",
+        metavar="<IP:PORT>"
+    )
+
+    args = parser.parse_args()
+
     options = {
-        "bind": "0.0.0.0:8000",
+        "bind": args.address,
         "workers": (multiprocessing.cpu_count() * 2) + 1,
         "worker_class": "uvicorn.workers.UvicornWorker",
     }
