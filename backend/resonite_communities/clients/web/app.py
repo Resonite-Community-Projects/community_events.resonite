@@ -221,9 +221,12 @@ async def render_main(request: Request, user: User, tab: str):
         else_=Event.start_time  # Otherwise, fallback to start_time
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
+    # Only get Resonite events
+    platform_filter = Event.tags.ilike('%resonite%')
+
     if user and user.is_superuser:
         # Superuser see all events
-        event_visibility_filter = time_filter
+        event_visibility_filter = and_(time_filter, platform_filter)
     elif user:
         # Authenticated users see public events and private events from communities they have access to
         community_filter = or_(
@@ -234,11 +237,11 @@ async def render_main(request: Request, user: User, tab: str):
             )
         )
 
-        event_visibility_filter = and_(time_filter, community_filter)
+        event_visibility_filter = and_(time_filter, community_filter, platform_filter)
     else:
         # Only public events for non authenticated users
         private_filter = not_(Event.tags.ilike('%private%'))
-        event_visibility_filter = and_(time_filter, private_filter)
+        event_visibility_filter = and_(time_filter, private_filter, platform_filter)
 
     events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
     streams = Stream().find(

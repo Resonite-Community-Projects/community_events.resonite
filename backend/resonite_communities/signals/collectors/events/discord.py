@@ -141,25 +141,47 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             # Add or Update events
             for event in events:
 
-                tags = [tag for tag in community.tags if tag != 'public' and tag != 'private']
+                tags = {tag for tag in community.tags if tag != 'public' and tag != 'private'}
+
+                #if 'resonite' not in tags and 'vrchat' not in tags:
+                # Filter and tag any event with the word `resonite` in either of this 3:
+                # title, description or location (either in the metadata or the audio channel)
+                if (
+                    "resonite" in event.name.lower() or
+                    "resonite" in event.description.lower() or
+                    (
+                        "resonite" in str(event.entity_metadata.location if event.entity_metadata else "").lower() or
+                        event.channel_id
+                    )
+                ):
+                    tags.add('resonite')
+
+                # Filter and tag any event with the word `vrchat` in either of this 3:
+                # title, description or location (either in the metadata or the audio channel)
+                if (
+                    "vrchat" in event.name.lower() or
+                    "vrchat" in event.description.lower() or
+                    "vrchat" in str(event.entity_metadata.location if event.entity_metadata else "").lower()
+                ):
+                    tags.add('vrchat')
 
                 # We do different check based if a community is public or private
                 if 'public' in community.tags:
                     # We check if the event is private
                     if community.config.get('private_channel_id', None):
                         if community.config['private_channel_id'] == event.channel_id:
-                            tags.append('private')
+                            tags.add('private')
                     # If there is no private events channel id configured we assume this event is public
                     if 'private' not in tags and 'public' not in tags:
-                        tags.append('public')
+                        tags.add('public')
                 elif 'private' in community.tags:
                     # We check if the event is public
                     if community.config.get('public_channel_id', None):
                         if community.config['public_channel_id'] == event.channel_id:
-                            tags.append('public')
+                            tags.add('public')
                     # If there is no public events channel id configured we assume this event is private
                     if 'public' not in tags and 'private' not in tags:
-                        tags.append('private')
+                        tags.add('private')
                 else:
                     # We don't assume anything, we log an error and skip all the events of this community
                     self.logger.error(f"Community {community.name} have no tags, skipping all events")
