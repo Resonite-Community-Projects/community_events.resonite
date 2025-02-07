@@ -5,6 +5,7 @@ import inspect
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from disnake.ext import commands
+import sentry_sdk
 
 from resonite_communities.signals import (
     collectors,
@@ -48,6 +49,14 @@ Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOK
 Services.discord.client = discord_client
 Services.twitch = twitch_client
 Services.redis = redis_client
+
+if "SENTRY_DSN" in Config:
+
+    sentry_sdk.init(
+        dsn=Config.SENTRY_DSN,
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+    )
 
 async def main():
 

@@ -15,6 +15,7 @@ Most of the configuration of this tool are available in the `config.toml` file.
 - `SECRET`: str, The secret key use to handle the authentication system
 - `PUBLIC_DOMAIN`: str, The domain used by the HTTP API do show only the public events
 - `PRIVATE_DOMAIN`: str, The domain used by the HTTP API to show only the private events
+- `SENTRY_DSN`: str, The DSN configuration for send error logs to Sentry
 
 !!! note "About the domains"
 
