@@ -51,6 +51,7 @@ nav:
     - DeveloperGuide/usage.md
     - DeveloperGuide/server-configuration.md
     - DeveloperGuide/server-installation.md
+    - DeveloperGuide/testing.md
     - DeveloperGuide/architecture.md
   - Support:
     - support.md
