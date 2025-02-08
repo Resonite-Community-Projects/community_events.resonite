@@ -11,7 +11,7 @@ from sqlalchemy import and_, not_
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
 from resonite_communities.models.community import Community
-from resonite_communities.utils import Config
+from resonite_communities.utils import Config, is_local_env
 
 app = FastAPI()
 
@@ -82,7 +82,7 @@ def get_filtered_events(
         domain_filter = True
     else:
         msg = f"Unsupported domain: {host}."
-        if ".local" in Config.PUBLIC_DOMAIN and ".local" in Config.PRIVATE_DOMAIN:
+        if is_local_env:
             msg += " You need to configure your hosts file for access to the locally to the HTTP API."
             msg += " See https://docs.resonite-communities.com/DeveloperGuide/server-configuration/"
         raise HTTPException(status_code=400, detail=msg)

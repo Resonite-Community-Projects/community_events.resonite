@@ -24,7 +24,7 @@
   - [x] Update the documentation in consequence in "Developer Guide" > "Usage"
 - [x] Check the behavior for the API: text and json
   - [x] Also update the documentation "Client Integration" at the same time
-- [ ] **FIX VERY BAD BUG** Look into why for whatever reason the cookies are not saved at all anymore
+- [x] **FIX VERY BAD BUG** Look into why for whatever reason the cookies are not saved at all anymore
 - [ ] Fix the fact that the web interface and the API return only the event for Resonite and nothing else
   - [x] Save the location in tags for now, either vrchat or resonite
   - [ ] Only show the events for resonite in the webinterface

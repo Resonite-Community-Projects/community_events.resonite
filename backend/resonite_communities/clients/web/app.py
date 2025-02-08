@@ -130,7 +130,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
-app.secret_key = Config.SECRET_KEY
+app.secret_key = Config.SECRET
 
 # Discord stuff
 from httpx_oauth.clients.discord import DiscordOAuth2

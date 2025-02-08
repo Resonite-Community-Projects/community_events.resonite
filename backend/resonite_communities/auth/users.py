@@ -12,15 +12,11 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 
 from resonite_communities.auth.db import User, get_user_db
-from resonite_communities.utils import get_logger
-
-
-SECRET = 'SECRET'
-
+from resonite_communities.utils import get_logger, Config, is_local_env
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
-    reset_password_token_secret = SECRET
-    verification_token_secret = SECRET
+    reset_password_token_secret = Config.SECRET
+    verification_token_secret = Config.SECRET
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -181,11 +177,15 @@ class MyCookieTransport(CookieTransport):
         response = RedirectResponse(url="/")
         return self._set_logout_cookie(response)
 
-cookie_transport = MyCookieTransport()
+cookie_secure = True
+if is_local_env:
+    cookie_secure = False
+
+cookie_transport = MyCookieTransport(cookie_secure=cookie_secure)
 
 
 def get_jwt_strategy() -> JWTStrategy[models.UP, models.ID]:
-    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
+    return JWTStrategy(secret=Config.SECRET, lifetime_seconds=3600)
 
 from resonite_communities.auth.db import AccessToken, get_access_token_db
 from fastapi_users.authentication.strategy.db import AccessTokenDatabase, DatabaseStrategy

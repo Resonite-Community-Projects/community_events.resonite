@@ -203,3 +203,11 @@ class TwitchClient:
 
 Services = edict()
 Services.discord = edict()
+
+def check_is_local_env():
+    """Check if we are in the development environment based on the local domain."""
+    if ".local" in Config.PUBLIC_DOMAIN and ".local" in Config.PRIVATE_DOMAIN:
+        return True
+    return False
+
+is_local_env = check_is_local_env()
