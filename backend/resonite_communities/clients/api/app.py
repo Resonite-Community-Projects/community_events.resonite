@@ -87,7 +87,10 @@ def get_filtered_events(
             msg += " See https://docs.resonite-communities.com/DeveloperGuide/server-configuration/"
         raise HTTPException(status_code=400, detail=msg)
 
-    signals.extend(Event.find(__custom_filter=and_(communities_filter, domain_filter)))
+    # Only get Resonite events
+    platform_filter = Event.tags.ilike('%resonite%')
+
+    signals.extend(Event.find(__custom_filter=and_(communities_filter, domain_filter, platform_filter)))
 
     if version != "v1":
         streams = Stream.find()

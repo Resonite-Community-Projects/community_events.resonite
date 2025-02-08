@@ -25,10 +25,11 @@
 - [x] Check the behavior for the API: text and json
   - [x] Also update the documentation "Client Integration" at the same time
 - [x] **FIX VERY BAD BUG** Look into why for whatever reason the cookies are not saved at all anymore
-- [ ] Fix the fact that the web interface and the API return only the event for Resonite and nothing else
+- [x] Fix the fact that the web interface and the API return only the event for Resonite and nothing else
   - [x] Save the location in tags for now, either vrchat or resonite
-  - [ ] Only show the events for resonite in the webinterface
-  - [ ] Only show the events for resonite in the API
+  - [x] Only show the events for resonite in the webinterface
+  - [x] Only show the events for resonite in the API
+- [ ] Remove useless tags from the web client as: "public", "resonite"
 - [ ] Go a check of all the TODO and FIXME
 - [ ] Set up the new stack for production (and preproduction) with docker container and such
   - [ ] Update the documentation in "Developer Guide" > "Server Installation"
