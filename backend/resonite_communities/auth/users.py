@@ -198,9 +198,7 @@ def get_database_strategy(
 
 auth_backend = AuthenticationBackend(
     name="jwt",
-    #transport=bearer_transport,  # FIXME: This should be a custom CookieTransport
     transport=cookie_transport,
-    #get_strategy=get_jwt_strategy,
     get_strategy=get_database_strategy,
 )
 

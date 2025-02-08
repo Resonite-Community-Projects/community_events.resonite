@@ -30,7 +30,7 @@
   - [x] Only show the events for resonite in the webinterface
   - [x] Only show the events for resonite in the API
 - [x] Remove useless tags from the web client as: "public", "resonite"
-- [ ] Go a check of all the TODO and FIXME
+- [x] Go a check of all the TODO and FIXME
 - [ ] Set up the new stack for production (and preproduction) with docker container and such
   - [ ] Update the documentation in "Developer Guide" > "Server Installation"
   - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
