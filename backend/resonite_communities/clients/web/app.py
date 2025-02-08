@@ -80,7 +80,9 @@ def filter_tag(tags):
     html_tags = ""
     if not tags:
         return ""
-    for tag in tags.split(','):
+    tags = tags.split(',')
+    tags = [tag for tag in tags if tag not in ["public", "resonite"]]
+    for tag in tags:
         html_tags += f"<span class='tag is-info m-1'>{tag}</span>"
     return html_tags
 
