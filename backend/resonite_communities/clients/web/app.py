@@ -3,7 +3,6 @@ import logging
 import re
 import traceback
 import base64
-import json
 from datetime import datetime, timedelta
 
 from fastapi import FastAPI, Request
@@ -13,8 +12,6 @@ from sqlalchemy import case, and_, not_, or_
 from starlette.templating import Jinja2Templates
 
 from resonite_communities.clients import StandaloneApplication
-from resonite_communities.clients.web.utils.discord import get_current_user, get_user_guilds, \
-    get_user_roles_in_guild_safe
 from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.models.signal import Event, Stream
 from resonite_communities.utils import Config
@@ -114,24 +111,12 @@ templates = Jinja2Templates(env=env)
 from starlette.responses import JSONResponse, RedirectResponse
 
 from resonite_communities.auth.users import fastapi_users, auth_backend
-from resonite_communities.auth.db import (
-    create_db_and_tables,
-)
-from resonite_communities.auth.schemas import UserCreate, UserRead
-
-from contextlib import asynccontextmanager
 import secrets
 
 
 current_active_user = fastapi_users.current_user(active=True, optional=True)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # TODO: Replace with alembic
-    await create_db_and_tables()
-    yield
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 app.secret_key = Config.SECRET
 
 # Discord stuff

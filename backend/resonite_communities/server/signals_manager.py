@@ -33,13 +33,6 @@ intents = disnake.Intents.all()
 bot = disnake.ext.commands.InteractionBot(intents=intents)
 ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
 
-from resonite_communities.models.base import engine
-
-from sqlmodel import SQLModel
-SQLModel.metadata.create_all(engine)
-
-#signals_queue = asyncio.Queue()
-
 # Scheduler initialization
 scheduler = AsyncIOScheduler(daemon=True)
 

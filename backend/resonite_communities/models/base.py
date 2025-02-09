@@ -3,15 +3,16 @@ from datetime import datetime
 from typing import Optional, Any
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, create_engine, inspect, desc, asc, BinaryExpression, ClauseElement
-from sqlalchemy.orm import sessionmaker, RelationshipProperty, joinedload
+from sqlalchemy import select, create_engine, inspect, desc, asc, ClauseElement
+from sqlalchemy.orm import RelationshipProperty, joinedload
 from sqlmodel import Session, SQLModel
 
 
 from resonite_communities.utils.logger import get_logger
+from resonite_communities.utils import Config
 
-engine = create_engine("sqlite:///my_database.db")
-SessionLocale = sessionmaker(bind=engine)
+engine = create_engine(Config.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), echo=False)
+
 
 class BaseModel(SQLModel):
 
@@ -200,8 +201,13 @@ class BaseModel(SQLModel):
         except IntegrityError as exc:
             if not isinstance(_filter_field, list):
                 _filter_field = [_filter_field]
-            if f'constraint failed' not in str(exc):
+            from psycopg.errors import UniqueViolation, NotNullViolation
+            if not isinstance(
+                exc.orig,
+                (UniqueViolation, NotNullViolation)
+            ):
                 get_logger(cls.__name__).error(exc)
+                #pass
             else:
                 cls.update(_filter_field, _filter_value, **fields_to_update)
 

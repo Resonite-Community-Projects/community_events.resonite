@@ -47,10 +47,12 @@ nav:
     - ClientIntegration/http-api-usage.md
   - Developer Guide:
     - DeveloperGuide/development.md
+    - DeveloperGuide/requirements.md
     - DeveloperGuide/installation.md
-    - DeveloperGuide/usage.md
     - DeveloperGuide/server-configuration.md
     - DeveloperGuide/server-installation.md
+    - DeveloperGuide/usage.md
+    - DeveloperGuide/migrations.md
     - DeveloperGuide/testing.md
     - DeveloperGuide/architecture.md
   - Support:

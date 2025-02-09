@@ -32,7 +32,14 @@
 - [x] Remove useless tags from the web client as: "public", "resonite"
 - [x] Go a check of all the TODO and FIXME
 - [ ] Set up the new stack for production (and preproduction) with docker container and such
-  - [ ] Update the documentation in "Developer Guide" > "Server Installation"
+  - [/] Update the documentation in "Developer Guide" > "Server Installation"
+  - [x] Switch to alembic for the migrations
+  - [ ] Finish to work on the docker file
+    - Test the client and manager in a container
+    - Finish to setup the healthcheck system instead of using the depends_on feature
+  - [ ] Use traefik to root everything
+    - Keep the /v1
+    - Prepare for the v2 on /api/v2 instead, if possible. See if something can be done in traefik for that and dont forget to update the doc
   - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
 - [ ] Set up the deployment in preproduction (beta.resonite-communities.com) as well as the documentation (docs.beta.resonite-communities.com)
 - [ ] Update the documentation to explain more the architecture part as well as the usage guide

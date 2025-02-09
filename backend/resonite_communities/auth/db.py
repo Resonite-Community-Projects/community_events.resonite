@@ -11,19 +11,18 @@ from fastapi_users_db_sqlalchemy.access_token import (
     SQLAlchemyBaseAccessTokenTableUUID,
 )
 
-DATABASE_URL = "sqlite+aiosqlite:///./my_database.db"
+from resonite_communities.utils import Config
 
-
-class Base(DeclarativeBase):
+class BaseModel(DeclarativeBase):
     pass
 
 
-class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
+class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, BaseModel):
     __tablename__ = 'oauth_account'
     discord_account_id = Column(UUID, ForeignKey('discord_account.id'), unique=True, nullable=True)
     discord_account = relationship('DiscordAccount', back_populates='oauth_account', uselist=False)
 
-class DiscordAccount(Base):
+class DiscordAccount(BaseModel):
     __tablename__ = 'discord_account'
     id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
     name: Mapped[str] = Column(String)
@@ -33,22 +32,17 @@ class DiscordAccount(Base):
     oauth_account = relationship('OAuthAccount', back_populates='discord_account', uselist=False)
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
+class User(SQLAlchemyBaseUserTableUUID, BaseModel):
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined"
     )
 
-class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
+class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, BaseModel):
     pass
 
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(Config.DATABASE_URL, echo=False)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
-
-
-async def create_db_and_tables():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

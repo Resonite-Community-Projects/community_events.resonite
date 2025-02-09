@@ -1,39 +1,58 @@
 services:
-  cache:
-    image: redis:7.0-alpine
-    restart: always
-    command: redis-server --save 20 1 --loglevel warning
-  bots:
-    #image: community_event:latest
-    build: backend
-    restart: always
-    #command: signals_manager
-    command: poetry run signals_manager
-    #command: poetry run python -m resonite_communities.server.signals_manager run
-    depends_on:
-      - "cache"
+  database:
+    image: postgres:16
+    profiles:
+      - database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=resonitecommunities
+      - POSTGRES_DB=resonitecommunities
     volumes:
-      - "./config.toml:/app/config.toml"
-      - "./credentials.json:/app/credentials.json"
-  web:
-    #image: community_event:latest
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  signals_manager:
     build: backend
     restart: always
+    command: poetry run signals_manager
+    profiles:
+      - manager
+    depends_on:
+      - "database"
+    volumes:
+      - "./backend/config.toml:/app/config.toml"
+  api_client:
+    build: backend
+    restart: always
+    profiles:
+      - client
+    command: poetry run api_client
+    depends_on:
+      - "database"
+    volumes:
+      - "./backend/config.toml:/app/config.toml"
+    ports:
+      - '8000:8000'
+  web_client:
+    build: backend
+    restart: always
+    profiles:
+      - client
     command: poetry run web_client
     depends_on:
-      - "cache"
+      - "database"
     volumes:
-      - "./config.toml:/app/config.toml"
-      - "./credentials.json:/app/credentials.json"
+      - "./backend/config.toml:/app/config.toml"
     ports:
-      - '5000:8000'
-  worker:
-    #image: community_event:latest
-    build: .
-    restart: always
-    #command: .venv/bin/worker
-    command: celery -A resonite_communities.tasks worker -l info
-    depends_on:
-      - "cache"
-    volumes:
-      - "./config.toml:/app/config.toml"
+      - '8001:8001'
+
+volumes:
+  postgres_data:
+    driver: local
