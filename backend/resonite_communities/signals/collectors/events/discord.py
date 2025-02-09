@@ -195,7 +195,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     self.logger.error(f"Community {community.name} have no tags, skipping all events")
                     self.logger.error(f"Please add 'public' or 'private' tag to this community")
                     break
-                self.logger.warning(event.dict())
 
                 self.model.upsert(
                     _filter_field='external_id',
@@ -214,7 +213,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     scheduler_type=self.scheduler_type.name,
                     status=EventStatus.READY,
                     created_at_external=event.created_at,
-                    #updated_at_external=event.updated_at,
                 )
 
             events_id = [event.id for event in events]
