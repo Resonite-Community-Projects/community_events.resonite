@@ -127,19 +127,19 @@ class Signal:
     def init_update_communities(self):
         self.communities = []
         for signal in deepcopy(getattr(self.config.SIGNALS, self.name, [])):
-            community = Community(
-                name=signal['name'],
-                monitored=False,
-                external_id=str(signal['external_id']),
-                platform=self.platform,
-                url=signal.get('url', None),
-                tags=signal.get('tags', []),
-                config=signal.get('config', {})
-            )
-            Community.upsert(
+            community = {
+                "name": signal['name'],
+                "monitored": False,
+                "external_id": str(signal['external_id']),
+                "platform": self.platform,
+                "url": signal.get('url', None),
+                "tags": signal.get('tags', []),
+                "config": signal.get('config', {})
+            }
+            community = Community.upsert(
                 _filter_field=['external_id', 'platform'],
-                _filter_value=[community.external_id, community.platform],
-                **community.dict()
+                _filter_value=[community['external_id'], community['platform']],
+                **community
             )
             self.communities.append(community)
 

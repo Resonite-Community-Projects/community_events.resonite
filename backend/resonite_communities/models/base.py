@@ -1,9 +1,10 @@
-from datetime import datetime
+from typing import ClassVar
+from datetime import datetime, timezone
 
 from typing import Optional, Any
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, create_engine, inspect, desc, asc, ClauseElement
+from sqlalchemy.dialects.postgresql import insert as dialects_insert
 from sqlalchemy.orm import RelationshipProperty, joinedload
 from sqlmodel import Session, SQLModel
 
@@ -15,6 +16,8 @@ engine = create_engine(Config.DATABASE_URL.replace("postgresql+asyncpg", "postgr
 
 
 class BaseModel(SQLModel):
+    insert_only_fields: ClassVar[list[str]]= ['created_at']
+    update_only_fields: ClassVar[list[str]] = ['updated_at']
 
     def __str__(self):
         """
@@ -92,6 +95,21 @@ class BaseModel(SQLModel):
 
         return query
 
+    @classmethod
+    def set_insert_fields(cls, fields_to_update: dict):
+        """Set fields that should only be set during insert.
+        """
+        if 'created_at' not in fields_to_update:
+            fields_to_update['created_at'] = datetime.now(timezone.utc)
+        return fields_to_update
+
+    @classmethod
+    def set_update_fields(cls, fields_to_update: dict):
+        """Set fields that should only be set during insert.
+        """
+        if 'updated_at' not in fields_to_update:
+            fields_to_update['updated_at'] = datetime.now(timezone.utc)
+        return fields_to_update
 
     @classmethod
     def add(cls, **data: Any):
@@ -193,23 +211,36 @@ class BaseModel(SQLModel):
         **fields_to_update: Any
     ):
         cls._validate_filter(fields_to_update)
-        # TODO: This will need to use the on_conflict_do_update sql method
-        # But this is not available yet in SQLModel
-        # See https://github.com/fastapi/sqlmodel/issues/59
-        try:
-            cls.add(**fields_to_update)
-        except IntegrityError as exc:
-            if not isinstance(_filter_field, list):
-                _filter_field = [_filter_field]
-            from psycopg.errors import UniqueViolation, NotNullViolation
-            if not isinstance(
-                exc.orig,
-                (UniqueViolation, NotNullViolation)
-            ):
-                get_logger(cls.__name__).error(exc)
-                #pass
-            else:
-                cls.update(_filter_field, _filter_value, **fields_to_update)
+
+        if not isinstance(_filter_field, list):
+            _filter_field = [_filter_field]
+        if not isinstance(_filter_value, list):
+            _filter_value = [_filter_value]
+        if len(_filter_field) != len(_filter_value):
+            raise ValueError("There should be the same amount of fields and values")
+
+        insert_data = {key: value for key, value in fields_to_update.items() if key not in cls.update_only_fields}
+        insert_data = cls.set_insert_fields(insert_data)
+
+        update_data = {key: value for key, value in fields_to_update.items() if key not in cls.insert_only_fields}
+        update_data = cls.set_update_fields(update_data)
+
+        stmt = dialects_insert(cls).values(**insert_data)
+
+        stmt = stmt.on_conflict_do_update(
+            index_elements=_filter_field,
+            set_=update_data
+        ).returning(cls)
+
+        with Session(engine) as session:
+            result = session.execute(stmt)
+            session.commit()
+            row = result.first()
+            if row is None:
+                return
+            instance = row[0]
+            session.refresh(instance)
+            return instance
 
 
 

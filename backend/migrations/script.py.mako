@@ -11,6 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 import sqlmodel.sql.sqltypes
 import fastapi_users_db_sqlalchemy
+import resonite_communities
 ${imports if imports else ""}
 
 # revision identifiers, used by Alembic.
