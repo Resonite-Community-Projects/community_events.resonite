@@ -1,8 +1,8 @@
 """Initialization
 
-Revision ID: 858efba88fd4
+Revision ID: 101730d4316f
 Revises: 
-Create Date: 2025-02-09 15:35:05.309913
+Create Date: 2025-02-10 10:20:56.712801
 
 """
 from typing import Sequence, Union
@@ -15,7 +15,7 @@ import resonite_communities
 
 
 # revision identifiers, used by Alembic.
-revision: str = '858efba88fd4'
+revision: str = '101730d4316f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -80,7 +80,7 @@ def upgrade() -> None:
     sa.UniqueConstraint('external_id')
     )
     op.create_table('discord_account',
-    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('avatar_url', sa.String(), nullable=True),
     sa.Column('user_communities', sa.JSON(), nullable=True),
@@ -107,7 +107,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_accesstoken_created_at'), 'accesstoken', ['created_at'], unique=False)
     op.create_table('oauth_account',
-    sa.Column('discord_account_id', sa.UUID(), nullable=True),
+    sa.Column('discord_account_id', sa.Integer(), nullable=True),
     sa.Column('id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
     sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
     sa.Column('oauth_name', sa.String(length=100), nullable=False),

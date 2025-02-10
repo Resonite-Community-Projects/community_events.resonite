@@ -19,12 +19,12 @@ class BaseModel(DeclarativeBase):
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, BaseModel):
     __tablename__ = 'oauth_account'
-    discord_account_id = Column(UUID, ForeignKey('discord_account.id'), unique=True, nullable=True)
+    discord_account_id = Column(Integer, ForeignKey('discord_account.id'), unique=True, nullable=True)
     discord_account = relationship('DiscordAccount', back_populates='oauth_account', uselist=False)
 
 class DiscordAccount(BaseModel):
     __tablename__ = 'discord_account'
-    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid4)
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     name: Mapped[str] = Column(String)
     avatar_url: Mapped[str] = Column(String)
     user_communities: Mapped[list[str]] = Column(JSON)
@@ -41,8 +41,15 @@ class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, BaseModel):
     pass
 
 
-engine = create_async_engine(Config.DATABASE_URL, echo=False)
+engine = create_async_engine(Config.DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://'), echo=False)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
+#from sqlalchemy import create_engine
+#from sqlalchemy.orm import sessionmaker
+
+
+#engine = create_engine(Config.DATABASE_URL, echo=False)
+#SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

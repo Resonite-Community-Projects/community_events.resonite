@@ -28,7 +28,6 @@ class Community(BaseModel, table=True):
     url: str | None = Field()
     members_count: int | None = Field(default=0)
     tags: list | None = Field(default=[], sa_column=Column(JSON))
-    #config: dict | None = Field(default={}, sa_column=Column(JSON))
     config: dict | None = Field(default={}, sa_column=Column(EasyDictType, default=easydict.EasyDict()))
     events: list["Event"] = Relationship(back_populates="community")
     streams: list["Stream"] = Relationship(back_populates="community")

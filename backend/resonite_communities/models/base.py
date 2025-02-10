@@ -12,7 +12,7 @@ from sqlmodel import Session, SQLModel
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.utils import Config
 
-engine = create_engine(Config.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), echo=False)
+engine = create_engine(Config.DATABASE_URL, echo=False)
 
 
 class BaseModel(SQLModel):

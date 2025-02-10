@@ -41,6 +41,7 @@ class TwitchStreamsCollector(StreamsCollector):
                 _filter_field=['external_id', 'platform'],
                 _filter_value=[streamer.external_id, CommunityPlatform.TWITCH],
                 name=streamer.name,
+                platform=CommunityPlatform.TWITCH,
                 monitored=streamer.monitored,
                 external_id=streamer.external_id,
                 members_count=broadcaster['twitch']['followers']['total'],

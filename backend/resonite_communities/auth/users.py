@@ -102,9 +102,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
                         if retry_after > private_events_access_communities['retry_after']:
                             private_events_access_communities['retry_after'] = retry_after
                         for user_role in user_roles:
-                            if str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')):
+                            if (
+                                str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')) and
+                                guild['id'] in communities
+                            ):
                                 private_events_access_communities['guilds'].append(
-                                    communities[guild['id']]
+                                    str(communities[guild['id']])
                                 )
 
         from resonite_communities.auth.db import (
