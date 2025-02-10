@@ -18,6 +18,15 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+  migrations:
+    build: backend
+    command: poetry run alembic upgrade head
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles:
+      - manager
+      - client
   signals_manager:
     build: backend
     restart: always
@@ -25,7 +34,10 @@ services:
     profiles:
       - manager
     depends_on:
-      - "database"
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
     volumes:
       - "./backend/config.toml:/app/config.toml"
   api_client:
@@ -35,7 +47,10 @@ services:
       - client
     command: poetry run api_client
     depends_on:
-      - "database"
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
     volumes:
       - "./backend/config.toml:/app/config.toml"
     ports:
@@ -47,7 +62,10 @@ services:
       - client
     command: poetry run web_client
     depends_on:
-      - "database"
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
     volumes:
       - "./backend/config.toml:/app/config.toml"
     ports:

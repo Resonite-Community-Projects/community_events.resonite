@@ -15,22 +15,37 @@ Most of the configuration of this tool are available in the `config.toml` file.
 - `SECRET`: str, The secret key use to handle the authentication system
 - `PUBLIC_DOMAIN`: str, The domain used by the HTTP API do show only the public events
 - `PRIVATE_DOMAIN`: str, The domain used by the HTTP API to show only the private events
+- `DATABASE_URL`: str, The Postgresql database url
 - `SENTRY_DSN`: str, The DSN configuration for send error logs to Sentry
 
-!!! note "About the domains"
+### Setting up `PUBLIC_DOMAIN` and `PRIVATE_DOMAINT`
 
-    To be able to use the HTTP API locally you need to configure your hosts file on your file system with the following domain:
+To be able to use the HTTP API locally you need to configure your hosts file on your file system with the following domain:
 
-    Depending on your Operating System this would either by `/etc/hosts` for linux or `C:\Windows\System32\drivers\etc\hosts` for Windows. Be careful that modifing this file require you to be administrator of you computer.
+Depending on your Operating System this would either by `/etc/hosts` for linux or `C:\Windows\System32\drivers\etc\hosts` for Windows. Be careful that modifing this file require you to be administrator of you computer.
 
-    ```hosts title="hosts"
-    127.0.0.1 resonite-communities.local
-    127.0.0.1 private.resonite-communities.local
-    ```
+```hosts title="hosts"
+127.0.0.1 resonite-communities.local
+127.0.0.1 private.resonite-communities.local
+```
 
-    You can change the second-level domain but there is a check on the top-level domain `.local` in the code, even if this is just to show an tip message.
+You can change the second-level domain but there is a check on the top-level domain `.local` in the code, even if this is just to show an tip message.
 
-    This check is done in the function `check_is_local_env` in the class utils and is used with the variable `is_local_env` in the rest of the code.
+This check is done in the function `check_is_local_env` in the class utils and is used with the variable `is_local_env` in the rest of the code.
+
+### Setting up `DATABASE_URL`
+
+In the case you want to do local developement switching between the docker containers and without for the manager and the clients you will need to configure the following for running the `poetry run` command directly:
+
+```toml
+DATABASE_URL = "postgresql://resonitecommunities:changeme@127.0.0.1:5432/resonitecommunities"
+```
+
+Or this configuration if you want to use the `poetry run` command via the docker compose:
+
+```toml
+DATABASE_URL = "postgresql://resonitecommunities:changeme@database:5432/resonitecommunities"
+```
 
 ## Resonite
 

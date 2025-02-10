@@ -33,11 +33,11 @@
 - [x] Go a check of all the TODO and FIXME
 - [x] Look into why the BDD have very high ids for community end events
 - [ ] Set up the new stack for production (and preproduction) with docker container and such
-  - [/] Update the documentation in "Developer Guide" > "Server Installation"
+  - [x] Update the documentation in "Developer Guide" > "Server Installation"
   - [x] Switch to alembic for the migrations
-  - [ ] Finish to work on the docker file
+  - [x] Finish to work on the docker file
     - [x] Test the client and manager in a container
-    - [ ] Finish to setup the healthcheck system instead of using the depends_on feature
+    - [x] Finish to setup the healthcheck system instead of using the depends_on feature
   - [ ] Use traefik to root everything
     - Keep the /v1
     - Prepare for the v2 on /api/v2 instead, if possible. See if something can be done in traefik for that and dont forget to update the doc
