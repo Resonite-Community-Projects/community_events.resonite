@@ -1,4 +1,19 @@
 services:
+
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   database:
     image: postgres:16
     profiles:
@@ -18,6 +33,7 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+
   migrations:
     build: backend
     command: poetry run alembic upgrade head
@@ -27,6 +43,7 @@ services:
     profiles:
       - manager
       - client
+
   signals_manager:
     build: backend
     restart: always
@@ -40,6 +57,7 @@ services:
         condition: service_healthy
     volumes:
       - "./backend/config.toml:/app/config.toml"
+
   api_client:
     build: backend
     restart: always
@@ -55,6 +73,21 @@ services:
       - "./backend/config.toml:/app/config.toml"
     ports:
       - '8000:8000'
+    labels:
+      - traefik.enable=true
+
+      # Modern API route
+      - traefik.http.routers.api_client.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client.entrypoints=web
+
+      # Private events legacy API route
+      - traefik.http.routers.api_client_legacy_private.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_private.entrypoints=web
+
+      # Public events legacy API route
+      - traefik.http.routers.api_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_public.entrypoints=web
+
   web_client:
     build: backend
     restart: always
@@ -70,6 +103,11 @@ services:
       - "./backend/config.toml:/app/config.toml"
     ports:
       - '8001:8001'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web_client.rule=Host(`resonite-communities.local`)
+      - traefik.http.routers.web_client.entrypoints=web
+
 
 volumes:
   postgres_data:

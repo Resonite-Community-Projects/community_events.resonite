@@ -192,3 +192,53 @@ services:
     ```
 
     And to restart it use the `up` command.
+
+## Running the proxy
+
+We use traefik to handle this notion of new and old url.
+
+```yaml
+  traefik:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  # Here goes the database docker compose configuration
+
+  # Here goes the manager docker compose configuration
+
+  # Here goes the api client docker compose configuration
+  # Labels for the api client docker compose configuration
+      labels:
+      - traefik.enable=true
+
+      # Modern API route
+      - traefik.http.routers.api_client.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client.entrypoints=web
+
+      # Private events legacy API route
+      - traefik.http.routers.api_client_legacy_private.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_private.entrypoints=web
+
+      # Public events legacy API route
+      - traefik.http.routers.api_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_public.entrypoints=web
+
+  # Here goes the web client docker compose configuration
+  # Labels for the web client docker compose configuration
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web_client.rule=Host(`resonite-communities.local`)
+      - traefik.http.routers.web_client.entrypoints=web
+
+  # Here goes the volume information for the database
+```

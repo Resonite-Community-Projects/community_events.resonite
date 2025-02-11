@@ -38,9 +38,10 @@
   - [x] Finish to work on the docker file
     - [x] Test the client and manager in a container
     - [x] Finish to setup the healthcheck system instead of using the depends_on feature
-  - [ ] Use traefik to root everything
-    - Keep the /v1
-    - Prepare for the v2 on /api/v2 instead, if possible. See if something can be done in traefik for that and dont forget to update the doc
+  - [x] Use traefik to root everything
+    - [x] Keep the /v1
+    - [x] Prepare for the v2 on /api/v2 instead, if possible. See if something can be done in traefik for that and dont forget to update the doc
+    - [x] Test from another computer (like that i can test that the full development process in resonite works for me - not really but that should be ok like that)
   - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
 - [ ] Set up the deployment in preproduction (beta.resonite-communities.com) as well as the documentation (docs.beta.resonite-communities.com)
 - [ ] Update the documentation to explain more the architecture part as well as the usage guide

@@ -59,3 +59,35 @@ poetry run docs serve
 Accessible at [http://resonite-communities.local:8002](http://resonite-communities.local:8002)
 
 **Note:** You can use the option `-a <IP:PORT>` to change the host and port the Documentation will listen
+
+## Tips
+
+### Developing on another device that Resonite is running
+
+In the case where you want to develop on a device you need to say to VSCode to listen to all interface.
+
+Search for `Remote: Local Port Host` and set it to `allInterfaces`
+
+### DIrect connection without port
+
+Let's say you configure your hostfile like explained in [server-configuration](server-configuration.md) and you can access the service via `resonite-communities.local:8000` but you want to have access with `resonite-communities.local` directly without the port.
+
+Depending of your operating system you will need help from other software to redirect everything that come to the port `80` (aka no port in the url) to the redirection automatically made by VSCode. Go into the `PORTS` forwading setting and vscode and for the `80` port take the `fowarded address` port.
+
+#### Linux
+
+For linux you can simply use a program called `socat` and use it that way:
+
+```console
+sudo socat TCP-LISTEN:80,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:44677 # Replace the last number with the forwarded address given by VSCode.
+```
+
+!!! danger
+
+    This only work locally but not from the remote device, while `http://resonite-communities.local:8001` works this is not the case of `http://resonite-communities.local`
+
+#### Windows
+
+!!! warning
+
+    Someone need to test on Windows.
