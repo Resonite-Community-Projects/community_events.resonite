@@ -1,0 +1,21 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: SANVM07
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build app
+        run: docker compose -f docker-compose.yml build
+
+      - name: Update 3rd party docker containers
+        run: docker compose -f docker-compose.yml pull
+
+      - name: Spin up containers
+        run: docker compose -f docker-compose.yml up -d
