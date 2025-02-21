@@ -66,7 +66,7 @@ services:
         condition: service_healthy
     volumes:
       #- "./backend/config.toml:/app/config.toml"
-      - "./backend/config.toml:/app/config.toml"
+      - "/home/root_man/.config/community_events.resonite.toml:/app/config.toml"
 
   api_client:
     build: backend
