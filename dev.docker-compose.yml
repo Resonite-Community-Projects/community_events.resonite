@@ -46,6 +46,8 @@ services:
         exit $EXIT_CODE;
       fi
       "
+    volumes:
+      - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
     depends_on:
       database:
         condition: service_healthy
