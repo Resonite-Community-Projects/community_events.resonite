@@ -36,6 +36,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         associate_by_email = False,
         is_verified_by_default = False
     ):
+        self.logger.info('Processing callback...')
         from fastapi_users.exceptions import UserAlreadyExists
         from fastapi import HTTPException
         try:
