@@ -23,7 +23,7 @@ formatter = logging.Formatter(
 )
 
 logger = logging.getLogger('community_events')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.addHandler(default_handler)
 logger.handlers[0].setFormatter(formatter)
 
@@ -120,55 +120,7 @@ app = FastAPI()
 app.secret_key = Config.SECRET
 
 # Discord stuff
-from httpx_oauth.clients.discord import DiscordOAuth2 as AAA
-from resonite_communities.utils import get_logger
-
-import json
-
-def args_kwargs_dict(*args, **kwargs):
-    def safe_repr(obj):
-        try:
-            return {obj.__class__.__name__: obj.__dict__}
-        except (TypeError, OverflowError):
-            return repr(obj)
-
-    return {
-        "args": [safe_repr(arg) for arg in args],
-        "kwargs": {key: safe_repr(value) for key, value in kwargs.items()}
-    }
-
-class DiscordOAuth2(AAA):
-
-    async def get_access_token(self, *args, **kwargs):
-        get_logger(self.__class__.__name__).error('before get access token')
-        data = await super().get_access_token(*args, **kwargs)
-        get_logger(self.__class__.__name__).error('after get access token')
-        return data
-
-    async def refresh_token(self, *args, **kwargs):
-        get_logger(self.__class__.__name__).error('before get refresh_token')
-        data = await super().refresh_token(*args, **kwargs)
-        get_logger(self.__class__.__name__).error('after get refresh_token')
-        return data
-
-    async def revoke_token(self, *args, **kwargs):
-        get_logger(self.__class__.__name__).error('before get revoke_token')
-        data = await super().revoke_token(*args, **kwargs)
-        get_logger(self.__class__.__name__).error('after get revoke_token')
-        return data
-
-    async def send_request(self, *args, **kwargs):
-        get_logger(self.__class__.__name__).error('before send request')
-        #args_kwargs_str = lambda *args, **kwargs: ", ".join(map(str, args)) + (", " if args and kwargs else "") + ", ".join(f"{k}={v}" for k, v in kwargs.items())
-        get_logger(self.__class__.__name__).error(args_kwargs_dict(*args, **kwargs))
-        try:
-            data = await super().send_request(*args, **kwargs)
-        except Exception as e:
-            get_logger(self.__class__.__name__).error('------')
-            get_logger(self.__class__.__name__).error(e)
-            raise
-        get_logger(self.__class__.__name__).error('after send request')
-        return data
+from httpx_oauth.clients.discord import DiscordOAuth2
 
 discord_oauth = DiscordOAuth2(
     client_id=str(Config.Discord.client.id),
@@ -186,30 +138,21 @@ oauth_clients = {
 
 @app.get('/auth/login/{provider}')
 async def login(provider: str, request: Request):
-    logger.info(f"Trying login with {provider}")
-    forwarded_proto = request.headers.get("x-forwarded-proto")
-    logger.info(f"Forwarded protocol: {forwarded_proto}")
-    logger.info(f"Request URL: {request.url}")
+    #forwarded_proto = request.headers.get("x-forwarded-proto")
     oauth_client = oauth_clients.get(provider)
     if not oauth_client:
         return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
 
     state = secrets.token_urlsafe(16)
 
-    logger.info(f"Trying to generate a new token...")
     from fastapi_users.router.oauth import generate_state_token
     state_data: dict[str, str] = {}
     state_token = generate_state_token(state_data, Config.SECRET)
-
-    logger.info(f"Trying to get auth url")
 
     authorization_url = await oauth_client["client"].get_authorization_url(
         redirect_uri=oauth_client["redirect_uri"],
         state=state_token,
     )
-
-    logger.info(f"Redirecting to discord...")
-    logger.info(authorization_url)
 
     return RedirectResponse(authorization_url)
 
@@ -230,9 +173,6 @@ async def logout(
     response.delete_cookie("fastapiusersauth")
     return response
 
-# f"oauth:{discord_oauth.name}.{auth_backend.name}.callback"
-# f"oauth:discord.jwt.callback"
-
 app.include_router(
     fastapi_users.get_oauth_router(
         discord_oauth,
@@ -245,7 +185,6 @@ app.include_router(
 )
 
 logger = logging.getLogger('uvicorn.error')
-logger.setLevel(logging.DEBUG)
 
 async def render_main(request: Request, user: User, tab: str):
     user_auth = None
