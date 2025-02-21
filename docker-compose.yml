@@ -65,6 +65,7 @@ services:
       database:
         condition: service_healthy
     volumes:
+      #- "./backend/config.toml:/app/config.toml"
       - "./backend/config.toml:/app/config.toml"
 
   api_client:
@@ -79,22 +80,23 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      #- "./backend/config.toml:/app/config.toml"
+      - "/home/root_man/.config/community_events.resonite.toml:/app/config.toml"
     ports:
       - '8000:8000'
     labels:
       - traefik.enable=true
 
       # Modern API route
-      - traefik.http.routers.api_client.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
       - traefik.http.routers.api_client.entrypoints=web
 
       # Private events legacy API route
-      - traefik.http.routers.api_client_legacy_private.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.api_client_legacy_private.entrypoints=web
 
       # Public events legacy API route
-      - traefik.http.routers.api_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.api_client_legacy_public.entrypoints=web
 
   web_client:
@@ -109,7 +111,8 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      #- "./backend/config.toml:/app/config.toml"
+      - "/home/root_man/.config/community_events.resonite.toml:/app/config.toml"
     ports:
       - '8001:8001'
     labels:
