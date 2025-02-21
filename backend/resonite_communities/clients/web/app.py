@@ -138,20 +138,27 @@ oauth_clients = {
 
 @app.get('/auth/login/{provider}')
 async def login(provider: str):
+    logger.info(f"Trying login with {provider}")
     oauth_client = oauth_clients.get(provider)
     if not oauth_client:
         return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
 
     state = secrets.token_urlsafe(16)
 
+    logger.info(f"Trying to generate a new token...")
     from fastapi_users.router.oauth import generate_state_token
     state_data: dict[str, str] = {}
     state_token = generate_state_token(state_data, Config.SECRET)
+
+    logger.info(f"Trying to get auth url")
 
     authorization_url = await oauth_client["client"].get_authorization_url(
         redirect_uri=oauth_client["redirect_uri"],
         state=state_token,
     )
+
+    logger.info(f"Redirecting to discord...")
+
     return RedirectResponse(authorization_url)
 
 from resonite_communities.auth.db import User
