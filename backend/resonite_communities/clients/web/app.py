@@ -137,8 +137,11 @@ oauth_clients = {
 
 
 @app.get('/auth/login/{provider}')
-async def login(provider: str):
+async def login(provider: str, request: Request):
     logger.info(f"Trying login with {provider}")
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    logger.info(f"Forwarded protocol: {forwarded_proto}")
+    logger.info(f"Request URL: {request.url}")
     oauth_client = oauth_clients.get(provider)
     if not oauth_client:
         return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
