@@ -36,7 +36,16 @@ services:
 
   migrations:
     build: backend
-    command: poetry run alembic upgrade head
+    #command: poetry run alembic upgrade head
+    command: >
+      /bin/bash -c "
+      poetry run alembic upgrade head;
+      EXIT_CODE=$?;
+      if [ $EXIT_CODE -ne 0 ]; then
+        echo 'Alembic migration failed with exit code' $EXIT_CODE;
+        exit $EXIT_CODE;
+      fi
+      "
     depends_on:
       database:
         condition: service_healthy
