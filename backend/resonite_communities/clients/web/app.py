@@ -123,10 +123,26 @@ app.secret_key = Config.SECRET
 from httpx_oauth.clients.discord import DiscordOAuth2 as AAA
 from resonite_communities.utils import get_logger
 
+import json
+
+def args_kwargs_dict(*args, **kwargs):
+    def safe_repr(obj):
+        try:
+            return obj.__dict__
+        except (TypeError, OverflowError):
+            return repr(obj)
+
+    return {
+        "args": [safe_repr(arg) for arg in args],
+        "kwargs": {key: safe_repr(value) for key, value in kwargs.items()}
+    }
+
 class DiscordOAuth2(AAA):
 
     async def send_request(self, *args, **kwargs):
         get_logger(self.__class__.__name__).error('before send request')
+        #args_kwargs_str = lambda *args, **kwargs: ", ".join(map(str, args)) + (", " if args and kwargs else "") + ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        get_logger(self.__class__.__name__).error(args_kwargs_dict(*args, **kwargs))
         data = await super().send_request(*args, **kwargs)
         get_logger(self.__class__.__name__).error('after send request')
         return data
