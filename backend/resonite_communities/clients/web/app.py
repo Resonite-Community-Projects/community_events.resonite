@@ -230,11 +230,15 @@ async def logout(
     response.delete_cookie("fastapiusersauth")
     return response
 
+# f"oauth:{discord_oauth.name}.{auth_backend.name}.callback"
+# f"oauth:discord.jwt.callback"
+
 app.include_router(
     fastapi_users.get_oauth_router(
         discord_oauth,
         auth_backend,
         Config.SECRET,
+        redirect_url=Config.Discord.client.redirect_uri
     ),
     prefix="/auth/discord",
     tags=["auth"],
