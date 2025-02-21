@@ -143,7 +143,12 @@ class DiscordOAuth2(AAA):
         get_logger(self.__class__.__name__).error('before send request')
         #args_kwargs_str = lambda *args, **kwargs: ", ".join(map(str, args)) + (", " if args and kwargs else "") + ", ".join(f"{k}={v}" for k, v in kwargs.items())
         get_logger(self.__class__.__name__).error(args_kwargs_dict(*args, **kwargs))
-        data = await super().send_request(*args, **kwargs)
+        try:
+            data = await super().send_request(*args, **kwargs)
+        except Exception as e:
+            get_logger(self.__class__.__name__).error('------')
+            get_logger(self.__class__.__name__).error(e)
+            raise
         get_logger(self.__class__.__name__).error('after send request')
         return data
 
