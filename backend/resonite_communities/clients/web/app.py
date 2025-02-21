@@ -120,7 +120,16 @@ app = FastAPI()
 app.secret_key = Config.SECRET
 
 # Discord stuff
-from httpx_oauth.clients.discord import DiscordOAuth2
+from httpx_oauth.clients.discord import DiscordOAuth2 as AAA
+from resonite_communities.utils import get_logger
+
+class DiscordOAuth2(AAA):
+
+    async def send_request(self, *args, **kwargs):
+        get_logger(self.__class__.__name__).error('before send request')
+        data = await super().send_request(*args, **kwargs)
+        get_logger(self.__class__.__name__).error('after send request')
+        return data
 
 discord_oauth = DiscordOAuth2(
     client_id=str(Config.Discord.client.id),
@@ -193,6 +202,7 @@ app.include_router(
 )
 
 logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
 
 async def render_main(request: Request, user: User, tab: str):
     user_auth = None
