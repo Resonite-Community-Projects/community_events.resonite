@@ -9,6 +9,11 @@ services:
       - "--entryPoints.web.address=:80"
       - "--entryPoints.web.forwardedHeaders.insecure"
       - "--accesslog=true"
+    labels:
+      traefik.http.routers.http-catchall.rule: hostregexp(`{host:.+}`)
+      traefik.http.routers.http-catchall.entrypoints: web
+      traefik.http.routers.http-catchall.middlewares: redirect-to-https@docker
+      traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
     ports:
       - "80:80"
       - "8080:8080"
