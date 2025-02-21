@@ -128,7 +128,7 @@ import json
 def args_kwargs_dict(*args, **kwargs):
     def safe_repr(obj):
         try:
-            return obj.__dict__
+            return {obj.__class__.__name__: obj.__dict__}
         except (TypeError, OverflowError):
             return repr(obj)
 
@@ -138,6 +138,24 @@ def args_kwargs_dict(*args, **kwargs):
     }
 
 class DiscordOAuth2(AAA):
+
+    async def get_access_token(self, *args, **kwargs):
+        get_logger(self.__class__.__name__).error('before get access token')
+        data = await super().get_access_token(*args, **kwargs)
+        get_logger(self.__class__.__name__).error('after get access token')
+        return data
+
+    async def refresh_token(self, *args, **kwargs):
+        get_logger(self.__class__.__name__).error('before get refresh_token')
+        data = await super().refresh_token(*args, **kwargs)
+        get_logger(self.__class__.__name__).error('after get refresh_token')
+        return data
+
+    async def revoke_token(self, *args, **kwargs):
+        get_logger(self.__class__.__name__).error('before get revoke_token')
+        data = await super().revoke_token(*args, **kwargs)
+        get_logger(self.__class__.__name__).error('after get revoke_token')
+        return data
 
     async def send_request(self, *args, **kwargs):
         get_logger(self.__class__.__name__).error('before send request')
