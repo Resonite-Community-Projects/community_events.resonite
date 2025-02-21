@@ -157,10 +157,11 @@ async def login(provider: str, request: Request):
 
     authorization_url = await oauth_client["client"].get_authorization_url(
         redirect_uri=oauth_client["redirect_uri"],
-        #state=state_token,
+        state=state_token,
     )
 
     logger.info(f"Redirecting to discord...")
+    logger.info(authorization_url)
 
     return RedirectResponse(authorization_url)
 
