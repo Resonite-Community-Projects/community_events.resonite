@@ -23,7 +23,7 @@ formatter = logging.Formatter(
 )
 
 logger = logging.getLogger('community_events')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logger.addHandler(default_handler)
 logger.handlers[0].setFormatter(formatter)
 
