@@ -2,10 +2,9 @@ import hashlib
 import contextlib
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
 from datetime import datetime
 import geoip2.database
-from resonite_communities.clients.web.models.metrics import Metrics
+from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.auth.db import get_async_session
 
 class MetricsMiddleware(BaseHTTPMiddleware):
@@ -15,17 +14,22 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         self.monitored_routes = [
             '/',
             '/streams',
+            '/v1/events',
+            '/v1/aggregated_events',
+            '/v2/events',
         ]
         self.reader = geoip2.database.Reader(db_path)
 
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
+        import logging
+
+        logging.error(request.url.path)
 
         if request.url.path not in self.monitored_routes:
             return response
 
         ip_address = request.headers.get('X-Forwarded-For', request.client.host).split(",")[0]
-        import logging
         hashed_ip = hashlib.sha256(ip_address.encode()).hexdigest()
 
         country = self.get_country_from_ip(ip_address)

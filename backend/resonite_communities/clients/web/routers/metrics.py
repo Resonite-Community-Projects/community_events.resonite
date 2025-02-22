@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 from resonite_communities.auth.users import current_active_user, User
 from resonite_communities.auth.db import get_async_session
-from resonite_communities.clients.web.models.metrics import Metrics
+from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.clients.web.utils.templates import templates
 
 

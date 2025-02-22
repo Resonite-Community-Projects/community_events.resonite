@@ -12,8 +12,12 @@ from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
 from resonite_communities.models.community import Community
 from resonite_communities.utils import Config, is_local_env
+from resonite_communities.clients.middleware.metrics import MetricsMiddleware
+from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
 app = FastAPI()
+
+app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 router_v1 = APIRouter(prefix='/v1')
 router_v2 = APIRouter(prefix='/v2')

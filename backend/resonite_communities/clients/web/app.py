@@ -13,8 +13,8 @@ from resonite_communities.clients.web.routers import (
     logout,
     metrics,
 )
-from resonite_communities.clients.web.middleware.metrics import MetricsMiddleware
-from resonite_communities.clients.web.utils.geoip import get_geoip_db_path
+from resonite_communities.clients.middleware.metrics import MetricsMiddleware
+from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
 app = FastAPI()
 app.secret = Config.SECRET
