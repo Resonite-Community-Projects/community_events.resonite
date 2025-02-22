@@ -44,7 +44,7 @@
     - [x] Test from another computer (like that i can test that the full development process in resonite works for me - not really but that should be ok like that)
   - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
 - [x] Setup the deployment in preproduction (dev.resonite-communities.com)
-- [ ] Add monitoring into the api part too, copy middleware and such
+- [x] Add monitoring into the api part too, copy middleware and such
 - [ ] Fix api v1 text for resonite who doesnt work well
 - [ ] Setup the deployment for the documentation (docs.dev.resonite-communities.com)
 - [ ] Update the documentation to explain more the architecture part as well as the usage guide
