@@ -38,6 +38,7 @@ mkdocs-material = "^9.6.2"
 sentry-sdk = "^2.20.0"
 psycopg = {extras = ["binary"], version = "^3.2.4"}
 psycopg2-binary = "^2.9.10"
+geoip2 = "^5.0.1"
 
 [tool.poetry.scripts]
 web_client = "resonite_communities.clients.web.app:run"

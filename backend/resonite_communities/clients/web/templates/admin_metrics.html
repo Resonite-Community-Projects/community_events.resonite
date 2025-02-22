@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Metrics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {
+        'packages':['geochart'],
+      });
+      google.charts.setOnLoadCallback(drawRegionsMap);
+
+      function drawRegionsMap() {
+        var data = google.visualization.arrayToDataTable([
+          ['Country', 'Users'],
+          {% for item in country_data %}
+          ['{{ item.name }}', {{ item.value }}],
+          {% endfor %}
+        ]);
+
+        var options = {
+          colorAxis: {colors: ['#e0ffff', '#006edd']}
+        };
+
+        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+
+        chart.draw(data, options);
+      }
+    </script>
+</head>
+<body>
+    <h1>Metrics</h1>
+
+    <h2>Daily Unique Users</h2>
+    <p>Average: {{ average_unique_users }}</p>
+    <p>Last Day: {{ last_day_unique_users }}</p>
+
+    <h2>Weekly Unique Users</h2>
+    <canvas id="dailyUniqueUsersChart"></canvas>
+    <script>
+        var ctx = document.getElementById('dailyUniqueUsersChart').getContext('2d');
+        var dailyUniqueUsersChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ daily_unique_users_labels | tojson }},
+                datasets: [{
+                    label: 'Daily Unique Users',
+                    data: {{ daily_unique_users_data | tojson }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <h2>World Map (Daily Unique Users)</h2>
+    <div id="regions_div" style="width: 900px; height: 500px;"></div>
+
+    <table border="1">
+        <tr>
+            <th>Endpoint</th>
+            <th>Domain</th>
+            <th>Country</th>
+            <th>Timestamp</th>
+        </tr>
+        {% for metric in metrics %}
+        <tr>
+            <td>{{ metric.endpoint }}</td>
+            <td>{{ metric.domain }}</td>
+            <td>{{ metric.country }}</td>
+            <td>{{ metric.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

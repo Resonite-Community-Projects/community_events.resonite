@@ -11,14 +11,22 @@ from resonite_communities.clients.web.routers import (
     main,
     login,
     logout,
+    metrics,
 )
+from resonite_communities.clients.web.middleware.metrics import MetricsMiddleware
 
 app = FastAPI()
 app.secret = Config.SECRET
 
+# curl -fL https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb --output GeoLite2-Country.mmdb
+geoip_db_path = "GeoLite2-Country.mmdb"
+app.add_middleware(MetricsMiddleware, db_path=geoip_db_path)
+
 app.include_router(logout.router)
 app.include_router(login.router)
 app.include_router(main.router)
+
+app.include_router(metrics.router)
 
 app.include_router(
     fastapi_users.get_oauth_router(
@@ -46,7 +54,7 @@ def run():
 
     options = {
         "bind": args.address,
-        "workers": (multiprocessing.cpu_count() *2) + 1,
+        "workers": (multiprocessing.cpu_count() * 2) + 1,
         "worker_class": "uvicorn.workers.UvicornWorker",
     }
     StandaloneApplication(app, options).run()

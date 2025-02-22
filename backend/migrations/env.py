@@ -12,6 +12,7 @@ from resonite_communities.auth.db import BaseModel as FastAPIUserModel
 from resonite_communities.auth.db import *
 from resonite_communities.models.community import *
 from resonite_communities.models.signal import *
+from resonite_communities.clients.web.models.metrics import *
 
 from resonite_communities.utils import Config
 
