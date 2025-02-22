@@ -24,7 +24,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         if request.url.path not in self.monitored_routes:
             return response
 
-        ip_address = request.client.host
+        ip_address = request.headers.get('X-Forwarded-For', request.client.host)
         import logging
         hashed_ip = hashlib.sha256(ip_address.encode()).hexdigest()
 
