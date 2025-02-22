@@ -14,13 +14,12 @@ from resonite_communities.clients.web.routers import (
     metrics,
 )
 from resonite_communities.clients.web.middleware.metrics import MetricsMiddleware
+from resonite_communities.clients.web.utils.geoip import get_geoip_db_path
 
 app = FastAPI()
 app.secret = Config.SECRET
 
-# curl -fL https://github.com/P3TERX/GeoLite.mmdb/releases/latest/download/GeoLite2-Country.mmdb --output GeoLite2-Country.mmdb
-geoip_db_path = "GeoLite2-Country.mmdb"
-app.add_middleware(MetricsMiddleware, db_path=geoip_db_path)
+app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 app.include_router(logout.router)
 app.include_router(login.router)
