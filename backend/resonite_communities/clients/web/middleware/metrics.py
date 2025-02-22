@@ -25,9 +25,14 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             return response
 
         ip_address = request.client.host
+        import logging
         hashed_ip = hashlib.sha256(ip_address.encode()).hexdigest()
 
         country = self.get_country_from_ip(ip_address)
+        logging.error(ip_address)
+        logging.error(ip_address.encode())
+        logging.error(hashed_ip)
+        logging.error(country)
 
         metrics = Metrics(
             endpoint=request.url.path,
