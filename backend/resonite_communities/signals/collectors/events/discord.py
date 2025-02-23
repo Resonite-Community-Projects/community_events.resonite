@@ -102,9 +102,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             for community in self.communities:
 
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
-                if self.ad_bot and 'private' not in community.tags:
+                if self.ad_bot and 'private' not in community.tags.split(','):
                     continue
-                elif not self.ad_bot and 'private' in community.tags:
+                elif not self.ad_bot and 'private' in community.tags.split(','):
                     continue
 
                 if community.external_id == str(guild_bot.id):
@@ -149,7 +149,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             # Add or Update events
             for event in events:
 
-                tags = {tag for tag in community.tags if tag != 'public' and tag != 'private'}
+                tags = {tag for tag in community.tags.split(',') if tag != 'public' and tag != 'private'}
 
                 #if 'resonite' not in tags and 'vrchat' not in tags:
                 # Filter and tag any event with the word `resonite` in either of this 3:
@@ -174,7 +174,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     tags.add('vrchat')
 
                 # We do different check based if a community is public or private
-                if 'public' in community.tags:
+                if 'public' in community.tags.split(','):
                     # We check if the event is private
                     if community.config.get('private_channel_id', None):
                         if community.config['private_channel_id'] == event.channel_id:
@@ -182,7 +182,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     # If there is no private events channel id configured we assume this event is public
                     if 'private' not in tags and 'public' not in tags:
                         tags.add('public')
-                elif 'private' in community.tags:
+                elif 'private' in community.tags.split(','):
                     # We check if the event is public
                     if community.config.get('public_channel_id', None):
                         if community.config['public_channel_id'] == event.channel_id:

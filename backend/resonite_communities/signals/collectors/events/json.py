@@ -60,7 +60,7 @@ class JSONEventsCollector(EventsCollector):
                     start_time=parse(event['start_time']),
                     end_time=parse(event['end_time']),
                     community_id=Community.find(external_id=community.external_id)[0].id,
-                    tags=",".join(community.tags),
+                    tags=community.tags,
                     external_id=event['event_id'],
                     scheduler_type=self.scheduler_type.name,
                     status=EventStatus.READY,
