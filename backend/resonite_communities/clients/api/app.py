@@ -6,7 +6,7 @@ from enum import Enum
 
 from dacite.types import is_instance
 from fastapi import APIRouter, Depends, Response, HTTPException, Request, FastAPI
-from sqlalchemy import and_, not_
+from sqlalchemy import and_, not_, case
 
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream
@@ -94,7 +94,24 @@ def get_filtered_events(
     # Only get Resonite events
     platform_filter = Event.tags.ilike('%resonite%')
 
-    signals.extend(Event.find(__custom_filter=and_(communities_filter, domain_filter, platform_filter)))
+    if version == "v1":
+        # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
+        # If end_time is available, it will be used; otherwise, fallback to start_time.
+        time_filter = case(
+            (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
+            else_=Event.start_time  # Otherwise, fallback to start_time
+        ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+        custom_filter=and_(communities_filter, domain_filter, platform_filter, time_filter)
+    else:
+        custom_filter=and_(communities_filter, domain_filter, platform_filter)
+
+    # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
+    # SQL commend, optimization to order elements by date
+    signals.extend(Event.find(__custom_filter=custom_filter, __order_by=["start_time"]))
+
+    import logging
+    for signal in signals:
+        logging.error(signal.start_time)
 
     if version != "v1":
         streams = Stream.find()
@@ -107,6 +124,15 @@ def get_filtered_events(
             versioned_events.append({
                 "name": signal.name,
                 "description": signal.description,
+                "location_str": signal.location,
+                "start_time": signal.start_time,
+                "end_time": signal.end_time,
+                "community_name": signal.community.name, # TODO: Connect this to a session
+            })
+        elif version == "v2":
+            versioned_events.append({
+                "name": signal.name,
+                "description": signal.description,
                 "session_image": signal.session_image,
                 "location_str": signal.location,
                 "location_web_session_url": signal.location_web_session_url,
@@ -115,13 +141,8 @@ def get_filtered_events(
                 "end_time": signal.end_time,
                 "community_name": signal.community.name, # TODO: Connect this to a session
                 "community_url": signal.community.url,
-            })
-        elif version == "v2":
-            versioned_events.append({
-                "name": signal.name,
-                "start_time": signal.start_time,
-                "end_time": signal.end_time,
                 "tags": signal.tags,
+                # source
             })
         else:
             raise HTTPException(status_code=400, detail="Unsupported version")
@@ -133,26 +154,48 @@ separators = {
     "v2": {"field": chr(30), "object": chr(29)},
 }
 
-def format_dict_list(data, version):
+def clean_text(text):
+    """ Remove all invalid characters for text_dumps. """
+    if text:
+        text = text.replace('`', ' ')
+        text = text.replace('\n\n', ' ')
+        text = text.replace('\n\r', ' ')
+        text = text.replace('\n', ' ')
+        text = text.replace('\r', ' ')
+    else:
+        text = ''
+    return text
+
+def text_dumps(events, version):
+    """ Convert the Python Dictionary to a text string. """
+
     if version not in separators:
         raise ValueError("Unsported version.")
     field_separator = separators[version]['field']
     object_separator = separators[version]['object']
 
     formatted_items = []
-    for item in data:
-        formatted_values = []
-        for value in item.values():
+    for event in events:
+        formatted_event_values = []
+        for event_key, event_value in event.items():
+
             # Convert list to a more usable text format
-            if isinstance(value, list):
-                formatted_values.append(",".join(map(str, value)))
-            elif is_instance(value, dict):
-                # We do not support dict
-                # Silently pass to the next value
+            if isinstance(event_value, list):
+                event_value = ",".join(map(str, event_value))
+
+            # Dict are not supported in TEXT format, silently pass to the next
+            elif is_instance(event_value, dict):
                 continue
+
+            # Clean some event key of non wanted chars for the v1
+            elif event_key in ['description'] and version == "v1":
+                event_value = clean_text(event_value)
+
+            # By default we convert anything else to string
             else:
-                formatted_values.append(str(value))
-        formatted_items.append(field_separator.join(formatted_values))
+                event_value = str(event_value)
+            formatted_event_values.append(event_value)
+        formatted_items.append(field_separator.join(formatted_event_values))
     return object_separator.join(formatted_items)
 
 class JSONEncoder(json.JSONEncoder):
@@ -169,7 +212,7 @@ def generate_events_response(
     match format_type:
         case FormatType.TEXT:
             return Response(
-                format_dict_list(events, version),
+                text_dumps(events, version),
                 media_type="text/plain",
             )
         case FormatType.JSON:

@@ -45,7 +45,8 @@
   - Keep in mind to ease the developement process so we should still be able to use sqlite locally while use a postgresql instance while on the production stack
 - [x] Setup the deployment in preproduction (dev.resonite-communities.com)
 - [x] Add monitoring into the api part too, copy middleware and such
-- [ ] Fix api v1 text for resonite who doesnt work well
+- [x] Fix api v1 text for resonite who doesnt work well
+- [ ] Dont show events who are canceled in the API and the Web client
 - [ ] Setup the deployment for the documentation (docs.dev.resonite-communities.com)
 - [ ] Update the documentation to explain more the architecture part as well as the usage guide
   - [ ] Update the url documentation to `docs.dev.resonite-communities.com` in the README
