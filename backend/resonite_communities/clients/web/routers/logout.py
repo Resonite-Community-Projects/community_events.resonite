@@ -17,8 +17,8 @@ async def logout(
     user: User = Depends(optional_current_active_user),
     strategy: Strategy[models.UP, models.ID] = Depends(auth_backend.get_strategy),
 ):
-    token = request.cookies.get("fastapiuserauth")
+    token = request.cookies.get("fastapiusersauth")
     response = RedirectResponse(url="/")
     await auth_backend.logout(strategy, user, token)
-    response.delete_cookie("fastapiuserauth")
+    response.delete_cookie("fastapiusersauth")
     return response
