@@ -133,7 +133,7 @@ class Signal:
                 "external_id": str(signal['external_id']),
                 "platform": self.platform,
                 "url": signal.get('url', None),
-                "tags": signal.get('tags', []),
+                "tags": ",".join(signal.get('tags', [])),
                 "config": signal.get('config', {})
             }
             community = Community.upsert(

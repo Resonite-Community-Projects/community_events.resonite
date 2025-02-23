@@ -35,7 +35,7 @@ def upgrade() -> None:
     sa.Column('monitored', sa.Boolean(), nullable=False),
     sa.Column('url', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('members_count', sa.Integer(), nullable=True),
-    sa.Column('tags', sa.JSON(), nullable=True),
+    sa.Column('tags', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('config', resonite_communities.models.types.EasyDictType(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('external_id', 'platform')

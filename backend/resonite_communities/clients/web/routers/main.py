@@ -81,7 +81,8 @@ async def render_main(request: Request, user: User, tab: str):
         end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
     )
     streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
-    communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+
+    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
     user_communities = Community().find(id__in=user_auth.user_communities) if user_auth else []
 
     return templates.TemplateResponse(
