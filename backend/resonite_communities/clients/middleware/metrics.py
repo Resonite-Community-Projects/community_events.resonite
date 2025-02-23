@@ -22,9 +22,6 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        import logging
-
-        logging.error(request.url.path)
 
         if request.url.path not in self.monitored_routes:
             return response
@@ -33,10 +30,6 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         hashed_ip = hashlib.sha256(ip_address.encode()).hexdigest()
 
         country = self.get_country_from_ip(ip_address)
-        logging.error(ip_address)
-        logging.error(ip_address.encode())
-        logging.error(hashed_ip)
-        logging.error(country)
 
         metrics = Metrics(
             endpoint=request.url.path,
