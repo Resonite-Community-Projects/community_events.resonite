@@ -47,7 +47,8 @@
 - [x] Add monitoring into the api part too, copy middleware and such
 - [x] Fix api v1 text for resonite who doesnt work well
 - [x] Dont show events who are canceled in the API and the Web client
-- [ ] The web client show the title instead of the description
+- [x] The web client show the title instead of the description
+- [ ] Do not show any of the private community on the front page
 - [ ] Setup the deployment for the documentation (docs.dev.resonite-communities.com)
 - [ ] Update the documentation to explain more the architecture part as well as the usage guide
   - [ ] Update the url documentation to `docs.dev.resonite-communities.com` in the README
