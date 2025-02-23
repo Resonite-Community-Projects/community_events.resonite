@@ -34,7 +34,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 
         country = self.get_country_from_ip(ip_address)
         query_params = parse_qs(request.url.query)
-        version = query_params.get('clversion', ['Unknown'])[0]
+        version = query_params.get('clversion', [None])[0]
 
         metrics = Metrics(
             endpoint=request.url.path,
