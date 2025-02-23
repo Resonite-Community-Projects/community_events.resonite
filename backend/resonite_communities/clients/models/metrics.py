@@ -9,4 +9,5 @@ class Metrics(BaseModel):
     domain = Column(String, index=True)
     hashed_ip = Column(String, index=True)
     country = Column(String, index=True)
+    version = Column(String, index=True)
     timestamp = Column(DateTime)

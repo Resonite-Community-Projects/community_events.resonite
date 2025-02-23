@@ -71,6 +71,7 @@
             <th>Endpoint</th>
             <th>Domain</th>
             <th>Country</th>
+            <th>Version</th>
             <th>Timestamp</th>
         </tr>
         {% for metric in metrics %}
@@ -78,6 +79,7 @@
             <td>{{ metric.endpoint }}</td>
             <td>{{ metric.domain }}</td>
             <td>{{ metric.country }}</td>
+            <td>{{ metric.version }}</td>
             <td>{{ metric.timestamp }}</td>
         </tr>
         {% endfor %}

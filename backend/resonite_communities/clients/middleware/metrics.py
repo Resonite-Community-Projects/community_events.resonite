@@ -1,9 +1,12 @@
 import hashlib
 import contextlib
+from urllib.parse import parse_qs
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from datetime import datetime
 import geoip2.database
+
 from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.auth.db import get_async_session
 
@@ -30,12 +33,15 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         hashed_ip = hashlib.sha256(ip_address.encode()).hexdigest()
 
         country = self.get_country_from_ip(ip_address)
+        query_params = parse_qs(request.url.query)
+        version = query_params.get('clversion', ['Unknown'])[0]
 
         metrics = Metrics(
             endpoint=request.url.path,
             domain=request.url.hostname,
             hashed_ip=hashed_ip,
             country=country,
+            version=version,
             timestamp=datetime.utcnow(),
         )
 
