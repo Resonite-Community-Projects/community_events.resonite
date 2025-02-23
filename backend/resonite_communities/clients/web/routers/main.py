@@ -8,7 +8,7 @@ from fastapi import APIRouter, Request, Depends
 
 from resonite_communities.auth.db import User, DiscordAccount, get_async_session
 from resonite_communities.auth.users import optional_current_active_user
-from resonite_communities.models.signal import Event, Stream
+from resonite_communities.models.signal import Event, Stream, EventStatus
 from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.utils import Config
 from resonite_communities.clients.web.utils.templates import templates
@@ -53,9 +53,12 @@ async def render_main(request: Request, user: User, tab: str):
     # Only get Resonite events
     platform_filter = Event.tags.ilike('%resonite%')
 
+    # Only get Events that are ACTIVE or READY
+    status_filter = Event.status.in_((EventStatus.ACTIVE, EventStatus.READY))
+
     if user and user.is_superuser:
         # Superuser see all events
-        event_visibility_filter = and_(time_filter, platform_filter)
+        event_visibility_filter = and_(time_filter, platform_filter, status_filter)
     elif user:
         # Authenticated users see public events and private events from communities they have access to
         community_filter = or_(
@@ -66,11 +69,11 @@ async def render_main(request: Request, user: User, tab: str):
             )
         )
 
-        event_visibility_filter = and_(time_filter, community_filter, platform_filter)
+        event_visibility_filter = and_(time_filter, community_filter, platform_filter, status_filter)
     else:
         # Only public events for non authenticated users
         private_filter = not_(Event.tags.ilike('%private%'))
-        event_visibility_filter = and_(time_filter, private_filter, platform_filter)
+        event_visibility_filter = and_(time_filter, private_filter, platform_filter, status_filter)
 
     events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
     streams = Stream().find(
