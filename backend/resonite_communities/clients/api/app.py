@@ -128,10 +128,6 @@ def get_filtered_events(
     # SQL commend, optimization to order elements by date
     signals.extend(Event.find(__custom_filter=custom_filter, __order_by=["start_time"]))
 
-    import logging
-    for signal in signals:
-        logging.error(signal.start_time)
-
     if version != "v1":
         streams = Stream.find()
 
