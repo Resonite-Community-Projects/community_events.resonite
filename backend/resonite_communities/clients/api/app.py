@@ -26,7 +26,7 @@ from redis import asyncio as aioredis
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    redis = aioredis.from_url('redis://redis')
+    redis = aioredis.from_url('redis://cache')
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
     yield
 
@@ -247,7 +247,6 @@ def request_key_builder(
     *,
     request: Request = None,
     response: Response = None,
-    *args,
     **kwargs,
 ):
     return ":".join([
