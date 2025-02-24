@@ -32,7 +32,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(lifespan=lifespan)
 
-#app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
+app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 router_v1 = APIRouter(prefix='/v1')
 router_v2 = APIRouter(prefix='/v2')
@@ -241,7 +241,7 @@ def generate_events_response(
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
-@cache
+@cache(expire=60)
 @router_v1.get("/aggregated_events")
 def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
