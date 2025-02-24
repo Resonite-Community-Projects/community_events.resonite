@@ -19,7 +19,7 @@ class SignalSchedulerType(CEEnum):
     APSCHEDULER = 'apscheduler'
     """
     Signal uses the APScheduler module to schedule tasks.
-    
+
     Signals with this type will be scheduled via the AsyncIOScheduler.
     """
 
