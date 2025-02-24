@@ -13,7 +13,7 @@ template: page.html
 
     If you want to share your events or streams with the Resonite community
 
-    [:octicons-arrow-right-24: Usage](../Usage/community-configuration.md)
+    [:octicons-arrow-right-24: Usage](../Usage/usage.md)
 
 -   :material-axis-arrow:{ .lg .middle } __Build your custom features__
 

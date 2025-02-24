@@ -49,7 +49,15 @@
 - [x] Dont show events who are canceled in the API and the Web client
 - [x] The web client show the title instead of the description
 - [x] Do not show any of the private community on the front page
-- [ ] Setup the deployment for the documentation (docs.dev.resonite-communities.com)
-- [ ] Update the documentation to explain more the architecture part as well as the usage guide
-  - [ ] Update the url documentation to `docs.dev.resonite-communities.com` in the README
-  - [ ] Document about the version system a bit more
+- [x] Setup the deployment for the documentation (docs.dev.resonite-communities.com)
+- [x] Update the documentation to explain more the architecture part as well as the usage guide
+  - [x] Update the url documentation to `docs.dev.resonite-communities.com` in the README
+  - [x] Document about the version system a bit more
+- [ ] Doc: Make a rough version of the usage section (as it's useful enough and note just copied notes)
+  - [ ] Community configration
+  - [ ] Facet client
+  - [ ] Web Client
+- [ ] Doc: move the information about the date format into a new V2 section
+- [ ] Doc: look into setting up the swagger and update the documentation
+- [ ] Doc: Work on the architecture section for the developer guide
+- [ ] Doc: The usage section of the developer guide seems a bit confusing

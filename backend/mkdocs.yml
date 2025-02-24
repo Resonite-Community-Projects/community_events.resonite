@@ -40,11 +40,13 @@ nav:
   - Getting Started:
     - GettingStarted/getting-started.md
   - Usage:
+    - Usage/usage.md
     - Usage/community-configuration.md
-    - Usage/client-configuration.md
-    - Usage/facet-configuration.md
+    - Usage/facet-client.md
+    - Usage/web-client.md
   - Client Integration:
     - ClientIntegration/http-api-usage.md
+    - ClientIntegration/versioning.md
   - Developer Guide:
     - DeveloperGuide/development.md
     - DeveloperGuide/requirements.md

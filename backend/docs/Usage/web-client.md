@@ -1,4 +1,4 @@
-# Client Configuration
+# Web Client
 
 !!! construction "This need to be documented"
 

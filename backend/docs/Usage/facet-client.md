@@ -1,4 +1,4 @@
-# Facet Configuration
+# Facet Client
 
 !!! construction "This need to be documented"
 

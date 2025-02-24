@@ -8,7 +8,7 @@ Service for announcing Resonite events and stream from multiple source like Disc
 This tool has been write in a way that different communities can host their own server and can be connected to
 each other. There is a main instance available at [resonite-community.events](https://resonite-community.events).
 
-To setup the project see the [documentation](http://localhost:8001/DeveloperGuide/installation/) about getting started.
+To setup the project see the [documentation](https://docs.dev.resonite-communities.com) about getting started.
 
 To help the development see about the [architecture](http://localhost:8001/DeveloperGuide/architecture/) as well as the API.
 
