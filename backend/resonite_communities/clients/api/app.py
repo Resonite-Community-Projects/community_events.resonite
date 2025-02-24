@@ -128,8 +128,8 @@ def get_filtered_events(
                 "name": signal.name,
                 "description": signal.description,
                 "location_str": signal.location,
-                "start_time": signal.start_time,
-                "end_time": signal.end_time,
+                "start_time": signal.start_time.strftime("%Y/%m/%d %H:%M:%S+00:00"),
+                "end_time": signal.end_time.strftime("%Y/%m/%d %H:%M:%S+00:00") if signal.end_time else None,
                 "community_name": signal.community.name, # TODO: Connect this to a session
             })
         elif version == "v2":
@@ -140,8 +140,8 @@ def get_filtered_events(
                 "location_str": signal.location,
                 "location_web_session_url": signal.location_web_session_url,
                 "location_session_url": signal.location_session_url,
-                "start_time": signal.start_time,
-                "end_time": signal.end_time,
+                "start_time": signal.start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "end_time": signal.end_time.strftime("%Y-%m-%dT%H:%M:%SZ") if signal.end_time else None,
                 "community_name": signal.community.name, # TODO: Connect this to a session
                 "community_url": signal.community.url,
                 "tags": signal.tags,
@@ -225,6 +225,11 @@ def generate_events_response(
             )
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
+
+@router_v1.get("/aggregated_events")
+def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
+    """Deprecated"""
+    return get_events_v1(request=request, format_type=format_type, communities=communities)
 
 @router_v1.get("/events")
 def get_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):

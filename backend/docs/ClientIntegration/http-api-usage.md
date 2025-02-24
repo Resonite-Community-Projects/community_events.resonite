@@ -33,6 +33,16 @@ To filter signals per communities.
 
 **Default value:** `""` (Empty string)
 
+## Dates
+
+From receiving to sending/distribuing, including storing, signals time related information are in UTC.
+
+We return the date in the following format: `%Y-%m-%dT%H:%M:%SZ` but keep in mind that even wihout the timezone expected the date to be UTC.
+
+### V1
+
+To avoid problem with existing clients the V1 date format output is `%Y/%m/%d %H:%M:%S+00:00`.
+
 ## Endpoints
 
 ### V1
