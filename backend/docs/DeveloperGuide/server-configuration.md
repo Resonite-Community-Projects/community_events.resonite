@@ -16,6 +16,7 @@ Most of the configuration of this tool are available in the `config.toml` file.
 - `PUBLIC_DOMAIN`: str, The domain used by the HTTP API do show only the public events
 - `PRIVATE_DOMAIN`: str, The domain used by the HTTP API to show only the private events
 - `DATABASE_URL`: str, The Postgresql database url
+- `CACHE_URL`: str, The Redis database url
 - `SENTRY_DSN`: str, The DSN configuration for send error logs to Sentry
 
 ### Setting up `PUBLIC_DOMAIN` and `PRIVATE_DOMAINT`
@@ -45,6 +46,20 @@ Or this configuration if you want to use the `poetry run` command via the docker
 
 ```toml
 DATABASE_URL = "postgresql://resonitecommunities:changeme@database:5432/resonitecommunities"
+```
+
+### Setting up `CACHE_URL`
+
+In the case you want to do local developement switching between the docker containers and without for the signal manager you will need to configure the following for running the `poetry run` command directly:
+
+```toml
+CACHE_URL = "redis://127.0.0.1"
+```
+
+Or this configuration if you want to use the `poetry run` command via the docker compose:
+
+```toml
+CACHE_URL = "redis://cache"
 ```
 
 ## Resonite

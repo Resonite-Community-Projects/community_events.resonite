@@ -137,6 +137,8 @@ services:
   cache:
     image: redis:7.0-alpine
     restart: always
+    ports:
+    - "6379:6379"
     command: redis-server --save ""
 
 
