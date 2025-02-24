@@ -32,7 +32,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(lifespan=lifespan)
 
-app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
+#app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 router_v1 = APIRouter(prefix='/v1')
 router_v2 = APIRouter(prefix='/v2')
