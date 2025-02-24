@@ -120,6 +120,21 @@ services:
       - traefik.http.routers.web_client.rule=Host(`dev.resonite-communities.com`)
       - traefik.http.routers.web_client.entrypoints=web
 
+  mkdocs:
+    image: squidfunk/mkdocs-material
+    working_dir: /docs
+    volumes:
+      - ./backend/:/docs
+    ports:
+      - "8002:8000"
+    profiles:
+      - doc
+    stdin_open: true
+    tty: true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
+      - traefik.http.routers.docs.entrypoints=web
 
 volumes:
   postgres_data:
