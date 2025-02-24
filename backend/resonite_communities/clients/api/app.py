@@ -259,7 +259,7 @@ def request_key_builder(
 
 
 @router_v1.get("/aggregated_events")
-#@cache(expire=1800, key_builder=request_key_builder)
+@cache(expire=1800, key_builder=request_key_builder)
 def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
     return get_events_v1(request=request, format_type=format_type, communities=communities)
