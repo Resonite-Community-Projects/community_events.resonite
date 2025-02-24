@@ -241,8 +241,25 @@ def generate_events_response(
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
+def request_key_builder(
+    func,
+    namespace: str = "",
+    *,
+    request: Request = None,
+    response: Response = None,
+    *args,
+    **kwargs,
+):
+    return ":".join([
+        namespace,
+        request.method.lower(),
+        request.url.path,
+        repr(sorted(request.query_params.items()))
+    ])
+
+
 @router_v1.get("/aggregated_events")
-@cache(expire=1800)
+@cache(expire=1800, key_builder=request_key_builder)
 def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
     return get_events_v1(request=request, format_type=format_type, communities=communities)
