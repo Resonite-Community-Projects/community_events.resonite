@@ -37,6 +37,7 @@ async def render_main(request: Request, user: User, tab: str):
             for user_oauth_account in user.oauth_accounts:
                 if user_oauth_account.oauth_name == "discord":
                     user_auth = await session.get(DiscordAccount, user_oauth_account.discord_account_id)
+                    user_auth.is_superuser = user.is_superuser
                     break
 
     with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:

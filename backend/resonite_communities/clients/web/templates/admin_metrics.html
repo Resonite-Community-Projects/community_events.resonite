@@ -1,7 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Metrics</title>
+{% extends "base.html" %}
+    {% block extended_head %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
@@ -29,13 +27,103 @@
         chart.draw(data, options);
       }
     </script>
-</head>
-<body>
-    <h1>Metrics</h1>
+    {% endblock %}
+    {% block content %}
 
-    <h2>Daily Unique Users</h2>
-    <p>Average: {{ average_unique_users }}</p>
-    <p>Last Day: {{ last_day_unique_users }}</p>
+
+
+
+
+    <div class="fixed-grid has-1-cols">
+        <div class="grid">
+
+            <div class="fixed-grid">
+                <div class="cell">
+                    <div class="card">
+                        <div class="card-content">
+                            <p class="title">Daily Users Average</p>
+                            <div class="content">
+                                <p>{{ average_unique_users }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cell">
+                    <div class="card">
+                        <div class="card-content">
+                            <p class="title">Last Day Unique Visitor</p>
+                            <div class="content">
+                                <p>{{ last_day_unique_users }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="title">World Map (Daily Unique Users)</p>
+                        <div class="content">
+                            <div id="regions_div" style="width: 900px; height: 500px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="title">Client versions</p>
+                        <div class="content">
+                            <table class="table">
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Count</th>
+                                </tr>
+                                <tbody>
+                                    {% for version in versions %}
+                                    <tr>
+                                        <td>{{ version.version }}</td>
+                                        <td>{{ version.count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cell">
+                {% for domain, metrics in metrics_domains.items() %}
+                <div class="card">
+                    <div class="card-content">
+                        <p class="title">{{ domain }}</p>
+                        <div class="content">
+                            <table class="table">
+                                <thead>
+                                    <th>Endpoint</th>
+                                    <th>Count</th>
+                                </thead>
+
+                                <tbody>
+                                    {% for metric in metrics %}
+                                    <tr>
+                                        <td>{{ metric.endpoint }}</td>
+                                        <td>{{ metric.count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
 
     <h2>Weekly Unique Users</h2>
     <canvas id="dailyUniqueUsersChart"></canvas>
@@ -63,26 +151,8 @@
         });
     </script>
 
-    <h2>World Map (Daily Unique Users)</h2>
-    <div id="regions_div" style="width: 900px; height: 500px;"></div>
 
-    <table border="1">
-        <tr>
-            <th>Endpoint</th>
-            <th>Domain</th>
-            <th>Country</th>
-            <th>Version</th>
-            <th>Timestamp</th>
-        </tr>
-        {% for metric in metrics %}
-        <tr>
-            <td>{{ metric.endpoint }}</td>
-            <td>{{ metric.domain }}</td>
-            <td>{{ metric.country }}</td>
-            <td>{{ metric.version }}</td>
-            <td>{{ metric.timestamp }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
-</html>
+
+
+
+    {% endblock %}
