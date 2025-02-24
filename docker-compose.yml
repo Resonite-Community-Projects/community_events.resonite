@@ -134,6 +134,12 @@ services:
       - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.local`)
       - traefik.http.routers.docs.entrypoints=web
 
+  cache:
+    image: redis:7.0-alpine
+    restart: always
+    command: redis-server --save ""
+
+
 volumes:
   postgres_data:
     driver: local

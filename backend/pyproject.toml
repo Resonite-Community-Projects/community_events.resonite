@@ -16,7 +16,6 @@ google-auth-httplib2 = "^0.1.1"
 google-auth-oauthlib = "^1.1.0"
 python-dateutil = "^2.8.2"
 timeago = "^1.0.16"
-redis = "^5.0.0"
 disnake = "^2.9.0"
 easydict = "^1.10"
 jsonschema = "^4.19.0"
@@ -39,6 +38,7 @@ sentry-sdk = "^2.20.0"
 psycopg = {extras = ["binary"], version = "^3.2.4"}
 psycopg2-binary = "^2.9.10"
 geoip2 = "^5.0.1"
+fastapi-cache2 = {extras = ["redis"], version = "^0.2.2"}
 
 [tool.poetry.scripts]
 web_client = "resonite_communities.clients.web.app:run"

@@ -15,7 +15,22 @@ from resonite_communities.utils import Config, is_local_env
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
-app = FastAPI()
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
+
+from redis import asyncio as aioredis
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    redis = aioredis.from_url('redis://redis')
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
@@ -226,6 +241,7 @@ def generate_events_response(
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
+@cache
 @router_v1.get("/aggregated_events")
 def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
