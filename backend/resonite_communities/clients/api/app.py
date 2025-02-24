@@ -241,7 +241,7 @@ def generate_events_response(
         case _:
             raise HTTPException(status_code=400, detail="Unsupported format")
 
-@cache(expire=60)
+@cache(expire=1800)
 @router_v1.get("/aggregated_events")
 def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
