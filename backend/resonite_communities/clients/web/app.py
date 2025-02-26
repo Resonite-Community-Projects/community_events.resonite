@@ -2,6 +2,7 @@ import argparse
 import multiprocessing
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 from resonite_communities.auth.users import fastapi_users, auth_backend
 from resonite_communities.clients.web.auth import discord_oauth
@@ -37,6 +38,14 @@ app.include_router(
     prefix="/auth/discord",
     tags=["auth"],
 )
+
+@app.exception_handler(404)
+async def custom_404_handler(_, __):
+    return RedirectResponse("/")
+
+@app.exception_handler(401)
+async def custom_401_handler(_, __):
+    return RedirectResponse("/")
 
 def run():
     parser = argparse.ArgumentParser(description="Run the server")
