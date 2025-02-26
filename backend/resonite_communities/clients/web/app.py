@@ -12,8 +12,8 @@ from resonite_communities.clients.web.routers import (
     main,
     login,
     logout,
-    metrics,
 )
+from resonite_communities.clients.web.routers.admin import metrics
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 

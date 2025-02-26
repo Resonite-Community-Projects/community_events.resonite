@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block admin_menu %}
+{% if user.is_superuser %}
+      <aside class="menu">
+        <p class="menu-label">General</p>
+        <ul class="menu-list">
+          <li><a>Communities</a></li>
+        </ul>
+        <p class="menu-label">Administration</p>
+        <ul class="menu-list">
+          <li><a class="is-active">Dashboard</a></li>
+          <li><a>Configuration</a></li>
+      </aside>
+      {% endif %}
+{% endblock %}

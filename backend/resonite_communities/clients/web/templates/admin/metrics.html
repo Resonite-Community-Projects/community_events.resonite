@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "admin/base.html" %}
     {% block extended_head %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"></script>
@@ -37,35 +37,39 @@
     <div class="fixed-grid has-1-cols">
         <div class="grid">
 
-            <div class="fixed-grid">
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-content">
-                            <p class="title">Daily Users Average</p>
-                            <div class="content">
-                                <p>{{ average_unique_users }}</p>
+            <div class="fixed-grid has-4-cols">
+                <div class="grid">
+                    <div class="cell"></div>
+                    <div class="cell">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <p class="title">Today Users Average</p>
+                                <div class="content is-size-3">
+                                    <p>{{ average_unique_users }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="cell">
-                    <div class="card">
-                        <div class="card-content">
-                            <p class="title">Last Day Unique Visitor</p>
-                            <div class="content">
-                                <p>{{ last_day_unique_users }}</p>
+                    <div class="cell">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <p class="title">Yesterday Users Average</p>
+                                <div class="content is-size-3">
+                                    <p>{{ last_day_unique_users }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="cell"></div>
                 </div>
             </div>
 
             <div class="cell">
-                <div class="card">
+                <div class="card has-text-centered">
                     <div class="card-content">
                         <p class="title">World Map (Daily Unique Users)</p>
                         <div class="content">
-                            <div id="regions_div" style="width: 900px; height: 500px;"></div>
+                            <div id="regions_div" style="width: 900px; height: 500px; margin: 0 auto;"></div>
                         </div>
                     </div>
                 </div>
@@ -74,9 +78,9 @@
             <div class="cell">
                 <div class="card">
                     <div class="card-content">
-                        <p class="title">Client versions</p>
+                        <p class="title has-text-centered">Client versions</p>
                         <div class="content">
-                            <table class="table">
+                            <table class="table" style="width: 100%;">
                                 <tr>
                                     <th>Endpoint</th>
                                     <th>Count</th>
@@ -99,9 +103,9 @@
                 {% for domain, metrics in metrics_domains.items() %}
                 <div class="card">
                     <div class="card-content">
-                        <p class="title">{{ domain }}</p>
+                        <p class="title has-text-centered">{{ domain }}</p>
                         <div class="content">
-                            <table class="table">
+                            <table class="table" style="width: 100%;">
                                 <thead>
                                     <th>Endpoint</th>
                                     <th>Count</th>
@@ -125,7 +129,7 @@
         </div>
     </div>
 
-    <h2>Weekly Unique Users</h2>
+    <h2 class="has-text-centered">Weekly Unique Users</h2>
     <canvas id="dailyUniqueUsersChart"></canvas>
     <script>
         var ctx = document.getElementById('dailyUniqueUsersChart').getContext('2d');

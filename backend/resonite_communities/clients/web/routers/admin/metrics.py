@@ -104,7 +104,7 @@ async def get_metrics(request: Request, user: User = Depends(current_active_user
         country_data = [{"name": country, "value": count} for country, count in country_data_result.all()]
         max_users = max([count for _, count in country_data], default=0)
 
-    return templates.TemplateResponse("admin_metrics.html", {
+    return templates.TemplateResponse("admin/metrics.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth) if user_auth else None,
         "request": request,
