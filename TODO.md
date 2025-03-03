@@ -4,7 +4,7 @@
 
 - [x] Fully connect the Discord auth with fastapi-users
 - [x] Clean code the merge between discord and fastapi-users and commit
-- [ ] Hide all private events unless
+- [x] Hide all private events unless
   - [x] They are connected
   - [x] The user have the role administrator
   - [x] The user have access to a community, in this case only the private event of this community are showed
