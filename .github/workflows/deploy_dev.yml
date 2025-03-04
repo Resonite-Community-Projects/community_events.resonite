@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: SANVM07
+    environment: dev
 
     steps:
       - uses: actions/checkout@v3
