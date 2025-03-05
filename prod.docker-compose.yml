@@ -7,10 +7,10 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entryPoints.web.forwardedHeaders.insecure"
-      - "--entryPoints.web.address=:8081"
+      - "--entryPoints.web.address=:80"
       - "--accesslog=true"
     ports:
-      - "81:8081"
+      - "81:80"
       #- "8081:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
