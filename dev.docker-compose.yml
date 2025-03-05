@@ -23,13 +23,13 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=$${{ secrets.POSTGRES_PASSWORD }}
-      - POSTGRES_USER=$${{ secrets.POSTGRES_USER }}
-      - POSTGRES_DB=$${{ secrets.POSTGRES_DB }}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+      - POSTGRES_USER_FILE=/run/secrets/postgres_user
+      - POSTGRES_DB_FILE=/run/secrets/postgres_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${{ secrets.POSTGRES_USER }}"]
+      test: ["CMD-SHELL", "pg_isready -U ${{ secrets.POSTGRES_USER }}"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -140,6 +140,14 @@ services:
     image: redis:7.0-alpine
     restart: always
     command: redis-server --save ""
+
+secrets:
+  postgres_password:
+    environment: POSTGRES_PASSWORD
+  postgres_user:
+    environment: POSTGRES_USER
+  postgres_db:
+    environment: POSTGRES_DB
 
 volumes:
   postgres_data:

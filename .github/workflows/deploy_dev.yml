@@ -13,10 +13,22 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build app
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
