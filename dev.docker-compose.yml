@@ -92,16 +92,16 @@ services:
       - traefik.enable=true
 
       # Modern API route
-      - traefik.http.routers.api_client.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client.entrypoints=web
+      - traefik.http.routers.dev_api_client.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.dev_api_client.entrypoints=web
 
       # Private events legacy API route
-      - traefik.http.routers.api_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_private.entrypoints=web
+      - traefik.http.routers.dev_api_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_client_legacy_private.entrypoints=web
 
       # Public events legacy API route
-      - traefik.http.routers.api_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_public.entrypoints=web
+      - traefik.http.routers.dev_api_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_client_legacy_public.entrypoints=web
 
   web_client:
     build: backend
@@ -120,8 +120,8 @@ services:
       - '8001:8001'
     labels:
       - traefik.enable=true
-      - traefik.http.routers.web_client.rule=Host(`dev.resonite-communities.com`)
-      - traefik.http.routers.web_client.entrypoints=web
+      - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
+      - traefik.http.routers.dev_web_client.entrypoints=web
 
   mkdocs:
     image: squidfunk/mkdocs-material
@@ -136,8 +136,8 @@ services:
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
-      - traefik.http.routers.docs.entrypoints=web
+      - traefik.http.routers.dev_docs.rule=Host(`docs.dev.resonite-communities.com`)
+      - traefik.http.routers.dev_docs.entrypoints=web
 
   cache:
     image: redis:7.0-alpine
