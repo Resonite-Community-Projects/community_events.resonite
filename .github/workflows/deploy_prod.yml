@@ -1,13 +1,14 @@
-name: Deploy Dev
+name: Deploy Prod
 
 on:
   push:
-    branches: [ stable ]
+    tags:
+      - '*'
 
 jobs:
   build:
     runs-on: SANVM07
-    environment: dev
+    environment: prod
 
     steps:
       - uses: actions/checkout@v3
@@ -17,18 +18,18 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
+        run: docker compose -f dev.docker-compose.yml -p prod_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
+        run: docker compose -f dev.docker-compose.yml -p prod_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
+        run: docker compose -f dev.docker-compose.yml -p prod_community_eventsresonite --profile "*" up -d
