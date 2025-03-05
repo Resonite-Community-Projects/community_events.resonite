@@ -206,7 +206,17 @@ Services.discord = edict()
 
 def check_is_local_env():
     """Check if we are in the development environment based on the local domain."""
-    if ".local" in Config.PUBLIC_DOMAIN and ".local" in Config.PRIVATE_DOMAIN:
+    public_domains = Config.PUBLIC_DOMAIN
+    if not isinstance(public_domains, list):
+        public_domains = [public_domains]
+
+    private_domains = Config.PRIVATE_DOMAIN
+    if not isinstance(private_domains, list):
+        private_domains = [private_domains]
+    if (
+        any(domain.endswith(".local") for domain in public_domains) and
+        any(domain.endswith(".local") for domain in private_domains)
+    ):
         return True
     return False
 

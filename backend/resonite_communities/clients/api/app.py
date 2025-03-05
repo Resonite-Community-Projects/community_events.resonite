@@ -96,9 +96,19 @@ def get_filtered_events(
         communities = [community for community in communities.split(",")]
         communities_filter = Event.community.has(Community.name.in_(communities))
 
-    if host == Config.PUBLIC_DOMAIN:
+    if isinstance(Config.PUBLIC_DOMAIN, str):
+        public_domains = [Config.PUBLIC_DOMAIN]
+    else:
+        public_domains = Config.PUBLIC_DOMAIN
+
+    if isinstance(Config.PRIVATE_DOMAIN, str):
+        private_domains = [Config.PRIVATE_DOMAIN]
+    else:
+        private_domains = Config.PRIVATE_DOMAIN
+
+    if host in public_domains:
         domain_filter = not_(Event.tags.ilike("%private%"))
-    elif host == Config.PRIVATE_DOMAIN:
+    elif host in private_domains:
         domain_filter = True
     else:
         msg = f"Unsupported domain: {host}."

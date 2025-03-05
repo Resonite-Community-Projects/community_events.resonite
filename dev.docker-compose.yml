@@ -99,9 +99,17 @@ services:
       - traefik.http.routers.dev_api_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.dev_api_client_legacy_private.entrypoints=web
 
+      # Private events legacy API route
+      - traefik.http.routers.dev_api_client_legacy_private2.rule=Host(`3rd.adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_client_legacy_private2.entrypoints=web
+
       # Public events legacy API route
       - traefik.http.routers.dev_api_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.dev_api_client_legacy_public.entrypoints=web
+
+      # Public events legacy API route
+      - traefik.http.routers.dev_api_client_legacy_public2.rule=Host(`3rd.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_client_legacy_public2.entrypoints=web
 
   web_client:
     build: backend
@@ -122,6 +130,10 @@ services:
       - traefik.enable=true
       - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
       - traefik.http.routers.dev_web_client.entrypoints=web
+
+      # Public events legacy API route
+      - traefik.http.routers.dev_web_client_legacy_public.rule=Host(`3rd.dev.resonite-communities.com`)
+      - traefik.http.routers.dev_web_client_legacy_public.entrypoints=web
 
   mkdocs:
     image: squidfunk/mkdocs-material

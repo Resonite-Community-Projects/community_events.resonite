@@ -133,8 +133,8 @@ services:
       - traefik.http.routers.prod_web_client.entrypoints=web
 
       # Private events legacy API route 2
-      - traefik.http.routers.prod_api_client_legacy_private2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_client_legacy_private2.entrypoints=web
+      - traefik.http.routers.prod_web_client_legacy_public.rule=Host(`events.resonite.boltwolf.net`)
+      - traefik.http.routers.prod_web_client_legacy_public.entrypoints=web
 
   mkdocs:
     image: squidfunk/mkdocs-material
