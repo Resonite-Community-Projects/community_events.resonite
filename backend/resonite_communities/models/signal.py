@@ -37,6 +37,15 @@ class Event(BaseModel, table=True):
     scheduler_type: str = Field()
     status: EventStatus = Field()
 
+    @classmethod
+    def set_insert_fields(cls, fields_to_update: dict):
+        """Set fields that should only be set during insert.
+        """
+        fields_to_update = super().set_insert_fields(fields_to_update)
+        if 'status' not in fields_to_update:
+            fields_to_update['status'] = EventStatus.READY
+        return fields_to_update
+
 class Stream(BaseModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field()
@@ -50,3 +59,12 @@ class Stream(BaseModel, table=True):
     tags: str | None = Field()
     scheduler_type: str = Field()
     status: EventStatus = Field()
+
+    @classmethod
+    def set_insert_fields(cls, fields_to_update: dict):
+        """Set fields that should only be set during insert.
+        """
+        fields_to_update = super().set_insert_fields(fields_to_update)
+        if 'status' not in fields_to_update:
+            fields_to_update['status'] = EventStatus.READY
+        return fields_to_update

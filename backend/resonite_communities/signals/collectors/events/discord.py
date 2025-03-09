@@ -211,7 +211,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     tags=",".join(tags),
                     external_id=event.id,
                     scheduler_type=self.scheduler_type.name,
-                    status=EventStatus.READY,
                     created_at_external=event.created_at,
                 )
 
