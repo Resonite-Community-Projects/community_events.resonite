@@ -1,4 +1,4 @@
-import base64
+import calendar
 import contextlib
 from copy import deepcopy
 from datetime import timedelta, date
@@ -7,22 +7,19 @@ from fastapi import APIRouter, Depends, Request
 from starlette.responses import RedirectResponse
 
 from sqlalchemy import func, select, extract
-from resonite_communities.auth.users import current_active_user, User
-from resonite_communities.auth.db import get_async_session, DiscordAccount
+from resonite_communities.auth.db import get_async_session
 from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.clients.web.utils.templates import templates
-from resonite_communities.clients.web.routers.admin.utils import UserAuthModel, get_user_auth
+from resonite_communities.clients.web.routers.utils import UserAuthModel, get_user_auth, logo_base64
+from resonite_communities.utils import Config
 
 router = APIRouter()
 
 @router.get("/admin/metrics")
 async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if user_auth is None:
+    if not user_auth or not user_auth.is_superuser:
         return RedirectResponse(url="/")
-
-    with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:
-        logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
 
     today = date.today()
     yesterday = today - timedelta(days=1)
@@ -45,11 +42,6 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
                 )
             )
         ).all()
-
-        from resonite_communities.utils import Config
-
-        import logging
-        logging.error(Config.MONITORED_DOMAINS)
 
         _metrics_domains = {}
         for metrics_domain in metrics_domains_result:
@@ -116,8 +108,6 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
             )
         )
 
-        import calendar
-
         # Initialize empty heatmap data with zeros
         days_of_week = 7
         hours_of_day = 24
@@ -147,7 +137,7 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
 
     return templates.TemplateResponse("admin/metrics.html", {
         "userlogo" : logo_base64,
-        "user" : deepcopy(user_auth.discord_account),
+        "user" : deepcopy(user_auth),
         "request": request,
         "metrics_domains": metrics_domains,
         "versions": versions,

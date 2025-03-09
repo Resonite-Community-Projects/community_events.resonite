@@ -241,7 +241,7 @@
         {% if user %}
           <div class="is-flex is-flex-direction-column m-1">
             <figure class="image pfp is-96x96 m-1">
-              <img class="is-rounded has-background-info" src='{{user.avatar_url}}' />
+              <img class="is-rounded has-background-info" src='{{user.discord_account.avatar_url}}' />
             </figure>
             <a class="button m-1" href="/logout/">Logout</a>
             {% if user.is_superuser %}
@@ -249,7 +249,7 @@
             {% endif %}
           </div>
           <div class="is-flex-direction-column m-1">
-            <p class="m-1">Connected as <span class="tag has-text-info">{{user.name}}</span></p>
+            <p class="m-1">Connected as <span class="tag has-text-info">{{user.discord_account.name}}</span></p>
             {% if user_communities %}
             <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
                 <div>
