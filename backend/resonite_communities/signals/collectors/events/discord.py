@@ -148,6 +148,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
             # Add or Update events
             for event in events:
+                if event.name == '[F.E] Campfire Friday':
+                    self.logger.error('------')
+                    self.logger.error(event.name)
 
                 tags = {tag for tag in community.tags.split(',') if tag != 'public' and tag != 'private'}
 
