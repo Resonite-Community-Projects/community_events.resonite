@@ -4,11 +4,11 @@
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
-          <li><a>Communities</a></li>
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/communities' else '' }}" href="{{ '/admin/communities' }}">Communities</a></li>
         </ul>
         <p class="menu-label">Administration</p>
         <ul class="menu-list">
-          <li><a class="is-active">Dashboard</a></li>
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/metrics' else '' }}" href="{{ '/admin/metrics' }}">Dashboard</a></li>
           <li><a>Configuration</a></li>
       </aside>
       {% endif %}

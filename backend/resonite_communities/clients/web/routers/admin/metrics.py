@@ -3,7 +3,7 @@ import contextlib
 from copy import deepcopy
 from datetime import timedelta, date
 
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request
 from starlette.responses import RedirectResponse
 
 from sqlalchemy import func, select, extract
@@ -11,24 +11,15 @@ from resonite_communities.auth.users import current_active_user, User
 from resonite_communities.auth.db import get_async_session, DiscordAccount
 from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.clients.web.utils.templates import templates
-
+from resonite_communities.clients.web.routers.admin.utils import UserAuthModel, get_user_auth
 
 router = APIRouter()
 
 @router.get("/admin/metrics")
-async def get_metrics(request: Request, user: User = Depends(current_active_user)):
+async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user.is_superuser:
+    if user_auth is None:
         return RedirectResponse(url="/")
-
-    get_async_session_context = contextlib.asynccontextmanager(get_async_session)
-
-    async with get_async_session_context() as session:
-        for user_oauth_account in user.oauth_accounts:
-            if user_oauth_account.oauth_name == "discord":
-                user_auth = await session.get(DiscordAccount, user_oauth_account.discord_account_id)
-                user_auth.is_superuser = user.is_superuser
-                break
 
     with open("resonite_communities/clients/web/static/images/icon.png", "rb") as logo_file:
         logo_base64 = base64.b64encode(logo_file.read()).decode("utf-8")
@@ -156,7 +147,7 @@ async def get_metrics(request: Request, user: User = Depends(current_active_user
 
     return templates.TemplateResponse("admin/metrics.html", {
         "userlogo" : logo_base64,
-        "user" : deepcopy(user_auth) if user_auth else None,
+        "user" : deepcopy(user_auth.discord_account),
         "request": request,
         "metrics_domains": metrics_domains,
         "versions": versions,
