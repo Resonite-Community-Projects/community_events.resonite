@@ -133,8 +133,8 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         """
         local_event_end_time = getattr(local_event, 'end_time')
         if (
-                (local_event_end_time and local_event.end_time > datetime.utcnow()) or
-                (not local_event_end_time and local_event.start_time > datetime.utcnow())
+                (local_event_end_time and local_event.end_time < datetime.utcnow()) or
+                (not local_event_end_time and local_event.start_time < datetime.utcnow())
         ):
             return True
 
