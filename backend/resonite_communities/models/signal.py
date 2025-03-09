@@ -13,6 +13,7 @@ class EventStatus(CEEnum):
     ACTIVE = "ACTIVE"
     PENDING = "PENDING"
     READY = "READY"
+    COMPLETED = "COMPLETED"
 
 
 class Event(BaseModel, table=True):

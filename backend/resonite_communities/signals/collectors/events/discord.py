@@ -220,13 +220,14 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             events_id = [event.id for event in events]
             for local_event in self.model.find(
                     scheduler_type=self.scheduler_type.name,
-                    community_id=Community.find(external_id=community.external_id)[0].id
+                    community_id=Community.find(external_id=community.external_id)[0].id,
+                    status__in=(EventStatus.ACTIVE, EventStatus.READY),
             ):
                 if int(local_event.external_id) not in events_id and self.is_cancel(local_event):
                     self.model.update(
                         _filter_field='external_id',
                         _filter_value=local_event.external_id,
-                        status=EventStatus.CANCELED
+                        status=EventStatus.COMPLETED
                     )
         self.logger.info('Update events collector DONE')
 
