@@ -1,4 +1,81 @@
 {% extends "admin/base.html" %}
 {% block content %}
-AH
+
+<div class="tabs is-centered is-boxed is-medium">
+    <ul>
+        <li class="is-active" id="events_communities_tab"><a>Event communities</a></li>
+        <li id="streams_communities_tab"><a>Streams communities</a></li>
+    </ul>
+</div>
+
+<div id="events_communities" style="width: 100%;">
+    <button class="button is-success">Add community</button>
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for community in events_communities %}
+            <tr>
+                <td>{{ community.name }}</td>
+                <td style="text-align: right;">
+                    <div>
+                        <button class="button is-info">Info</button>
+                        <button class="button is-warning">Edit</button>
+                        <button class="button is-danger">Delete</button>
+                        <button class="button is-link">External link</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div id="streams_communities" style="display: none; width: 100%;">
+    <button class="button is-success">Add stream</button>
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for community in streams_communities %}
+            <tr>
+                <td>{{ community.name }}</td>
+                <td style="text-align: right;">
+                    <div>
+                        <button class="button is-info">Info</button>
+                        <button class="button is-warning">Edit</button>
+                        <button class="button is-danger">Delete</button>
+                        <button class="button is-link">External link</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.getElementById('events_communities_tab').addEventListener('click', function() {
+        document.getElementById('events_communities').style.display = 'table';
+        document.getElementById('streams_communities').style.display = 'none';
+        this.classList.add('is-active');
+        document.getElementById('streams_communities_tab').classList.remove('is-active');
+    });
+
+    document.getElementById('streams_communities_tab').addEventListener('click', function() {
+        document.getElementById('events_communities').style.display = 'none';
+        document.getElementById('streams_communities').style.display = 'table';
+        this.classList.add('is-active');
+        document.getElementById('events_communities_tab').classList.remove('is-active');
+    });
+    </script>
+
 {% endblock content %}
