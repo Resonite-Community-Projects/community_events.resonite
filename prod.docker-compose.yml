@@ -95,21 +95,30 @@ services:
       - traefik.http.routers.prod_api_client.rule=Host(`resonite-communities.com`) && PathPrefix(`/api`)
       - traefik.http.routers.prod_api_client.entrypoints=web
 
-      # Private events legacy API route
+      # Private events legacy API v1 route
       - traefik.http.routers.prod_api_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.prod_api_client_legacy_private.entrypoints=web
 
-      # Private events legacy API route 2
+      # Private events legacy API v2 route
+      - traefik.http.routers.prod_api_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.prod_api_client_legacy_private.entrypoints=web
+
+      # Private events legacy API v1 route 2
       - traefik.http.routers.prod_api_client_legacy_private2.rule=Host(`adult-events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
       - traefik.http.routers.prod_api_client_legacy_private2.entrypoints=web
 
-      # Public events legacy API route
+      # Public events legacy API v1 route
       - traefik.http.routers.prod_api_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.prod_api_client_legacy_public.entrypoints=web
 
-      # Public events legacy API route 2
+      # Public events legacy API v1 route 2
       - traefik.http.routers.prod_api_client_legacy_public2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
       - traefik.http.routers.prod_api_client_legacy_public2.entrypoints=web
+
+      # Public events legacy API V2 route
+      - traefik.http.routers.prod_api_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.prod_api_client_legacy_public.entrypoints=web
+
 
 
   web_client:
