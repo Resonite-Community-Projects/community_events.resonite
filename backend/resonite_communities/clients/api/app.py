@@ -11,6 +11,7 @@ from sqlalchemy import and_, not_, case
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream, EventStatus
 from resonite_communities.models.community import Community
+from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.utils import Config, is_local_env
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
@@ -137,11 +138,6 @@ def get_filtered_events(
     # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
     # SQL commend, optimization to order elements by date
     signals.extend(Event.find(__custom_filter=custom_filter, __order_by=["start_time"]))
-
-    if version != "v1":
-        streams = Stream.find()
-
-        signals.extend(streams)
 
     versioned_events = []
     for signal in signals:
@@ -286,6 +282,21 @@ def get_events_v2(request: Request, format_type: FormatType = None, communities:
         format_type=set_default_format(version="v2", format_type=format_type),
         events=get_filtered_events(request.url.hostname, "v2", communities)
     )
+
+@router_v2.get("/communities")
+def get_communities_v2():
+    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+
+    communities_formated = []
+    for community in communities:
+        communities_formated.append({
+            "name": community.name,
+            "description": community.description,
+            "url": community.url,
+            "icon": community.logo,
+        })
+    return communities_formated
+
 app.include_router(router_v1)
 app.include_router(router_v2)
 

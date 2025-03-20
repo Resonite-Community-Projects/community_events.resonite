@@ -106,6 +106,10 @@ services:
       - traefik.http.routers.api_client_legacy_public2.rule=Host(`3rd.resonite-communities.local`) && PathPrefix(`/v1`)
       - traefik.http.routers.api_client_legacy_public2.entrypoints=web
 
+      # Public events legacy API V2 route
+      - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
+      - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
+
   web_client:
     build: backend
     restart: always
