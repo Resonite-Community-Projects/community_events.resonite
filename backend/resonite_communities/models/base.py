@@ -166,33 +166,33 @@ class BaseModel(SQLModel):
     @classmethod
     def update(
         cls,
-        _filter_field: str | list[str],
-        _filter_value: Any | list[Any],
+        filters: ClauseElement,
         **fields_to_update: Any
     ):
-        """
+        """ Generic update method for updating database records with a custom filter.
 
-        Examples
-            signal.update(_filter_field='id', _filter_value=44, name='aaa')
+        Parameters:
+            custom_filter (ClauseElement): A SQLAlchemy filter expression to select the rows to update.
+            fields_to_update (Any): Fields to update, provided as keyword arguments. Example: name="John".
 
-            signal.update(_filter_field='name', _filter_value="toto", name='aaa')
+        Examples:
+            # Update with a custom filter
+            MyModel.update(
+                custom_filter=MyModel.age > 30,
+                name="John Doe",
+                status="active"
+            )
         """
         # TODO: this would be interesting to let the user use the _apply_filter with like a Filter object instead
+
         fields_to_update['updated_at'] = datetime.utcnow()
         cls._validate_filter(fields_to_update)
         with Session(engine) as session:
             instances = []
-            if not isinstance(_filter_field, list):
-                _filter_field = [_filter_field]
-            if not isinstance(_filter_value, list):
-                _filter_value = [_filter_value]
-            if len(_filter_value) != len(_filter_value):
-                raise ValueError('Their should be the same amount of fields and values.')
-            filters = []
-            for pos in range(0, len(_filter_field)):
-                filters.append(getattr(cls, _filter_field[pos]) == _filter_value[pos])
-            statement = select(cls).where(*filters)
-            rows = session.exec(statement).all()
+
+            query = select(cls).where(filters)
+
+            rows = session.exec(query).all()
             for row in rows:
                 instance = row[0]
                 for key, value in fields_to_update.items():

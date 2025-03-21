@@ -23,8 +23,10 @@ class JSONEventsCollector(EventsCollector):
     def update_communities(self):
         for community in self.communities:
             Community.update(
-                _filter_field=['external_id', 'platform'],
-                _filter_value=[community.external_id, CommunityPlatform.JSON],
+                filters=(
+                    (Community.external_id == community.external_id) &
+                    (Community.platform == CommunityPlatform.JSON)
+                ),
                 monitored=True,
             )
 

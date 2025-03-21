@@ -152,8 +152,8 @@ class Signal:
     def get(self, **filters):
         return self.model.get(**filters)
 
-    def update(self, _filter_field, _filter_value, **data):
-        return self.model.update(_filter_field, _filter_value, **data)
+    def update(self, filters, **data):
+        return self.model.update(filters=filters, **data)
 
     def upsert(self, _filter_field, _filter_value, **data):
         return self.model.upsert(_filter_field, _filter_value, **data)
