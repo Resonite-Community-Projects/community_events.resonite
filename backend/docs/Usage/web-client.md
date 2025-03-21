@@ -20,5 +20,6 @@ And the resonite session URL is automaticaly detected from the description if no
 It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
 parameter.
 
-![WebUI client](https://github.com/Resonite-Community-Projects/community_events.resonite/assets/76159594/0a78fc1e-9250-41ee-a162-004076f13cb8)
+![Web client - Events](https://raw.githubusercontent.com/Resonite-Community-Projects/community_events.resonite/refs/heads/assets/Web%20client/events.webp)
 
+![Web client - Streams](https://raw.githubusercontent.com/Resonite-Community-Projects/community_events.resonite/refs/heads/assets/Web%20client/streams.webp)

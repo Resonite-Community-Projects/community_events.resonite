@@ -44,6 +44,7 @@ nav:
     - Usage/community-configuration.md
     - Usage/facet-client.md
     - Usage/web-client.md
+    - Usage/event-slinger.md
   - Client Integration:
     - ClientIntegration/http-api-usage.md
     - ClientIntegration/versioning.md
