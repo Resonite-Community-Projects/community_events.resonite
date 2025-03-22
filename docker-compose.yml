@@ -35,7 +35,7 @@ services:
       start_period: 30s
 
   migrations:
-    build: backend
+    build: .
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -46,7 +46,7 @@ services:
       fi
       "
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
     depends_on:
       database:
         condition: service_healthy
@@ -55,7 +55,7 @@ services:
       - client
 
   signals_manager:
-    build: backend
+    build: .
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -66,10 +66,10 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
 
   api_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -80,7 +80,7 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
     ports:
       - '8000:8000'
     labels:
@@ -111,7 +111,7 @@ services:
       - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
 
   web_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -122,7 +122,7 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
     ports:
       - '8001:8001'
     labels:
@@ -134,7 +134,8 @@ services:
     image: squidfunk/mkdocs-material
     working_dir: /docs
     volumes:
-      - ./backend/:/docs
+      - mkdocs.yml:/docs
+      - ./docs:/docs
     ports:
       - "8002:8000"
     profiles:
