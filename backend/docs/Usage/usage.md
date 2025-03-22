@@ -19,6 +19,12 @@ The last step is to informe your community members that the events are now avail
 
 | Client | Events | Streams | Communities list |
 |--------|--------|---------|------------------|
-| Facet         | :material-checkbox-outline: | :material-checkbox-blank-outline: | :material-checkbox-blank-outline: |
-| Web           | :material-checkbox-outline: | :material-checkbox-outline: | :material-checkbox-outline: |
-| Event Slinger | :material-checkbox-outline: | :material-checkbox-blank-outline: | :material-checkbox-outline: |
+| Facet         | :material-check: | :material-close: | :material-close: |
+| Web           | :material-check: | :material-check: | :material-check: |
+| Event Slinger | :material-check: | :material-close: | :material-check: |
+
+| Features | Facet | Web | Event Slinger |
+|--------|--------|---------|------------------|
+| Events         | :material-check: | :material-check: | :material-check: |
+| Streams           | :material-close: | :material-check: | :material-close: |
+| Communities list | :material-close: | :material-check: | :material-check: |
