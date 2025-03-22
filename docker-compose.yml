@@ -134,7 +134,6 @@ services:
     image: squidfunk/mkdocs-material
     working_dir: /docs
     volumes:
-      - mkdocs.yml:/docs
       - ./docs:/docs
     ports:
       - "8002:8000"

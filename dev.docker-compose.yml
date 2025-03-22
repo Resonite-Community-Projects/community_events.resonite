@@ -40,7 +40,7 @@ services:
       start_period: 30s
 
   migrations:
-    build: backend
+    build: .
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -60,7 +60,7 @@ services:
       - client
 
   signals_manager:
-    build: backend
+    build: .
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -74,7 +74,7 @@ services:
       - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
 
   api_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -112,7 +112,7 @@ services:
       - traefik.http.routers.dev_api_client_legacy_public2.entrypoints=web
 
   web_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -139,7 +139,7 @@ services:
     image: squidfunk/mkdocs-material
     working_dir: /docs
     volumes:
-      - ./backend/:/docs
+      - ./docs:/docs
     ports:
       - "8002:8000"
     profiles:
