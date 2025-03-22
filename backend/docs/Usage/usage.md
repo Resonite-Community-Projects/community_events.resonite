@@ -13,7 +13,7 @@ The last step is to informe your community members that the events are now avail
 
 ## Thrid-party
 
-- [Event Slinger](event_slinger.md) to be used when either on your Android phone (including a tablet mode) or Windows device.
+- [Event Slinger](event-slinger.md) to be used when either on your Android phone (including a tablet mode) or Windows device.
 
 ## Matrix feature list
 
