@@ -17,12 +17,6 @@ The last step is to informe your community members that the events are now avail
 
 ## Matrix feature list
 
-| Client | Events | Streams | Communities list |
-|--------|--------|---------|------------------|
-| Facet         | :material-check: | :material-close: | :material-close: |
-| Web           | :material-check: | :material-check: | :material-check: |
-| Event Slinger | :material-check: | :material-close: | :material-check: |
-
 | Features | Facet | Web | Event Slinger |
 |--------|--------|---------|------------------|
 | Events         | :material-check: | :material-check: | :material-check: |
