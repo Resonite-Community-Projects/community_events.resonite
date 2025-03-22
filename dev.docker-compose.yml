@@ -112,7 +112,7 @@ services:
       - traefik.http.routers.dev_api_v1_client_legacy_public2.entrypoints=web
 
       # Public events legacy API V2 route
-      - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v2`)
       - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
 
   web_client:
