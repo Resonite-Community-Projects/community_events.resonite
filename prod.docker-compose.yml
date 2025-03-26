@@ -40,7 +40,7 @@ services:
       start_period: 30s
 
   migrations:
-    build: backend
+    build: .
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -60,7 +60,7 @@ services:
       - client
 
   signals_manager:
-    build: backend
+    build: .
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -74,7 +74,7 @@ services:
       - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
 
   api_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -122,7 +122,7 @@ services:
 
 
   web_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -149,7 +149,7 @@ services:
     image: squidfunk/mkdocs-material
     working_dir: /docs
     volumes:
-      - ./backend/:/docs
+      - ./docs/:/docs
     ports:
       - "9002:8000"
     profiles:
