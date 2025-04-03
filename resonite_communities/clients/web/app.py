@@ -13,7 +13,7 @@ from resonite_communities.clients.web.routers import (
     login,
     logout,
 )
-from resonite_communities.clients.web.routers.admin import metrics, communities
+from resonite_communities.clients.web.routers.admin import metrics, events, communities
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
@@ -27,6 +27,7 @@ app.include_router(login.router)
 app.include_router(main.router)
 
 app.include_router(metrics.router)
+app.include_router(events.router)
 app.include_router(communities.router)
 
 app.include_router(

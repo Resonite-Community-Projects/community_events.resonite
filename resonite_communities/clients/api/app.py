@@ -297,6 +297,33 @@ def get_communities_v2():
         })
     return communities_formated
 
+# TODO: Temporary
+
+from pydantic import BaseModel
+from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
+from resonite_communities.models.signal import EventStatus
+
+class EventUpdateStatusRequest(BaseModel):
+    id: str
+    status: EventStatus
+
+@router_v2.post("/admin/events/update_status")
+def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        msg = f"Not authenticated."
+        raise HTTPException(status_code=403, detail=msg)
+
+    result = Event.update(
+        filters=(Event.id == data.id),
+        status=data.status
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    return {"id": data.id, "status": data.status, "result": result}
+
 app.include_router(router_v1)
 app.include_router(router_v2)
 

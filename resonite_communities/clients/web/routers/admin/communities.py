@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, Request
 from starlette.responses import RedirectResponse
 
 from resonite_communities.clients.web.utils.templates import templates
-from resonite_communities.clients.web.routers.utils import UserAuthModel, get_user_auth, logo_base64
+from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
+from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform
 router = APIRouter()
 
