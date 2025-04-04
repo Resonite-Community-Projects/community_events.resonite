@@ -10,6 +10,7 @@ from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event
+from resonite_communities.utils import Config
 
 router = APIRouter()
 
@@ -33,10 +34,20 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     #events = Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
     events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
 
+    try:
+        api_url = Config.PUBLIC_DOMAIN[0]
+    except KeyError:
+        api_url = None
+
+    if api_url and api_url.endswith(".local"):
+        api_url = f"http://{api_url}"
+    else:
+        api_url = f"https://{api_url}"
 
     return templates.TemplateResponse("admin/events.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
+        "api_url": Config.PUBLIC_DOMAIN,
         "events": events,
         "request": request,
     })
