@@ -144,7 +144,7 @@ def get_filtered_events(
         if version == "v1":
             versioned_events.append({
                 "name": signal.name,
-                "description": signal.description,
+                "description": signal.custom_description if signal.custom_description else signal.default_description,
                 "location_str": signal.location,
                 "start_time": signal.start_time.strftime("%Y/%m/%d %H:%M:%S+00:00"),
                 "end_time": signal.end_time.strftime("%Y/%m/%d %H:%M:%S+00:00") if signal.end_time else None,
@@ -153,7 +153,7 @@ def get_filtered_events(
         elif version == "v2":
             versioned_events.append({
                 "name": signal.name,
-                "description": signal.description,
+                "description": signal.custom_description if signal.custom_description else signal.default_description,
                 "session_image": signal.session_image,
                 "location_str": signal.location,
                 "location_web_session_url": signal.location_web_session_url,
@@ -291,7 +291,7 @@ def get_communities_v2():
     for community in communities:
         communities_formated.append({
             "name": community.name,
-            "description": community.description,
+            "description": community.custom_description if community.custom_description else community.default_description,
             "url": community.url,
             "icon": community.logo,
         })
