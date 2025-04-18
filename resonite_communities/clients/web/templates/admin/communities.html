@@ -18,43 +18,8 @@
 
 <div id="events_communities" style="width: 100%;">
 
-    <button class="button is-success update-event-status" data-event_id="42">Update</button>
-
-    <div class="dropdown">
-        <div class="dropdown-trigger">
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                <span>Status</span>
-                <span class="icon is-small">
-                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                </span>
-            </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-            <div class="dropdown-content">
-                    <a class="dropdown-item" data-status="ACTIVE" data-event_id="43" > ACTIVE </a>
-                    <a class="dropdown-item" data-status="CANCELLED" data-event_id="43" > CANCELLED </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="dropdown">
-        <div class="dropdown-trigger">
-            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                <span>Status</span>
-                <span class="icon is-small">
-                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                </span>
-            </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-            <div class="dropdown-content">
-                    <a class="dropdown-item" data-status="ACTIVE" data-event_id="42" > ACTIVE </a>
-                    <a class="dropdown-item" data-status="CANCELLED" data-event_id="42" > CANCELLED </a>
-            </div>
-        </div>
-    </div>
-
     <button class="button is-success modal-add-community-trigger" data-target="modal-add-community">Add community</button>
+
     <table class="table is-fullwidth">
         <thead>
             <tr>
@@ -71,8 +36,7 @@
                         <button class="button is-info">Info</button>
                         <button class="button is-warning">Edit</button>
                         <button class="button is-danger">Delete</button>
-                        <button class="button is-link">External link</button>
-                    </div>
+                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -98,7 +62,7 @@
                         <button class="button is-info">Info</button>
                         <button class="button is-warning">Edit</button>
                         <button class="button is-danger">Delete</button>
-                        <button class="button is-link">External link</button>
+                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
                     </div>
                 </td>
             </tr>
@@ -183,7 +147,7 @@
     </section>
     <footer class="modal-card-foot">
         <div class="buttons">
-        <button class="button is-success">Save changes</button>
+        <button class="button is-success" id="add-event">Add event</button>
         <button class="button">Cancel</button>
         </div>
     </footer>
@@ -212,109 +176,6 @@
     </footer>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-
-        // Add click event on button to do something special
-        (document.querySelectorAll('.update-event-status') || []).forEach(($trigger) => {
-            const event_id = $trigger.dataset.event_id;
-
-            $trigger.addEventListener('click', async () => {
-                console.log('ITS BEEN CLICKED!');
-                console.log(event_id);
-
-                const response = await fetch('{{ api_url }}/v2/admin/events/update_status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: event_id
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Ok, result: ', result)
-                } else {
-                    const result = await response.json();
-                    console.log('Not Ok, result: ', result)
-                }
-            })
-        });
-
-    })
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const dropdownTriggers = document.querySelectorAll('.dropdown-trigger')
-
-        dropdownTriggers.forEach(trigger => {
-            const dropdown = trigger.closest('.dropdown');
-
-            // Toggle dropdown
-            trigger.addEventListener('click', () => {
-                dropdown.classList.toggle('is-active');
-            });
-        });
-
-        // Exit dropdown
-        document.addEventListener('click', (event) => {
-            const dropdowns = document.querySelectorAll('.dropdown');
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.contains(event.target)) {
-                    dropdown.classList.remove('is-active');
-                }
-            });
-        });
-    })
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        (document.querySelectorAll('.dropdown-item[data-status]') || []).forEach(($item) => {
-            $item.addEventListener('click', async () => {
-                const status = $item.dataset.status;
-                const event_id =$item.dataset.event_id;
-
-                console.log('Status selected: ', status);
-                console.log('For event: ', event_id);
-
-                const dropdown = $item.closest('.dropdown');
-
-                dropdown.classList.remove('is-active');
-
-                const response = await fetch('{{ api_url }}/v2/admin/events/update_status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        id: event_id,
-                        status: status,
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Status updated successfully', result);
-                    const statusSpan = dropdown.querySelector('.dropdown-trigger span')
-
-                    if (['ACTIVE', 'CANCELLED'].includes(result.status)) {
-                        statusSpan.textContent = result.status;
-                    } else {
-                        console.log('Invalid status received:', result.status)
-                    }
-                } else {
-                    const result = await response.json();
-                    console.log('Failed to update statys:', result);
-                }
-            });
-        });
-    });
-</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
