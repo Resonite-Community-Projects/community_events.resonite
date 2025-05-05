@@ -1,8 +1,9 @@
 import argparse
 import multiprocessing
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from resonite_communities.auth.users import fastapi_users, auth_backend
 from resonite_communities.clients.web.auth import discord_oauth
@@ -20,12 +21,17 @@ from resonite_communities.clients.utils.geoip import get_geoip_db_path
 app = FastAPI()
 app.secret = Config.SECRET
 
+app.mount(
+    "/static",
+    StaticFiles(directory="resonite_communities/clients/web/static"),
+    name="static"
+)
+
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 app.include_router(logout.router)
 app.include_router(login.router)
 app.include_router(main.router)
-
 app.include_router(metrics.router)
 app.include_router(events.router)
 app.include_router(communities.router)
@@ -42,7 +48,9 @@ app.include_router(
 )
 
 @app.exception_handler(404)
-async def custom_404_handler(_, __):
+async def custom_404_handler(request: Request, exc):
+    if request.url.path.startswith("/static"):
+        return await app.default_exception_handler(exc)
     return RedirectResponse("/")
 
 @app.exception_handler(401)

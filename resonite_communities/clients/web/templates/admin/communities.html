@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% block extended_head %}
+<script src="/static/js/communities.js"></script>
 <style>
     :required,
     .required {
@@ -18,7 +19,7 @@
 
 <div id="events_communities" style="width: 100%;">
 
-    <button class="button is-success modal-add-community-trigger" data-target="modal-add-community">Add community</button>
+    <button class="button is-success" data-modal-action="add" data-community-type="event">Add event community</button>
 
     <table class="table is-fullwidth">
         <thead>
@@ -33,9 +34,9 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-info">Info</button>
-                        <button class="button is-warning">Edit</button>
-                        <button class="button is-danger">Delete</button>
+                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="event">Info</button>
+                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="event">Edit</button>
+                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="event">Delete</button>
                         <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
                 </td>
             </tr>
@@ -45,7 +46,9 @@
 </div>
 
 <div id="streams_communities" style="display: none; width: 100%;">
-    <button class="button is-success modal-add-stream-trigger" data-target="modal-add-stream">Add stream</button>
+
+    <button class="button is-success" data-modal-action="add" data-community-type="stream">Add stream community</button>
+
     <table class="table is-fullwidth">
         <thead>
             <tr>
@@ -59,10 +62,10 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-info">Info</button>
-                        <button class="button is-warning">Edit</button>
-                        <button class="button is-danger">Delete</button>
-                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
+                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="stream">Info</button>
+                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="stream">Edit</button>
+                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="stream">Delete</button>
+                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>
                     </div>
                 </td>
             </tr>
@@ -71,182 +74,21 @@
     </table>
 </div>
 
-<div class="modal" id="modal-add-community">
+<div class="modal" id="generic-modal">
     <div class="modal-background"></div>
     <div class="modal-card">
-    <header class="modal-card-head">
-        <p class="modal-card-title">Add a community</p>
-        <button class="delete" aria-label="close"></button>
-    </header>
-    <section class="modal-card-body">
-
-        <!-- Add logo support -->
-
-        <div class="field">
-            <label class="label">Name</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Platform ID</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Platform</label>
-            <div class="control">
-                <div class="select">
-                    <select>
-                        <option>Discord</option>
-                        <option>JSON</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">URL</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Tags</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-            <p class="help">Tags are separated with a coma.</p>
-        </div>
-
-        <div class="field">
-            <label class="label">Description</label>
-            <div class="control">
-                <textarea class="textarea" placeholder="Textarea"></textarea>
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Private Role ID</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Private Channel ID</label>
-            <div class="control">
-                <input class="input" type="text" placeholder="Text input">
-            </div>
-        </div>
-
-    </section>
-    <footer class="modal-card-foot">
-        <div class="buttons">
-        <button class="button is-success" id="add-event">Add event</button>
-        <button class="button">Cancel</button>
-        </div>
-    </footer>
+        <header class="modal-card-head">
+            <p class="modal-card-title" id="modal-title">Modal Title</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body" id="modal-body">
+            <!-- Content will be dynamically injected here -->
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-success" id="modal-save-button">Save</button>
+            <button class="button" id="modal-cancel-button">Cancel</button>
+        </footer>
     </div>
 </div>
-
-<div class="modal" id="modal-add-stream">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-    <header class="modal-card-head">
-        <p class="modal-card-title">Add a stream</p>
-        <button class="delete" aria-label="close"></button>
-    </header>
-    <section class="modal-card-body">
-        <!-- Content ... -->
-    </section>
-    <footer class="modal-card-foot">
-        <div class="buttons">
-            <div class="control">
-                <button class="button is-success">Save changes</button>
-            </div>
-            <div class="control">
-                <button class="button">Cancel</button>
-            </div>
-        </div>
-    </footer>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Functions to open and close a modal
-        function openModal($el) {
-            $el.classList.add('is-active');
-        }
-
-        function closeModal($el) {
-            $el.classList.remove('is-active');
-        }
-
-        function closeAllModals() {
-            (document.querySelectorAll('.modal') || []).forEach(($modal) => {
-                closeModal($modal);
-            });
-        }
-
-        // Add a click event on buttons to open a specific modal
-        (document.querySelectorAll('.modal-add-community-trigger') || []).forEach(($trigger) => {
-            const modal = $trigger.dataset.target;
-            const $target = document.getElementById(modal);
-
-            $trigger.addEventListener('click', () => {
-                openModal($target);
-            });
-        });
-
-        // Add a click event on buttons to open a specific modal
-        (document.querySelectorAll('.modal-add-stream-trigger') || []).forEach(($trigger) => {
-            const modal = $trigger.dataset.target;
-            const $target = document.getElementById(modal);
-
-            $trigger.addEventListener('click', () => {
-            openModal($target);
-            });
-        });
-
-
-        // Add a click event on various child elements to close the parent modal
-        (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
-            const $target = $close.closest('.modal');
-
-            $close.addEventListener('click', () => {
-            closeModal($target);
-            });
-        });
-
-        // Add a keyboard event to close all modals
-        document.addEventListener('keydown', (event) => {
-            if(event.key === "Escape") {
-            closeAllModals();
-            }
-        });
-});
-</script>
-
-<script>
-    document.getElementById('events_communities_tab').addEventListener('click', function() {
-        document.getElementById('events_communities').style.display = 'table';
-        document.getElementById('streams_communities').style.display = 'none';
-        this.classList.add('is-active');
-        document.getElementById('streams_communities_tab').classList.remove('is-active');
-    });
-
-    document.getElementById('streams_communities_tab').addEventListener('click', function() {
-        document.getElementById('events_communities').style.display = 'none';
-        document.getElementById('streams_communities').style.display = 'table';
-        this.classList.add('is-active');
-        document.getElementById('events_communities_tab').classList.remove('is-active');
-    });
-</script>
 
 {% endblock content %}

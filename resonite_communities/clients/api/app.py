@@ -324,6 +324,31 @@ def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel
 
     return {"id": data.id, "status": data.status, "result": result}
 
+@router_v2.get("/admin/communities/{community_id}")
+def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    communities = Community().find(id__eq=community_id)
+    if not communities:
+        raise HTTPException(status_code=404, detail="Community not found.")
+    if len(communities) > 1:
+        raise HTTPException(status_code=500, detail="Multiple communities found with the same ID.")
+
+    community = communities[0]
+
+    return {
+        "id": community.id,
+        "name": community.name,
+        "external_id": community.external_id,
+        "platform": community.platform.value,
+        "url": community.url,
+        "tags": community.tags,
+        "description": community.default_description if not community.custom_description else community.custom_description,
+        "private_role_id": community.config.get("private_role_id", None),
+        "private_channel_id": community.config.get("private_channel_id", None),
+    }
 app.include_router(router_v1)
 app.include_router(router_v2)
 
