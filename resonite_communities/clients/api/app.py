@@ -349,6 +349,75 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
         "private_role_id": community.config.get("private_role_id", None),
         "private_channel_id": community.config.get("private_channel_id", None),
     }
+
+from pydantic import BaseModel
+
+class CommunityRequest(BaseModel):
+    name: str
+    external_id: str
+    platform: str
+    url: str
+    tags: str
+    description: str
+    private_role_id: str | None = None
+    private_channel_id: str | None = None
+
+@router_v2.post("/admin/communities/")
+def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    new_community = Community().add(
+        name=data.name,
+        external_id=data.external_id,
+        platform=CommunityPlatform(data.platform.upper()),
+        url=data.url,
+        tags=data.tags,
+        custom_description=data.description,
+        config={
+            "private_role_id": data.private_role_id,
+            "private_channel_id": data.private_channel_id,
+        },
+    )
+
+    return {"id": new_community.id, "message": "Community created successfully"}
+
+@router_v2.patch("/admin/communities/{community_id}")
+def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    updated = Community.update(
+        filters=(Community.id == community_id),
+        name=data.name,
+        external_id=data.external_id,
+        platform=CommunityPlatform(data.platform),
+        url=data.url,
+        tags=data.tags,
+        description=data.description,
+        config={
+            "private_role_id": data.private_role_id,
+            "private_channel_id": data.private_channel_id,
+        },
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community updated successfully"}
+
+@router_v2.delete("/admin/communities/{community_id}")
+def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    deleted = Community.delete(filters=(Community.id == community_id))
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community deleted successfully"}
+
 app.include_router(router_v1)
 app.include_router(router_v2)
 

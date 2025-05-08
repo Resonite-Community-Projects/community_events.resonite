@@ -6,17 +6,122 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalBody = document.getElementById('modal-body');
         const modalSaveButton = document.getElementById('modal-save-button');
 
-        const openModal = (title, saveButtonText, content, saveCallback) => {
+        const openModal = (title, actionButtonText, content, saveCallback) => {
             modalTitle.textContent = title;
             modalBody.innerHTML = content;
-            console.log(saveButtonText);
-            modalSaveButton.textContent = saveButtonText;
+            modalSaveButton.textContent = actionButtonText;
             modalSaveButton.onclick = saveCallback || (() => {});
             modal.classList.add('is-active');
         };
 
         const closeModal = () => {
             modal.classList.remove('is-active');
+        };
+
+        const handleCommunityAction = async (action, communityId, communityType) => {
+            let modalTitle = '';
+            let actionButtonText = '';
+            let content = null;
+            //let saveCallback = null;
+
+            const performBackendAction = async (method, body = null) => {
+                try {
+                    const response = await fetch(`/v2/admin/communities/${communityId || ''}`, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: body ? JSON.stringify(body) : null,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to ${action} community: ${response.statusText}`);
+                    }
+
+                    console.log(`${action} action successful`);
+                } catch (error) {
+                    console.error(`Error during ${action} action:`, error);
+                }
+            };
+
+            const serializeFormData = () => {
+                const inputs = modalBody.querySelectorAll('input, textarea, select');
+                console.log(inputs);
+                if (!inputs.length) {
+                    console.error("No input, textarea, or select elements found in the modal body.");
+                    return null;
+                }
+                const body = {};
+                inputs.forEach(input => {
+                    console.log(input.value);
+                    console.log(input.name)
+                    body[input.name] = input.value;
+                });
+                return body;
+            };
+
+
+            switch (action) {
+                case 'add':
+                    modalTitle = `Add ${communityType} community`;
+                    actionButtonText = 'Create';
+                    content = await getCommunityForm(communityId, communityType);
+                    /*saveCallback = async () => {
+                        const formData = new FormData(modalBody.querySelector('form'));
+                        const body = Object.fromEntries(formData.entries());
+                        await performBackendAction('POST', body);
+                        closeModal();
+                    };*/
+                    break;
+
+                case 'edit':
+                    modalTitle = `Edit ${communityType} Community`;
+                    actionButtonText = 'Save';
+                    content = await getCommunityForm(communityId, communityType);
+                    /*saveCallback = async () => {
+                        const formData = new FormData(modalBody.querySelector('form'));
+                        const body = Object.fromEntries(formData.entries());
+                        await performBackendAction('PATCH', body);
+                        closeModal();
+                    };*/
+                    break;
+
+                case 'info':
+                    modalTitle = `Community ${communityType} Info`;
+                    actionButtonText = 'Close';
+                    content = await getCommunityInfo(communityId, communityType);
+                    //openModal(modalTitle, actionButtonText, content, null);
+                    break;
+
+                case 'delete':
+                    modalTitle = `Delete ${communityType} community`;
+                    actionButtonText = 'Delete';
+                    content = `<p>Are you sure you want to delete this community?</p>`;
+                    /*saveCallback = async () => {
+                        await performBackendAction('DELETE');
+                        closeModal();
+                    };*/
+                    break;
+
+                default:
+                    console.error('Unknown action:', action);
+                    return;
+            }
+
+            const saveCallback = async () => {
+                if (action === 'delete') {
+                    await performBackendAction('DELETE');
+                } else if (action === 'add' || action === 'edit') {
+                    const body = serializeFormData();
+                    if (!body) return;
+
+                    const method = action === 'add' ? 'POST' : 'PATCH';
+                    await performBackendAction(method, body);
+                }
+                closeModal();
+            };
+
+            openModal(modalTitle, actionButtonText, content, saveCallback);
         };
 
         const initModalTriggers = () => {
@@ -26,27 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const communityId = trigger.dataset.communityId || null;
                     const communityType = trigger.dataset.communityType || null;
 
-                    if (action === 'add') {
-                        const formContent = await getCommunityForm(communityId, communityType);
-                        openModal('Add ' + communityType + ' community', 'Create', formContent, () => {
-                            console.log('Add action triggered');
-                            closeModal();
-                        });
-                    } else if (action === 'edit') {
-                        const formContent = await getCommunityForm(communityId, communityType);
-                        openModal('Edit ' + communityType + ' Community', 'Save', formContent, () => {
-                            console.log('Edit action triggered for ID:', communityId, communityType);
-                            closeModal();
-                        });
-                    } else if (action === 'info') {
-                        const infoContent = await getCommunityInfo(communityId, communityType);
-                        openModal('Community ' + communityType + ' Info', 'OK', infoContent, '');
-                    } else if (action === 'delete') {
-                        openModal('Delete ' + communityType + ' community', 'Delete', null, () => {
-                            console.log('Delete action triggered for ID:', communityId, communityType);
-                            closeModal();
-                        });
-                    }
+                    await handleCommunityAction(action, communityId, communityType);
                 });
             });
 
@@ -90,13 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="field">
                     <label class="label">Private Role ID</label>
                     <div class="control">
-                        <input class="input" type="text" value="${privateRoleIdValue}" placeholder="Private Role ID">
+                        <input name="private_role_id" class="input" type="text" value="${privateRoleIdValue}" placeholder="Private Role ID">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Private Channel ID</label>
                     <div class="control">
-                        <input class="input" type="text" value="${privateChannelIdValue}" placeholder="Private Channel ID">
+                        <input name="private_channel_id" class="input" type="text" value="${privateChannelIdValue}" placeholder="Private Channel ID">
                     </div>
                 </div>
                 `
@@ -110,20 +195,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="field">
                     <label class="label">Name</label>
                     <div class="control">
-                        <input class="input" type="text" value="${nameValue}" placeholder="Community Name">
+                        <input name="name" class="input" type="text" value="${nameValue}" placeholder="Community Name">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Platform ID</label>
                     <div class="control">
-                        <input class="input" type="text" value="${platformIdValue}" placeholder="Platform ID">
+                        <input name="external_id" class="input" type="text" value="${platformIdValue}" placeholder="Platform ID">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Platform</label>
                     <div class="control">
                         <div class="select">
-                            <select>
+                            <select name="platform">
                                 ${formOptions}
                             </select>
                         </div>
@@ -132,20 +217,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="field">
                     <label class="label">URL</label>
                     <div class="control">
-                        <input class="input" type="text" value="${urlValue}" placeholder="Community URL">
+                        <input name="url" class="input" type="text" value="${urlValue}" placeholder="Community URL">
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">Tags</label>
                     <div class="control">
-                        <input class="input" type="text" value="${tagsValue}" placeholder="Tags (comma-separated)">
+                        <input name="tags" class="input" type="text" value="${tagsValue}" placeholder="Tags (comma-separated)">
                     </div>
                     <p class="help">Tags are separated with a comma.</p>
                 </div>
                 <div class="field">
                     <label class="label">Description</label>
                     <div class="control">
-                        <textarea class="textarea" placeholder="Description">${descriptionValue}</textarea>
+                        <textarea name="description" class="textarea" placeholder="Description">${descriptionValue}</textarea>
                     </div>
                 </div>
                 ${formCommunityConfiguration}
