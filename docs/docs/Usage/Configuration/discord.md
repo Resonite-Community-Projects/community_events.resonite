@@ -8,9 +8,8 @@ Simply click on the following button to add the bot to your discord, there is no
 
 **2. Contact us to enable your community**
 
-For now we are not notified that a community is trying to join the system nor automatic configuration.
+At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration.
 
-So you need to send us a message (mainly to brodokk) and then we will review your community (mainly checking you respect the Resonite Guidelines)
-and if everything is good we will update our configuration and you can then see your event appear on our system.
+To proceed, please send a message to [brodokk](https://brodokk.space/) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html). If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
 
 Remember that to have your event shown you need to respect the validation format as stated in the [general configuration overview, section `Event definition`](overview.md#Event definition).

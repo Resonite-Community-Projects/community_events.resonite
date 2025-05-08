@@ -2,7 +2,7 @@
 
 !!! warning
 
-    Please do not share this page for now with anyone without authorization from brodokk.
+    Please do not share this page for now with anyone without authorization from [brodokk](https://brodokk.space/).
 
 For some communities it can happen they need to have private events for various reasons. Or they simply want to keep their community private.
 
@@ -41,14 +41,11 @@ For our system you will need to give us the voice channel id as well as the role
 
 ### **3. Contact us to enable your community**
 
-For now we are not notified that a community is trying to join the system nor automatic configuration.
+At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration.
 
-So you need to send us a message (mainly to brodokk) and then we will review your community, especially the reason **why** you need to have
-a private community or private events (and also checking you respect the Resonite Guidelines).
-
-If everything is good we will update our configuration and you can then see your even appear on our system.
+To proceed, please send a message to [brodokk](https://brodokk.space/) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html) as well as the reason **why** you want a private community. If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
 
 ### **4. Let your community know**
 
-In the case of private events you will need to use a different client. Please contact brodokk directly if during the previous step you didn't
+In the case of private events you will need to use a different client. Please contact [brodokk](https://brodokk.space/) directly if during the previous step you didn't
 have this information or you have questions.

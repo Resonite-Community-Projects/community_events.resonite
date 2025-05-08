@@ -13,6 +13,6 @@ Please have a preference for GitHub as the information remain public and their i
 Open a new [issue on GitHub](https://github.com/Resonite-Community-Projects/community_events.resonite/issues) for any bugs or features you would like. Otherwise see the [GitHub Discussions section](https://github.com/Resonite-Community-Projects/community_events.resonite/discussions). (If you don't know use the [GitHub Discussions section](https://github.com/Resonite-Community-Projects/community_events.resonite/discussions))
 
 
-If you prefer the discord follow the invite link `No server link for now, contact @brodokk to get access to the server`.
+If you prefer the discord follow the invite link `No server link for now`, contact [brodokk](https://brodokk.space/) to get access to the server.
 
-You can also directly contact `@brodokk`. (Avoid to contact other member you way know that are part of the time and prefer to bother me instead)
+You can also directly contact [brodokk](https://brodokk.space/). (Avoid to contact other member you way know that are part of the time and prefer to bother me instead)

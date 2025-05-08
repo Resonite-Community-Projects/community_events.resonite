@@ -18,5 +18,5 @@ Browse them all in the [Client Reference](clients.md).
 
 Let everyone know events are available. Share links to the client guides via Discord, Telegram, Matrix, or your usual channels.
 
-> **Need help?** If something doesn’t work, contact brodokk.
+> **Need help?** If something doesn’t work, contact [brodokk](https://brodokk.space/).
 
