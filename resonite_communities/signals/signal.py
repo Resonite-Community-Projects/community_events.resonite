@@ -131,6 +131,7 @@ class Signal:
                 "name": signal['name'],
                 "monitored": False,
                 "external_id": str(signal['external_id']),
+                "custom_description": signal.get('description', None) if signal.get('description', None) else None,
                 "platform": self.platform,
                 "url": signal.get('url', None),
                 "tags": ",".join(signal.get('tags', [])),

@@ -10,7 +10,8 @@ from sqlalchemy import func, select, extract
 from resonite_communities.auth.db import get_async_session
 from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.clients.web.utils.templates import templates
-from resonite_communities.clients.web.routers.utils import UserAuthModel, get_user_auth, logo_base64
+from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
+from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.utils import Config
 
 router = APIRouter()

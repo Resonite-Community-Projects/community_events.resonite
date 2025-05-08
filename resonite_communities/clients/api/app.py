@@ -144,7 +144,7 @@ def get_filtered_events(
         if version == "v1":
             versioned_events.append({
                 "name": signal.name,
-                "description": signal.description,
+                "description": signal.custom_description if signal.custom_description else signal.default_description,
                 "location_str": signal.location,
                 "start_time": signal.start_time.strftime("%Y/%m/%d %H:%M:%S+00:00"),
                 "end_time": signal.end_time.strftime("%Y/%m/%d %H:%M:%S+00:00") if signal.end_time else None,
@@ -153,7 +153,7 @@ def get_filtered_events(
         elif version == "v2":
             versioned_events.append({
                 "name": signal.name,
-                "description": signal.description,
+                "description": signal.custom_description if signal.custom_description else signal.default_description,
                 "session_image": signal.session_image,
                 "location_str": signal.location,
                 "location_web_session_url": signal.location_web_session_url,
@@ -291,11 +291,132 @@ def get_communities_v2():
     for community in communities:
         communities_formated.append({
             "name": community.name,
-            "description": community.description,
+            "description": community.custom_description if community.custom_description else community.default_description,
             "url": community.url,
             "icon": community.logo,
         })
     return communities_formated
+
+# TODO: Temporary
+
+from pydantic import BaseModel
+from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
+from resonite_communities.models.signal import EventStatus
+
+class EventUpdateStatusRequest(BaseModel):
+    id: str
+    status: EventStatus
+
+@router_v2.post("/admin/events/update_status")
+def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        msg = f"Not authenticated."
+        raise HTTPException(status_code=403, detail=msg)
+
+    result = Event.update(
+        filters=(Event.id == data.id),
+        status=data.status
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    return {"id": data.id, "status": data.status, "result": result}
+
+@router_v2.get("/admin/communities/{community_id}")
+def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    communities = Community().find(id__eq=community_id)
+    if not communities:
+        raise HTTPException(status_code=404, detail="Community not found.")
+    if len(communities) > 1:
+        raise HTTPException(status_code=500, detail="Multiple communities found with the same ID.")
+
+    community = communities[0]
+
+    return {
+        "id": community.id,
+        "name": community.name,
+        "external_id": community.external_id,
+        "platform": community.platform.value,
+        "url": community.url,
+        "tags": community.tags,
+        "description": community.default_description if not community.custom_description else community.custom_description,
+        "private_role_id": community.config.get("private_role_id", None),
+        "private_channel_id": community.config.get("private_channel_id", None),
+    }
+
+from pydantic import BaseModel
+
+class CommunityRequest(BaseModel):
+    name: str
+    external_id: str
+    platform: str
+    url: str
+    tags: str
+    description: str
+    private_role_id: str | None = None
+    private_channel_id: str | None = None
+
+@router_v2.post("/admin/communities/")
+def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    new_community = Community().add(
+        name=data.name,
+        external_id=data.external_id,
+        platform=CommunityPlatform(data.platform.upper()),
+        url=data.url,
+        tags=data.tags,
+        custom_description=data.description,
+        config={
+            "private_role_id": data.private_role_id,
+            "private_channel_id": data.private_channel_id,
+        },
+    )
+
+    return {"id": new_community.id, "message": "Community created successfully"}
+
+@router_v2.patch("/admin/communities/{community_id}")
+def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    updated = Community.update(
+        filters=(Community.id == community_id),
+        name=data.name,
+        external_id=data.external_id,
+        platform=CommunityPlatform(data.platform),
+        url=data.url,
+        tags=data.tags,
+        description=data.description,
+        config={
+            "private_role_id": data.private_role_id,
+            "private_channel_id": data.private_channel_id,
+        },
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community updated successfully"}
+
+@router_v2.delete("/admin/communities/{community_id}")
+def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    deleted = Community.delete(filters=(Community.id == community_id))
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community deleted successfully"}
 
 app.include_router(router_v1)
 app.include_router(router_v2)

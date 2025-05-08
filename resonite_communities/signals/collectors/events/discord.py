@@ -122,7 +122,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                         ),
                         monitored=community.monitored,
                         logo=guild_bot.icon.url if guild_bot.icon else "",
-                        description=guild_bot.description if guild_bot.description else None,
+                        default_description=guild_bot.description if guild_bot.description else None,
                     )
                     break
 

@@ -128,9 +128,13 @@
                         </div>
                       </div>
 
-                      {% if community.description != None %}
+                      {% if community.custom_description != None %}
                         <div class="content" style="height: 150px; overflow: hidden;">
-                          {{ community.description | safe }}
+                          {{ community.custom_description | safe }}
+                        </div>
+                      {% elif community.default_description != None %}
+                        <div class="content" style="height: 150px; overflow: hidden;">
+                          {{ community.default_description | safe }}
                         </div>
                       {% else %}
                       <div class="content" style="height: 150px; overflow: hidden;">
