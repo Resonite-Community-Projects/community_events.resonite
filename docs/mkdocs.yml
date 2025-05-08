@@ -40,11 +40,17 @@ nav:
   - Getting Started:
     - GettingStarted/getting-started.md
   - Usage:
-    - Usage/usage.md
-    - Usage/community-configuration.md
-    - Usage/facet-client.md
-    - Usage/web-client.md
-    - Usage/event-slinger.md
+    - Overview: Usage/overview.md
+    - Usage/clients.md
+    - Configurations:
+      - Overview: Usage/Configuration/overview.md
+      - Usage/Configuration/discord.md
+      - Usage/Configuration/hosted-JSON.md
+    - Community Projects Clients:
+      - Usage/facet-client.md
+      - Usage/web-client.md
+    - Third-party Clients:
+      - Usage/event-slinger.md
   - Client Integration:
     - ClientIntegration/http-api-usage.md
     - ClientIntegration/versioning.md
