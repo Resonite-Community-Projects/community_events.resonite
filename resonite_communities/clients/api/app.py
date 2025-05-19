@@ -119,7 +119,10 @@ def get_filtered_events(
         raise HTTPException(status_code=400, detail=msg)
 
     # Only get Resonite events
-    platform_filter = Event.tags.ilike('%resonite%')
+    platform_filter = and_(
+        Event.tags.ilike('%resonite%'),
+        not_(Event.tags.ilike('%vrchat%'))
+    )
 
     # Only get Events that are ACTIVE or READY
     status_filter = Event.status.in_((EventStatus.ACTIVE, EventStatus.READY))

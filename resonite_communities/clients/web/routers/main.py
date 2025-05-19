@@ -37,7 +37,10 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
     # Only get Resonite events
-    platform_filter = Event.tags.ilike('%resonite%')
+    platform_filter = and_(
+        Event.tags.ilike('%resonite%'),
+        not_(Event.tags.ilike('%vrchat%'))
+    )
 
     # Only get Events that are ACTIVE or READY
     status_filter = Event.status.in_((EventStatus.ACTIVE, EventStatus.READY))
