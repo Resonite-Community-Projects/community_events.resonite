@@ -2,7 +2,7 @@
 
 !!! warning
 
-    Please do not share this page for now with anyone without authorization from [brodokk](https://brodokk.space/).
+    Please do not share this page for now with anyone without authorization from [brodokk](mailto:brodokk@resonite-communities.com).
 
 For some communities it can happen they need to have private events for various reasons. Or they simply want to keep their community private.
 
@@ -43,9 +43,9 @@ For our system you will need to give us the voice channel id as well as the role
 
 At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration.
 
-To proceed, please send a message to [brodokk](https://brodokk.space/) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html) as well as the reason **why** you want a private community. If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
+To proceed, please send a message to [brodokk](mailto:brodokk@resonite-communities.com) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html) as well as the reason **why** you want a private community. If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
 
 ### **4. Let your community know**
 
-In the case of private events you will need to use a different client. Please contact [brodokk](https://brodokk.space/) directly if during the previous step you didn't
+In the case of private events you will need to use a different client. Please contact [brodokk](mailto:brodokk@resonite-communities.com) directly if during the previous step you didn't
 have this information or you have questions.
