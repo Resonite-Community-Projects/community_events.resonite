@@ -43,9 +43,9 @@ nav:
     - Overview: Usage/overview.md
     - Usage/clients.md
     - Configurations:
-      - Overview: Usage/Configuration/overview.md
-      - Usage/Configuration/discord.md
-      - Usage/Configuration/hosted-JSON.md
+      - Guide: Usage/Configurations/guide.md
+      - Usage/Configurations/discord.md
+      - Usage/Configurations/hosted-JSON.md
     - Community Projects Clients:
       - Usage/facet-client.md
       - Usage/web-client.md
