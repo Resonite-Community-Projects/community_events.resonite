@@ -8,11 +8,11 @@ We offer support through both [GitHub](https://github.com/Resonite-Community-Pro
 
 **Preferred Support: GitHub**
 
-For technical support, bug reports, feature requests, or general questions:
+For bug reports or feature requests:
 
 Open a new [GitHub Issue](https://github.com/Resonite-Community-Projects/community_events.resonite/issues) for any bugs or feature suggestions.
 
-If you're unsure where to start or have general setup questions, use the [GitHub Discussions section](https://github.com/Resonite-Community-Projects/community_events.resonite/discussions) — it’s beginner-friendly and a great place for open conversations.
+If you're unsure where to start or need technical support or have general questions, use the [GitHub Discussions section](https://github.com/Resonite-Community-Projects/community_events.resonite/discussions) — it’s beginner-friendly and a great place for open conversations.
 
 We highly recommend this option since it allows anyone to join the discussion without needing to join the Discord server.
 
