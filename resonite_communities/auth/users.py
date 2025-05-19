@@ -54,7 +54,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             # NOTE: If the oauth_account have been clean but not the user link to it this will cause this error.
             raise HTTPException(
                 status_code=400,
-                detail="This email address is already used in another account. Please contact brodokk (See https://brodokk.space/).",
+                detail="This email address is already used in another account. Please contact brodokk (mailto:brodokk@resonite-communities.com or check https://docs.resonite-communities.com/support/ ).",
             )
 
         self.logger.info(f"User {user.id} has logged in.")
