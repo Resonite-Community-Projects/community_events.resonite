@@ -12,10 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
             modalSaveButton.textContent = actionButtonText;
             modalSaveButton.onclick = saveCallback || (() => {});
             modal.classList.add('is-active');
+            document.documentElement.classList.add('no-scroll');
         };
 
         const closeModal = () => {
             modal.classList.remove('is-active');
+            document.documentElement.classList.remove('no-scroll')
         };
 
         const handleCommunityAction = async (action, communityId, communityType) => {

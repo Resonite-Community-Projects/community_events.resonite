@@ -34,10 +34,10 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="event">Info</button>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="event">Edit</button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="event">Delete</button>
-                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
+                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="event"><i class="fas fa-pen"></i></button>
+                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="event"><i class="fas fa-trash"></i></button>
+                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -62,10 +62,9 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="stream">Info</button>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="stream">Edit</button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="stream">Delete</button>
-                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>
+                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="stream"><i class="fas fa-pen"></i></button>
+                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="stream"><i class="fas fa-trash"></i></button>
+                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
                     </div>
                 </td>
             </tr>
