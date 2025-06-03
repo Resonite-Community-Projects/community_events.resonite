@@ -146,10 +146,9 @@ services:
       - traefik.http.routers.prod_web_client_legacy_public.entrypoints=web
 
   mkdocs:
-    image: squidfunk/mkdocs-material
-    working_dir: /docs
-    volumes:
-      - ./docs/:/docs
+    build:
+      context: .
+      dockerfile: Dockerfile.mkdocs
     ports:
       - "9002:8000"
     profiles:
