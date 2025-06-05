@@ -5,14 +5,14 @@
 
             <div class="columns">
               <div class="column">
-                <article class="message is-info">
-                  <div class="message-header" id="info_toggle">
+                <article class="message is-info" x-data="infoToggle()">
+                  <div class="message-header" id="info_toggle" @click="toggle()">
                     <p>Info</p>
                     <span class="icon">
-                      <i class="fas fa-angle-up" aria-hidden="true"></i>
+                      <i class="fas" x-bind:class="open ? 'fa-angle-up' : 'fa-angle-down'" aria-hidden="true"></i>
                     </span>
                   </div>
-                  <div class="message-body" id="info">
+                  <div class="message-body" id="info" x-show="open">
                     <p>Want your group listed here? Any question?</p>
                     <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-communities.com</samp>?</p>
                     <p>More info in <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
@@ -86,14 +86,14 @@
             </article>
             {% endfor %}
 
-            <article class="message is-dark">
-              <div class="message-header" id="info_toggle">
+            <article class="message is-dark" x-data="infoToggle()">
+              <div class="message-header" id="info_toggle" @click="toggle()">
                 <p>Resonite communities followed</p>
                 <span class="icon">
-                  <i class="fas fa-angle-up" aria-hidden="true"></i>
+                  <i class="fas" x-bind:class="open ? 'fa-angle-up' : 'fa-angle-down'" aria-hidden="true"></i>
                 </span>
               </div>
-              <div class="message-body" id="info">
+              <div class="message-body" id="info" x-show="open">
                 <article class="message is-info">
                   <div class="message-body content">
                     <p>Want your communities events listed here? Any questions? Check the <span @click="activeTab = 'About'"><a>About</a></span> section.</p>

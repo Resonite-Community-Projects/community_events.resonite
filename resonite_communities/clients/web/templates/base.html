@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="../css/cheatsheet.css">
     <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
     <script defer src="/static/js/alpine_tabs.js"></script>
+    <script defer src="/static/js/alpine_info_toggle.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extended_head %}{% endblock %}
 
@@ -327,49 +328,10 @@
 
 <script>
 
-  // Manage info toggle
-  window.addEventListener('resize', info_toggle);
-  document.querySelector("#info_toggle").addEventListener("click", info_toggle, false);
-  info_toggle = document.querySelector("#info_toggle");
-  info_toggle_icon = document.querySelector("#info_toggle .icon i");
-  info = document.querySelector("#info");
-
-  if (window.screen.availWidth < 1024) {
-    info_toggle.style.cursor = "pointer";
-    info_toggle_icon.className = "fas fa-angle-down";
-    info_toggle.style.borderRadius = "4px";
-    info.style.display = "none";
-  }
-
   // Manage facet resdb url copy button
   //js-copy-facet-url
   document.querySelector('.js-copy-facet-url').style.display = 'block'
   document.querySelector('.nojs-copy-facet-url').style.display = 'none'
-
-  function info_toggle() {
-    if (window.screen.availWidth < 1024) {
-      if (this.constructor.name != "Window") {
-        if (info.style.display == 'none') {
-          info_toggle.style.borderRadius = "4px 4px 0 0";
-          info_toggle.style.cursor = "pointer";
-          info_toggle_icon.className = "fas fa-angle-up";
-          info.style.display = "block";
-        } else {
-          info_toggle.style.borderRadius = "4px";
-          info_toggle.style.cursor = "pointer";
-          info_toggle_icon.className = "fas fa-angle-down";
-          info.style.display = "none";
-        }
-      } else {
-        info_toggle.style.cursor = "pointer";
-      }
-    } else {
-      info_toggle.style.borderRadius = "4px 4px 0 0";
-      info_toggle.style.cursor = "default";
-      info_toggle_icon.className = "fas fa-angle-up";
-      info.style.display = "block";
-    }
-  }
 
   function CopyFacetResoniteDBUrlToClipboard(text) {
     var textArea = document.createElement("textarea");
