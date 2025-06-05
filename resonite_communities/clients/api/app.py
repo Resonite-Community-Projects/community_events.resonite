@@ -353,6 +353,7 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
         "description": community.default_description if not community.custom_description else community.custom_description,
         "private_role_id": community.config.get("private_role_id", None),
         "private_channel_id": community.config.get("private_channel_id", None),
+        "events_url": community.config.get("events_url", None),
     }
 
 from pydantic import BaseModel
@@ -366,6 +367,7 @@ class CommunityRequest(BaseModel):
     description: str
     private_role_id: str | None = None
     private_channel_id: str | None = None
+    events_url: str | None = None
 
 @router_v2.post("/admin/communities/")
 def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
@@ -382,6 +384,7 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
         config={
             "private_role_id": data.private_role_id,
             "private_channel_id": data.private_channel_id,
+            "events_url": data.events_url,
         },
     )
 
@@ -396,13 +399,14 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
         filters=(Community.id == community_id),
         name=data.name,
         external_id=data.external_id,
-        platform=CommunityPlatform(data.platform),
+        platform=CommunityPlatform(data.platform.upper()),
         url=data.url,
         tags=data.tags,
-        description=data.description,
+        custom_description=data.description,
         config={
             "private_role_id": data.private_role_id,
             "private_channel_id": data.private_channel_id,
+            "events_url": data.events_url,
         },
     )
 

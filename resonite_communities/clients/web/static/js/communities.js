@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const descriptionValue = communityData.description || '';
             const privateRoleIdValue = communityData.private_role_id || '';
             const privateChannelIdValue = communityData.private_channel_id || '';
+            const eventsURLValue = communityData.events_url || '';
 
             let formOptions = '';
             let formCommunityConfiguration = '';
@@ -185,8 +186,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="control">
                         <input name="private_channel_id" class="input" type="text" value="${privateChannelIdValue}" placeholder="Private Channel ID">
                     </div>
-                </div>
-                `
+                </div>`
+
+                if (platformValue === 'JSON') {
+                    formCommunityConfiguration += `
+                    <div class="field">
+                        <label class="label">Server URL</label>
+                        <div class="control">
+                            <input name="events_url" class="input" type="text" value="${eventsURLValue}" placeholder="Server URL">
+                        </div>
+                    </div>
+                    `
+                }
             } else if (communityType === 'stream') {
                 formOptions = `
                 <option ${platformValue === 'Twitch' ? 'selected' : ''}>Twitch</option>

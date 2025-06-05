@@ -10,11 +10,9 @@ class EasyDictType(TypeDecorator):
     impl = JSON
 
     def process_bind_param(self, value, dialect):
-        if isinstance(value, easydict.EasyDict):
-            return json.dumps(value)
         return value
 
     def process_result_value(self, value, dialect):
         if value:
-            return easydict.EasyDict(json.loads(value))
+            return easydict.EasyDict(value)
         return easydict.EasyDict()
