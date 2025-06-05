@@ -422,6 +422,8 @@
     CopyFacetResoniteDBUrlToClipboard('{{ facet_url }}');
   });
 
+  // Handle date to user timezone for events
+
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const dates_tip = document.querySelectorAll(".date i");
