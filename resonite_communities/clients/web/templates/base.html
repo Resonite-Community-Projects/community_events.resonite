@@ -17,9 +17,12 @@
     <link rel='stylesheet' href="../css/prism.css">
     <link rel="stylesheet" href="../css/cheatsheet.css">
     <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
+    <script defer src="/static/js/alpine_tabs.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extended_head %}{% endblock %}
 
     <style>
+      [x-cloak] { display: none !important; }
       .no-scroll {
         overflow: hidden;
         }
@@ -225,7 +228,7 @@
     </style>
 </head>
 
-<body>
+<body x-data="tabManager()">
 
     <section class="hero is-small is-link">
         <div class="hero-body">
@@ -286,9 +289,15 @@
           <nav class="tabs is-boxed is-fullwidth is-large">
             <div class="container">
               <ul>
-                <li class="tab tab-events {{tab|tab_is_active('Events')}}" onclick="openTab(event,'Events')"><a href="/resonite_communities/client/web_client/static">Events</a></li>
-                <li class="tab tab-streams {{tab|tab_is_active('Streams')}}" onclick="openTab(event,'Streams')"><a href="/streams">Streams</a></li>
-                <li class="tab tab-about {{tab|tab_is_active('About')}}" onclick="openTab(event,'About')"><a href="/about">About</a></li>
+                <li class="tab tab-events" :class="{ 'is-active': activeTab === 'Events' }">
+                    <a @click="activeTab = 'Events'">Events</a>
+                </li>
+                <li class="tab tab-streams" :class="{ 'is-active': activeTab === 'Streams' }">
+                    <a @click="activeTab = 'Streams'">Streams</a>
+                </li>
+                <li class="tab tab-about" :class="{ 'is-active': activeTab === 'About' }">
+                    <a @click="activeTab = 'About'">About</a>
+                </li>
               </ul>
             </div>
           </nav>
@@ -315,38 +324,6 @@
   </footer>
 
   {% block script %}{% endblock %}
-
-  <script>
-    // Tab management
-    var tablinks;
-    tablinks = document.getElementsByClassName("tab");
-    for (i = 0; i < tablinks.length; i++) {
-      tablinks[i].children[0].removeAttribute("href");
-    }
-    function openTab(evt, tabName) {
-      var i, x, tablinks;
-      x = document.getElementsByClassName("content-tab");
-      for (i = 0; i < x.length; i++) {
-        x[i].style.display = "none";
-      }
-      tablinks = document.getElementsByClassName("tab");
-      for (i = 0; i < x.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" is-active", "");
-      }
-      document.getElementById(tabName).style.display = "block";
-      if (evt.currentTarget.constructor.name != "HTMLLIElement") {
-        target = document.getElementsByClassName("tab-"+tabName.toLowerCase())[0]
-      } else {
-        target = evt.currentTarget
-      }
-      target.className += " is-active";
-      url = '/'
-      if (tabName.toLowerCase() != "events") {
-        url += tabName.toLowerCase();
-      }
-      window.history.pushState('resonite-communities.com', 'resonite-communities.com', url);
-    }
-    </script>
 
 <script>
 

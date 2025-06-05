@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 {% block content %}
-          <div id="Events" class="content-tab" style="display:{{tab|tab_display('Events')}}">
+          <div x-show="activeTab === 'Events'" x-cloak>
 
             <div class="columns">
               <div class="column">
@@ -15,7 +15,7 @@
                   <div class="message-body" id="info">
                     <p>Want your group listed here? Any question?</p>
                     <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-communities.com</samp>?</p>
-                    <p>More info in <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>More info in <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
               </div>
@@ -96,7 +96,7 @@
               <div class="message-body" id="info">
                 <article class="message is-info">
                   <div class="message-body content">
-                    <p>Want your communities events listed here? Any questions? Check the <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>Want your communities events listed here? Any questions? Check the <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
                 <div class="columns is-multiline">
@@ -158,7 +158,7 @@
             </article>
           </div>
 
-          <div id="Streams" class="content-tab" style="display:{{tab|tab_display('Streams')}}">
+          <div x-show="activeTab === 'Streams'" x-cloak>
 
             <article class="message is-info">
               <div class="message-body content">
@@ -211,7 +211,7 @@
               <div class="message-body" id="info">
                 <article class="message is-info">
                   <div class="message-body content">
-                    <p>Want your stream listed here? Any questions? Check the <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>Want your stream listed here? Any questions? Check the <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
                 <div class="columns is-multiline">
@@ -250,7 +250,7 @@
             </article>
           </div>
 
-          <div id="About" class="content-tab" style="display:{{tab|tab_display('About')}}">
+          <div x-show="activeTab === 'About'" x-cloak>
             <div class="content">
               <p>This service is provided to you by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>. If you have any question about it, you can contact them either on discord or Resonite.</p>
 
