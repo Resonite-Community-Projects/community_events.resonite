@@ -1,0 +1,14 @@
+#notifications {
+    position: fixed;
+    bottom: 20px;
+    width: 250px;
+    right: 19px;
+}
+
+.notification {
+    margin: 5px 0;
+}
+
+.notification ul {
+    list-style: initial;
+}
