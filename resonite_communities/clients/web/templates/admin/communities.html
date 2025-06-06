@@ -24,56 +24,56 @@
 
     <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community</button>
 
-    <table class="table is-fullwidth">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th style="text-align: right;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for community in events_communities %}
-            <tr>
-                <td>{{ community.name }}</td>
-                <td style="text-align: right;">
+    <div class="grid">
+        {% for community in events_communities %}
+        <div class="cell">
+            <div class="card-image">
+                <figure class="image is-96x96">
+                    {% if community.logo %}
+                    <img src="{{ community.logo }}" alt="Community logo">
+                    {% else %}
+                    <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
+                    {% endif %}
+                </figure>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <p class="card-header-title">{{ community.name }}</p>
+                </div>
+                <div class="card-content">
                     <div>
                         <button class="button is-warning" @click="handleCommunityAction('edit', '{{ community.id }}', 'event')"><i class="fas fa-pen"></i></button>
                         <button class="button is-danger" @click="handleCommunityAction('delete', '{{ community.id }}', 'event')"><i class="fas fa-trash"></i></button>
                         <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
                     </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 
     <div x-show="activeTab === 'streams'" style="width: 100%;">
 
     <button class="button is-success" @click="handleCommunityAction('add', null, 'stream')">Add stream community</button>
 
-    <table class="table is-fullwidth">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th style="text-align: right;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for community in streams_communities %}
-            <tr>
-                <td>{{ community.name }}</td>
-                <td style="text-align: right;">
+    <div class="grid">
+        {% for community in streams_communities %}
+        <div class="cell">
+            <div class="card">
+                <div class="card-header">
+                    <p class="card-header-title">{{ community.name }}</p>
+                </div>
+                <div class="card-content">
                     <div>
                         <button class="button is-warning" @click="handleCommunityAction('edit', '{{ community.id }}', 'stream')"><i class="fas fa-pen"></i></button>
                         <button class="button is-danger" @click="handleCommunityAction('delete', '{{ community.id }}', 'stream')"><i class="fas fa-trash"></i></button>
                         <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
                     </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 
 <div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
