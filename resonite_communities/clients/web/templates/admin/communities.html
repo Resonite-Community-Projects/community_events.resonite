@@ -1,6 +1,8 @@
 {% extends "admin/base.html" %}
+{% block alpine_components_head %}
+    <script src="/static/js/alpine/pages/admin_communities.js"></script>
+{% endblock %}
 {% block extended_head %}
-<script src="/static/js/communities.js"></script>
 <style>
     :required,
     .required {
@@ -10,16 +12,17 @@
 {% endblock %}
 {% block content %}
 
-<div class="tabs is-centered is-boxed is-medium">
-    <ul>
-        <li class="is-active" id="events_communities_tab"><a>Event communities</a></li>
-        <li id="streams_communities_tab"><a>Streams communities</a></li>
-    </ul>
-</div>
+<div x-data="{ ...communityModal(), activeTab: 'events' }">
+    <div class="tabs is-centered is-boxed is-medium">
+        <ul>
+            <li :class="{ 'is-active': activeTab === 'events' }"><a @click="activeTab = 'events'">Event communities</a></li>
+            <li :class="{ 'is-active': activeTab === 'streams' }"><a @click="activeTab = 'streams'">Streams communities</a></li>
+        </ul>
+    </div>
 
-<div id="events_communities" style="width: 100%;">
+    <div x-show="activeTab === 'events'" style="width: 100%;">
 
-    <button class="button is-success" data-modal-action="add" data-community-type="event">Add event community</button>
+    <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community</button>
 
     <table class="table is-fullwidth">
         <thead>
@@ -34,8 +37,8 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="event"><i class="fas fa-pen"></i></button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="event"><i class="fas fa-trash"></i></button>
+                        <button class="button is-warning" @click="handleCommunityAction('edit', '{{ community.id }}', 'event')"><i class="fas fa-pen"></i></button>
+                        <button class="button is-danger" @click="handleCommunityAction('delete', '{{ community.id }}', 'event')"><i class="fas fa-trash"></i></button>
                         <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
                     </div>
                 </td>
@@ -43,11 +46,11 @@
             {% endfor %}
         </tbody>
     </table>
-</div>
+    </div>
 
-<div id="streams_communities" style="display: none; width: 100%;">
+    <div x-show="activeTab === 'streams'" style="width: 100%;">
 
-    <button class="button is-success" data-modal-action="add" data-community-type="stream">Add stream community</button>
+    <button class="button is-success" @click="handleCommunityAction('add', null, 'stream')">Add stream community</button>
 
     <table class="table is-fullwidth">
         <thead>
@@ -62,8 +65,8 @@
                 <td>{{ community.name }}</td>
                 <td style="text-align: right;">
                     <div>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="stream"><i class="fas fa-pen"></i></button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="stream"><i class="fas fa-trash"></i></button>
+                        <button class="button is-warning" @click="handleCommunityAction('edit', '{{ community.id }}', 'stream')"><i class="fas fa-pen"></i></button>
+                        <button class="button is-danger" @click="handleCommunityAction('delete', '{{ community.id }}', 'stream')"><i class="fas fa-trash"></i></button>
                         <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}><i class="fas fa-up-right-from-square"></i></button>
                     </div>
                 </td>
@@ -73,19 +76,19 @@
     </table>
 </div>
 
-<div class="modal" id="generic-modal">
-    <div class="modal-background"></div>
+<div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
+    <div class="modal-background" @click="closeModal()"></div>
     <div class="modal-card">
         <header class="modal-card-head">
-            <p class="modal-card-title" id="modal-title">Modal Title</p>
-            <button class="delete" aria-label="close"></button>
+            <p class="modal-card-title" x-text="modalTitle"></p>
+            <button class="delete" aria-label="close" @click="closeModal()"></button>
         </header>
-        <section class="modal-card-body" id="modal-body">
+        <section class="modal-card-body" x-html="modalBodyContent" id="modal-body">
             <!-- Content will be dynamically injected here -->
         </section>
         <footer class="modal-card-foot">
-            <button class="button is-success" id="modal-save-button">Save</button>
-            <button class="button" id="modal-cancel-button">Cancel</button>
+            <button class="button is-success" @click="saveCallback()" x-text="modalActionButtonText"></button>
+            <button class="button" @click="closeModal()">Cancel</button>
         </footer>
     </div>
 </div>
