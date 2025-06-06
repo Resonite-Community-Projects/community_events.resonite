@@ -1,5 +1,61 @@
-
 {% extends "base.html" %}
+{% block extended_head %}
+    <style>
+      .hero {
+        padding-bottom: inherit;
+      }
+
+      .hero.is-link .tab.tab-events.is-active {
+        border-color: #fff;
+        border-bottom-color: rgb(255, 255, 255);
+      }
+
+      .hero.is-link .tabs.is-boxed li.is-active a {
+        border-color: #fff;
+        border-bottom-color: rgb(255, 255, 255);
+        background: #fff;
+      }
+
+      .hero.is-link .tabs.is-boxed a:hover {
+        background-color: rgba(10,10,10,.1);
+        color: #fff;
+      }
+
+      .hero.is-link .tabs.is-boxed li.is-active a:hover {
+        color: var(--bulma-tabs-link-active-color);
+        color: var(--bulma-tabs-link-active-color);
+        background: rgb(207, 213, 255);
+      }
+
+      .hero.is-link .tabs a:hover {
+        opacity: 1;
+      }
+    </style>
+{% endblock %}
+{% block alpine_components_head %}
+    <script defer src="/static/js/alpine/tabs.js"></script>
+    <script defer src="/static/js/alpine/info_toggle.js"></script>
+    <script defer src="/static/js/alpine/copy_facet_url.js"></script>
+{% endblock %}
+{% block hero_foot %}
+        <div class="hero-foot">
+          <nav class="tabs is-boxed is-fullwidth is-large">
+            <div class="container">
+              <ul>
+                <li class="tab tab-events" :class="{ 'is-active': activeTab === 'Events' }">
+                    <a @click="activeTab = 'Events'">Events</a>
+                </li>
+                <li class="tab tab-streams" :class="{ 'is-active': activeTab === 'Streams' }">
+                    <a @click="activeTab = 'Streams'">Streams</a>
+                </li>
+                <li class="tab tab-about" :class="{ 'is-active': activeTab === 'About' }">
+                    <a @click="activeTab = 'About'">About</a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+{% endblock %}
 {% block content %}
           <div x-show="activeTab === 'Events'" x-cloak>
 
@@ -470,3 +526,36 @@
             </div>
           </div>
 {% endblock %}
+<environment_details>
+# VSCode Visible Files
+resonite_communities/clients/web/static/js/communities.js
+resonite_communities/clients/web/static/js/communities.js
+resonite_communities/clients/web/templates/admin/communities.html
+resonite_communities/clients/web/templates/admin/communities.html
+resonite_communities/clients/web/templates/index.html
+
+# VSCode Open Tabs
+resonite_communities/signals/collectors/events/discord.py
+resonite_communities/clients/api/app.py
+resonite_communities/signals/signal.py
+resonite_communities/clients/web/static/js/alpine/info_toggle.js
+resonite_communities/clients/web/templates/admin/events.html
+resonite_communities/clients/web/static/js/alpine/events_alpine.js
+resonite_communities/clients/web/static/js/alpine/tabs.js
+resonite_communities/clients/web/templates/base.html
+resonite_communities/clients/web/templates/index.html
+resonite_communities/clients/web/static/js/notification.js
+resonite_communities/clients/web/static/js/events.js
+resonite_communities/models/types.py
+docker-compose.yml
+resonite_communities/clients/web/routers/main.py
+
+# Current Time
+6/6/2025, 9:11:50 AM (UTC, UTC+0:00)
+
+# Context Window Usage
+285,286 / 1,048.576K tokens used (27%)
+
+# Current Mode
+ACT MODE
+</environment_details>

@@ -18,11 +18,10 @@
     <link rel="stylesheet" href="../css/cheatsheet.css">
     <script src="https://kit.fontawesome.com/7dc3015a44.js" crossorigin="anonymous"></script>
     <script src="/static/js/date_formatter.js"></script>
-    <script defer src="/static/js/alpine/tabs.js"></script>
-    <script defer src="/static/js/alpine/info_toggle.js"></script>
-    <script defer src="/static/js/alpine/copy_facet_url.js"></script>
+    {% block alpine_components_head %}{% endblock %}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extended_head %}{% endblock %}
+    {% block extended_head_admin %}{% endblock %}
 
     <style>
       [x-cloak] { display: none !important; }
@@ -48,25 +47,6 @@
         font-size: 1.25em;
       }
 
-      .hero.is-link .tab.tab-events.is-active {
-  border-color: #fff;
-    border-bottom-color: rgb(255, 255, 255);
-}
-
-.hero.is-link .tabs.is-boxed li.is-active a {
-  border-color: #fff;
-    border-bottom-color: rgb(255, 255, 255);
-    background: #fff !important;
-}
-
-.hero.is-link .tabs.is-boxed a:hover {
-  background-color: rgba(10,10,10,.1);
-  color: #fff;
-}
-
-.hero.is-link .tabs a:hover {
-  opacity: 1;
-}
 
       .logo {
         float: left;
@@ -288,23 +268,7 @@
         {% endif %}
         </div>
 
-        <div class="hero-foot">
-          <nav class="tabs is-boxed is-fullwidth is-large">
-            <div class="container">
-              <ul>
-                <li class="tab tab-events" :class="{ 'is-active': activeTab === 'Events' }">
-                    <a @click="activeTab = 'Events'">Events</a>
-                </li>
-                <li class="tab tab-streams" :class="{ 'is-active': activeTab === 'Streams' }">
-                    <a @click="activeTab = 'Streams'">Streams</a>
-                </li>
-                <li class="tab tab-about" :class="{ 'is-active': activeTab === 'About' }">
-                    <a @click="activeTab = 'About'">About</a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-        </div>
+        {% block hero_foot %}{% endblock %}
       </section>
 
 

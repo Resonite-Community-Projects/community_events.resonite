@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% block extended_head_admin %}
+    <style>
+      .hero {
+        padding-bottom: 30px;
+      }
+    </style>
+{% endblock %}
 {% block admin_menu %}
 {% if user.is_superuser %}
       <aside class="menu">
