@@ -1,41 +1,8 @@
-// Event status dropdown control
-document.addEventListener('DOMContentLoaded', () => {
-    const dropdownTriggers = document.querySelectorAll('.dropdown-trigger')
-
-    dropdownTriggers.forEach(trigger => {
-        const dropdown = trigger.closest('.dropdown');
-
-        // Toggle dropdown
-        trigger.addEventListener('click', () => {
-            dropdown.classList.toggle('is-active');
-        });
-    });
-
-    // Exit dropdown
-    document.addEventListener('click', (event) => {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        dropdowns.forEach(dropdown => {
-            if (!dropdown.contains(event.target)) {
-                dropdown.classList.remove('is-active');
-            }
-        });
-    });
-})
-
-// Handle event status change
-
-document.addEventListener('DOMContentLoaded', () => {
-    (document.querySelectorAll('.dropdown-item[data-status]') || []).forEach(($item) => {
-        $item.addEventListener('click', async () => {
-            const status = $item.dataset.status;
-            const event_id =$item.dataset.event_id;
-
+document.addEventListener('alpine:init', () => {
+    Alpine.data('eventStatusDropdown', () => ({
+        async updateStatus(event_id, status) {
             console.log('Status selected: ', status);
             console.log('For event: ', event_id);
-
-            const dropdown = $item.closest('.dropdown');
-
-            dropdown.classList.remove('is-active');
 
             try {
                 const response = await fetch('/v2/admin/events/update_status', {
@@ -53,13 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const result = await response.json();
                     console.log('Status updated successfully', result);
                     createNotification('Status update successfully', 'is-success');
-                    const statusSpan = dropdown.querySelector('.dropdown-trigger span')
+                    // Use x-ref to directly access the status text span
+                    const statusSpan = this.$refs.statusText;
 
-                    if (['CANCELED', 'ACTIVE', 'PENDING', 'READY', 'COMPLETED'].includes(result.status)) {
-                        statusSpan.textContent = result.status;
+                    const processedStatus = result.status ? String(result.status).trim().toUpperCase() : null;
+
+                    if (statusSpan && processedStatus && ['CANCELED', 'ACTIVE', 'PENDING', 'READY', 'COMPLETED'].includes(processedStatus)) {
+                        statusSpan.textContent = processedStatus;
                     } else {
-                        console.log('Invalid status received:', result.status);
-                        createNotification(`Failed to update status: Invalid status '${result.status || 'None'}'`, 'is-danger');
+                        console.log('Invalid status received or status span not found:', result.status);
+                        createNotification(`Failed to update status: Invalid status '${result.status || 'None'}' or UI update failed`, 'is-danger');
                     }
                 } else {
                     const result = await response.json();
@@ -81,8 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (error) {
+                console.log(error)
                 createNotification('An unexpected error occurred. Please try again later.', 'is-danger');
             }
-        });
-    });
+        }
+    }));
 });
