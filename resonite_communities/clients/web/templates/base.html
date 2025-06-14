@@ -211,7 +211,7 @@
     </style>
 </head>
 
-<body x-data="tabManager()">
+<body x-data="typeof tabManager === 'function' ? tabManager() : {}">
 
     <section class="hero is-small is-link">
         <div class="hero-body">
