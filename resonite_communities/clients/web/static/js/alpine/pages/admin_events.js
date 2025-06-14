@@ -20,7 +20,6 @@ document.addEventListener('alpine:init', () => {
                     const result = await response.json();
                     console.log('Status updated successfully', result);
                     createNotification('Status update successfully', 'is-success');
-                    // Use x-ref to directly access the status text span
                     const statusSpan = this.$refs.statusText;
 
                     const processedStatus = result.status ? String(result.status).trim().toUpperCase() : null;

@@ -1,7 +1,9 @@
 {% extends "admin/base.html" %}
+{% block alpine_components_head %}
+<script src="/static/js/alpine/pages/admin_events.js"></script>
+{% endblock %}
 {% block extended_head %}
 <script src="/static/js/notification.js"></script>
-<script src="/static/js/alpine/pages/admin_events.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/notification.css">
 <style>
     .fixed-width {
@@ -73,8 +75,6 @@
     </tbody>
 </table>
 
-<div id="notifications">
-
-</div>
+<div id="notifications"></div>
 
 {% endblock content %}
