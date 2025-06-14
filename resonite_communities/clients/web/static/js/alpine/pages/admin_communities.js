@@ -38,12 +38,12 @@ document.addEventListener('alpine:init', () => {
                     });
 
                     if (!response.ok) {
+                        createNotification('Community update failed', 'is-danger');
                         throw new Error(`Failed to ${action} community: ${response.statusText}`);
                     }
 
                     console.log(`${action} action successful`);
-                    // Reload the page to reflect changes
-                    window.location.reload();
+                    createNotification('Community update successfully', 'is-success');
                 } catch (error) {
                     console.error(`Error during ${action} action:`, error);
                 }
@@ -71,6 +71,7 @@ document.addEventListener('alpine:init', () => {
                         const body = serializeFormData();
                         if (!body) return;
                         await performBackendAction('POST', body);
+                        this.closeModal();
                     };
                     break;
 
@@ -82,6 +83,7 @@ document.addEventListener('alpine:init', () => {
                         const body = serializeFormData();
                         if (!body) return;
                         await performBackendAction('PATCH', body);
+                        this.closeModal();
                     };
                     break;
 
@@ -89,7 +91,7 @@ document.addEventListener('alpine:init', () => {
                     title = `Community ${communityType} Info`;
                     actionButton = 'Close';
                     content = await getCommunityInfo(communityId, communityType);
-                    saveFunc = () => this.closeModal(); // Just close for info
+                    saveFunc = () => this.closeModal();
                     break;
 
                 case 'delete':
