@@ -57,7 +57,15 @@ document.addEventListener('alpine:init', () => {
                 }
                 const body = {};
                 inputs.forEach(input => {
-                    body[input.name] = input.value;
+                    if (input.type === 'checkbox') {
+                        body[input.name] = input.checked;
+                    } else if (input.type === 'radio') {
+                        if (input.checked) {
+                            body[input.name] = input.value;
+                        }
+                    } else {
+                        body[input.name] = input.value;
+                    }
                 });
                 return body;
             };
@@ -133,6 +141,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
     const urlValue = communityData.url || '';
     const tagsValue = communityData.tags || '';
     const descriptionValue = communityData.description || '';
+    const isCustomDescription = communityData.is_custom_description || '';
     const privateRoleIdValue = communityData.private_role_id || '';
     const privateChannelIdValue = communityData.private_channel_id || '';
     const eventsURLValue = communityData.events_url || '';
@@ -173,6 +182,22 @@ async function getCommunityForm(communityId = null, communityType = null) {
     } else if (communityType === 'stream') {
         formOptions = `
         <option ${platformValue === 'Twitch' ? 'selected' : ''}>Twitch</option>
+        `
+    }
+
+    if (isCustomDescription === true) {
+        descriptionHelp = `
+        <p class="help">This is the overwritten community description from Discord. You can reset the description to the default Discord description.</p>
+        <fieldset>
+        <div>
+            <input type="checkbox" id="resetDescription" name="resetDescription" />
+            <label for="resetDescription">Reset Description</label>
+        </div>
+        </fieldset>
+        `
+    } else {
+        descriptionHelp = `
+        <p class="help">This is the default description set from Discord, any update to this description can be reset later.</p>
         `
     }
 
@@ -217,6 +242,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
             <div class="control">
                 <textarea name="description" class="textarea" placeholder="Description">${descriptionValue}</textarea>
             </div>
+            ${descriptionHelp}
         </div>
         ${formCommunityConfiguration}
     `;

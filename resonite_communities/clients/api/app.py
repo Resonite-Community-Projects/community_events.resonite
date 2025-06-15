@@ -351,6 +351,7 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
         "url": community.url,
         "tags": community.tags,
         "description": community.default_description if not community.custom_description else community.custom_description,
+        "is_custom_description": True if community.custom_description else False,
         "private_role_id": community.config.get("private_role_id", None),
         "private_channel_id": community.config.get("private_channel_id", None),
         "events_url": community.config.get("events_url", None),
@@ -365,6 +366,7 @@ class CommunityRequest(BaseModel):
     url: str
     tags: str
     description: str
+    resetDescription: bool | None = None
     private_role_id: str | None = None
     private_channel_id: str | None = None
     events_url: str | None = None
@@ -402,7 +404,7 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
         platform=CommunityPlatform(data.platform.upper()),
         url=data.url,
         tags=data.tags,
-        custom_description=data.description,
+        custom_description=data.description if not data.resetDescription else None,
         config={
             "private_role_id": data.private_role_id,
             "private_channel_id": data.private_channel_id,
