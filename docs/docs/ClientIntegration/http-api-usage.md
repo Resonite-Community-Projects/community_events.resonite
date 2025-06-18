@@ -92,7 +92,7 @@ name`description`location`start_time`end_time`community_name\n
 
 #### Fields
 
-!!! warning For the `TXT` format
+!!! warning "For the `TXT` format"
 
     The field order is different than the V1!
 
