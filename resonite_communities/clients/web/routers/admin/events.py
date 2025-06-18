@@ -31,8 +31,8 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
 
-    #events = Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
-    events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
+    events = Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
+    #events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
 
     try:
         api_url = Config.PUBLIC_DOMAIN[0]
