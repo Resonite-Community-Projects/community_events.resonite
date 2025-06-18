@@ -70,9 +70,12 @@ The fields and the types available for this version of the API:
 
 **Default:** True
 
-The field separator is done via the character `` ` `` while each row will be separated with `\n`.
+Separators:
 
-For example, with only one event:
+- Field separator: `` ` ``
+- Row separator: `\n`
+
+Example:
 
 ```
 name`description`location`start_time`end_time`community_name\n
@@ -115,6 +118,21 @@ The fields and the types available for this version of the API (in the correct o
 ##### TEXT
 
 **Default:** False
+
+Separators:
+
+- Field separator: `Record Separator (RS)` UTF-16: `001E`
+- Row separator: `Group Separator (GS) ` UTF-16: `001D`
+
+Example:
+
+```
+name<RS>description<RS>location<RS>start_time<RS>end_time<RS>community_name<RS>(...more fields go here)<GS>
+```
+
+!!! note
+
+    `<RS>` and `<GS>` are **invisible** characters!
 
 ##### JSON
 
