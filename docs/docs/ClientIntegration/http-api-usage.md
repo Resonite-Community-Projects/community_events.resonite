@@ -53,6 +53,17 @@ To avoid problem with existing clients the V1 date format output is `%Y/%m/%d %H
 
 - `/v1/events`
 
+#### Fields
+
+The fields and the types available for this version of the API:
+
+- **name** (_str_): The title (or title) of an event.
+- **description** (_str_): The description of an event.
+- **location_str** (_str_): The Resonite session ID or the name of the location of an event.
+- **start_time** (_str_): The date and time of the beginning of an event. In the format `%Y/%m/%d %H:%M:%S+00:00`
+- **end_time** (_str_): The date and time of the ending of an event. In the format `%Y/%m/%d %H:%M:%S+00:00`
+- **community_name** (_str_): The name of the community of an event.
+
 #### Format
 
 ##### TEXT
@@ -78,6 +89,26 @@ name`description`location`start_time`end_time`community_name\n
     To use at your own risk.
 
 - `/v2/events`
+
+#### Fields
+
+!!! warning For the `TXT` format
+
+    The field order is different than the V1!
+
+The fields and the types available for this version of the API (in the correct order for the `TXT` format):
+
+- **name** (_str_): The title (or title) of an event.
+- **description** (_str_): The description of an event.
+- **session_image** (_str_): The image of an event.
+- **location_str** (_str_): The Resonite session ID or the name of the location of an event.
+- **location_web_session_url** (_str_): The Resonite session HTTP URL of the location of an event.
+- **location_session_url** (_str_): The Resonite session URL of an event.
+- **start_time** (_str_): The date and time of the beginning of an event. In the format `%Y/%m/%d %H:%M:%S+00:00`
+- **end_time** (_str_): The date and time of the ending of an event. In the format `%Y/%m/%d %H:%M:%S+00:00`
+- **community_name** (_str_): The name of the community of an event.
+- **community_url** (_str_): The URL of the community of an event.
+- **tags** (_str_): The tags of the community of an event.
 
 #### Format
 
