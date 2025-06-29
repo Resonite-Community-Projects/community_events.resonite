@@ -10,26 +10,11 @@ from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.signals.collectors.event import EventsCollector
-from resonite_communities.signals.signal import gen_schema
 
 
 class DiscordEventsCollector(EventsCollector, commands.Cog):
     scheduler_type = SignalSchedulerType.DISCORD
     platform = CommunityPlatform.DISCORD
-    jschema = gen_schema(
-        title = "DiscordConfig",
-        description = "The discord configuration of a server.",
-        property_external_id = "The discord guild id of the Discord server.",
-        property_name = "The name of the Discord server.",
-        property_description = "The description of the Discord server.",
-        property_url = "The invite link of the Discord server.",
-        property_tags = "The tags about this Discord server.",
-        property_config = "The special configuration of this Discord server.",
-        properties_required = [
-            "external_id",
-            "name",
-        ]
-    )
 
     def __init__(self, config, services, scheduler, ad_bot=False):
         self.connected_communities = {}
