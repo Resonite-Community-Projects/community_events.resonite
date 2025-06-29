@@ -424,7 +424,7 @@ def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_u
     if not user_auth or not user_auth.is_superuser:
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
-    deleted = Community.delete(filters=(Community.id == community_id))
+    deleted = Community.delete(id__eq=community_id)
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Community not found")
