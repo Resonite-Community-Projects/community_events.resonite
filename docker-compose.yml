@@ -57,7 +57,7 @@ services:
   signals_manager:
     build: .
     restart: always
-    command: poetry run signals_manager
+    command: poetry run signals_manager --reload
     profiles:
       - manager
     depends_on:
@@ -67,6 +67,7 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
 
   api_client:
     build: .

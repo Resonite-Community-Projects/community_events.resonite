@@ -2,6 +2,14 @@ import asyncio
 import os
 import disnake
 import inspect
+import argparse
+import sys
+
+try:
+    import watchfiles
+except ImportError:
+    watchfiles = None
+
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from disnake.ext import commands
@@ -23,6 +31,8 @@ from resonite_communities.utils.logger import get_logger
 
 logger = get_logger('community_events')
 
+if not watchfiles:
+    logger.warning("watchfiles not found. --reload option will not be available.")
 
 # Clients initialization
 redis_client = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
@@ -58,10 +68,6 @@ async def main():
     #return
     for name, obj in inspect.getmembers(collectors, predicate=inspect.isclass):
         signal_collector = obj(Config, Services, scheduler)
-
-        if not signal_collector.valid_config:
-            logger.warning(f'Skipping {name} due to invalid configuration.')
-            continue
 
         match signal_collector.scheduler_type:
             case SignalSchedulerType.DISCORD:
@@ -101,5 +107,24 @@ async def main():
     # End process
     logger.info('Stopping...')
 
-def run():
+def run_without_reload():
     asyncio.run(main())
+
+def run():
+    parser = argparse.ArgumentParser(description="Run the signals manager.")
+    parser.add_argument(
+        '--reload',
+        action='store_true',
+        help='Enable auto-reloading on file changes (development only)'
+    )
+    args = parser.parse_args()
+
+    if args.reload:
+        if not watchfiles:
+            logger.error("watchfiles is required for --reload. Please install it.")
+            sys.argv.remove('--reload')
+        else:
+            logger.info("Starting signals manager with reload enabled...")
+        watchfiles.run_process('resonite_communities', target=run_without_reload)
+    else:
+        run_without_reload()
