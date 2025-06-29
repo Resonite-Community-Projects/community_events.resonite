@@ -73,7 +73,7 @@ services:
     restart: always
     profiles:
       - client
-    command: poetry run api_client
+    command: poetry run api_client --reload
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -81,6 +81,7 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
     ports:
       - '8010:8000'
     labels:
@@ -115,7 +116,7 @@ services:
     restart: always
     profiles:
       - client
-    command: poetry run web_client
+    command: poetry run web_client --reload
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -123,7 +124,7 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
-      - "./resonitecommunities:/app/resonitecommunities"
+      - "./resonite_communities:/app/resonite_communities"
     ports:
       - '8001:8001'
     labels:

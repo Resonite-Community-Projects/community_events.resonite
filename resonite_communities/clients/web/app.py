@@ -1,5 +1,6 @@
 import argparse
 import multiprocessing
+import uvicorn
 
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
@@ -67,12 +68,27 @@ def run():
         help="Bind address (default: 0.0.0.0:8001)",
         metavar="<IP:PORT>",
     )
+    parser.add_argument(
+        "-r",
+        "--reload",
+        action="store_true",
+        help="Enable autoreload with uvicorn"
+    )
 
     args = parser.parse_args()
 
-    options = {
-        "bind": args.address,
-        "workers": (multiprocessing.cpu_count() * 2) + 1,
-        "worker_class": "uvicorn.workers.UvicornWorker",
-    }
-    StandaloneApplication(app, options).run()
+    if args.reload:
+        host, port = args.address.split(":")
+        uvicorn.run(
+            "resonite_communities.clients.web.app:app",
+            host=host,
+            port=int(port),
+            reload=True,
+        )
+    else:
+        options = {
+            "bind": args.address,
+            "workers": (multiprocessing.cpu_count() * 2) + 1,
+            "worker_class": "uvicorn.workers.UvicornWorker",
+        }
+        StandaloneApplication(app, options).run()

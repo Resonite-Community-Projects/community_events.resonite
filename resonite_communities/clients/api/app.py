@@ -1,5 +1,6 @@
 import argparse
 import json
+import uvicorn
 import multiprocessing
 from datetime import datetime
 from enum import Enum
@@ -381,6 +382,7 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
         external_id=data.external_id,
         platform=CommunityPlatform(data.platform.upper()),
         url=data.url,
+        monitored=False,
         tags=data.tags,
         custom_description=data.description,
         config={
@@ -442,12 +444,27 @@ def run():
         help="Bind address (default: 0.0.0.0:8000)",
         metavar="<IP:PORT>"
     )
+    parser.add_argument(
+        "-r",
+        "--reload",
+        action="store_true",
+        help="Enable autoreload with uvicorn"
+    )
 
     args = parser.parse_args()
 
-    options = {
-        "bind": args.address,
-        "workers": (multiprocessing.cpu_count() * 2) + 1,
-        "worker_class": "uvicorn.workers.UvicornWorker",
-    }
-    StandaloneApplication(app, options).run()
+    if args.reload:
+        host, port = args.address.split(":")
+        uvicorn.run(
+            "resonite_communities.clients.api.app:app",
+            host=host,
+            port=int(port),
+            reload=True,
+        )
+    else:
+        options = {
+            "bind": args.address,
+            "workers": (multiprocessing.cpu_count() * 2) + 1,
+            "worker_class": "uvicorn.workers.UvicornWorker",
+        }
+        StandaloneApplication(app, options).run()
