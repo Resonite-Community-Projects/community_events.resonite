@@ -84,6 +84,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         else:
             discord_bot = self.services.discord.bot
 
+        self.communities = []
         for guild_bot in discord_bot.guilds:
             for community in Community.find(platform__in=[CommunityPlatform.DISCORD]):
 

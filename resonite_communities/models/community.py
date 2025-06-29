@@ -36,7 +36,12 @@ class Community(BaseModel, table=True):
             "cascade": "all, delete",
         },
     )
-    streams: list["Stream"] = Relationship(back_populates="community")
+    streams: list["Stream"] = Relationship(
+        back_populates="community",
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+        },
+    )
 
     class Config:
         arbitrary_types_allowed = True

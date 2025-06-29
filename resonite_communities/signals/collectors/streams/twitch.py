@@ -13,8 +13,9 @@ class TwitchStreamsCollector(StreamsCollector):
     broadcasters = []
 
     def update_communities(self):
-
-        for streamer in self.communities:
+        self.communities = []
+        self.broadcasters = []
+        for streamer in Community.find(platform__in=[CommunityPlatform.TWITCH]):
             broadcaster = dict()
             broadcaster['config'] = streamer
             try:
@@ -34,6 +35,7 @@ class TwitchStreamsCollector(StreamsCollector):
             )
             if not any(b.get('id') == broadcaster['twitch']['id'] for b in self.broadcasters):
                 self.broadcasters.append(broadcaster)
+            self.communities.append(streamer)
 
     def collect(self):
         self.logger.info('Update streams collector')
