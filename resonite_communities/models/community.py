@@ -30,7 +30,12 @@ class Community(BaseModel, table=True):
     members_count: int | None = Field(default=0)
     tags: str | None = Field()
     config: dict | None = Field(default={}, sa_column=Column(EasyDictType, default=easydict.EasyDict()))
-    events: list["Event"] = Relationship(back_populates="community")
+    events: list["Event"] = Relationship(
+        back_populates="community",
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+        },
+    )
     streams: list["Stream"] = Relationship(back_populates="community")
 
     class Config:
