@@ -5,6 +5,8 @@ document.addEventListener('alpine:init', () => {
         modalBodyContent: '',
         modalActionButtonText: '',
         saveCallback: () => {},
+        //activeTab: 'events',
+        communities: [],
 
         openModal(title, actionButtonText, content, saveCallback) {
             this.modalTitle = title;
@@ -18,7 +20,26 @@ document.addEventListener('alpine:init', () => {
         closeModal() {
             this.isOpen = false;
             document.documentElement.classList.remove('no-scroll');
-            this.modalBodyContent = ''; // Clear content on close
+            this.modalBodyContent = '';
+        },
+
+        async reloadCommunityList() {
+            const type = this.activeTab === 'events' ? 'event' : 'stream';
+
+            try {
+                const response = await fetch(`/v2/admin/communities/?type=${type}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${type} community list data: ${response.statusText}`);
+                }
+                const data = await response.json();
+                this.communities = data;
+                console.log(this.communities)
+                console.log(`Reloaded ${type} community list data`);
+            } catch (error) {
+                console.error(`Error reloading community list:`, error);
+                createNotification('Failed to reload community list', 'is-danger');
+                this.communities = [];
+            }
         },
 
         async handleCommunityAction(action, communityId, communityType) {
@@ -44,6 +65,7 @@ document.addEventListener('alpine:init', () => {
 
                     console.log(`${action} action successful`);
                     createNotification('Community update successfully', 'is-success');
+                    this.reloadCommunityList();
                 } catch (error) {
                     console.error(`Error during ${action} action:`, error);
                 }

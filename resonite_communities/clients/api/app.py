@@ -372,6 +372,44 @@ class CommunityRequest(BaseModel):
     private_channel_id: str | None = None
     events_url: str | None = None
 
+from fastapi import Query
+
+@router_v2.get("/admin/communities/", response_model=list[dict])
+def get_admin_communities_list(
+    request: Request,
+    type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
+    user_auth: UserAuthModel = Depends(get_user_auth)
+):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    communities = []
+    if type == 'event':
+        communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+    elif type == 'stream':
+        communities = Community().find(platform__in=[CommunityPlatform.TWITCH])
+    else:
+        raise HTTPException(status_code=400, detail="Invalid community type")
+
+    communities_formatted = []
+    for community in communities:
+        communities_formatted.append({
+            "id": str(community.id),
+            "name": community.name,
+            "external_id": community.external_id,
+            "platform": community.platform.value,
+            "url": community.url,
+            "tags": community.tags,
+            "description": community.custom_description if community.custom_description else community.default_description,
+            "is_custom_description": True if community.custom_description else False,
+            "logo": community.logo,
+            "private_role_id": community.config.get("private_role_id", None),
+            "private_channel_id": community.config.get("private_channel_id", None),
+            "events_url": community.config.get("events_url", None),
+        })
+
+    return communities_formatted
+
 @router_v2.post("/admin/communities/")
 def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
     if not user_auth or not user_auth.is_superuser:

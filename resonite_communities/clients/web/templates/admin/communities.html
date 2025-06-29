@@ -41,96 +41,98 @@
 {% endblock %}
 {% block content %}
 
-<div x-data="{ ...communityModal(), activeTab: 'events' }">
+<div x-data="{ ...communityModal(), activeTab: 'events' }" x-init="reloadCommunityList()">
     <div class="tabs is-centered is-boxed is-medium">
         <ul>
-            <li :class="{ 'is-active': activeTab === 'events' }"><a @click="activeTab = 'events'">Event communities</a></li>
-            <li :class="{ 'is-active': activeTab === 'streams' }"><a @click="activeTab = 'streams'">Streams communities</a></li>
+            <li :class="{ 'is-active': activeTab === 'events' }"><a @click="activeTab = 'events'; reloadCommunityList()">Event communities</a></li>
+            <li :class="{ 'is-active': activeTab === 'streams' }"><a @click="activeTab = 'streams'; reloadCommunityList()">Streams communities</a></li>
         </ul>
     </div>
 
     <div x-show="activeTab === 'events'" style="width: 100%;">
-
         <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community</button>
-
+        {# Use x-for to loop through the communities data #}
         <div class="columns is-multiline">
-            {% for community in events_communities %}
-            <div class="column is-one-fifth">
-                <div class="card">
-                    <div class="card-image has-text-centered pt-4">
-                        <figure class="image is-3by3 is-inline-block">
-                            {% if community.logo %}
-                            <img class="" src="{{ community.logo }}" alt="Community logo">
-                            {% else %}
-                            <img class="is-rounded" src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
-                            {% endif %}
-                        </figure>
-                    </div>
-                    <div class="card-content has-text-centered">
-                        <div class="columns is-flex-direction-column">
-                            <p class="title is-5">{{ community.name }}</p>
+            <template x-for="community in communities" :key="community.id">
+                <div class="column is-one-fifth">
+                    <div class="card">
+                        <div class="card-image has-text-centered pt-4">
+                            <template x-if="community.logo">
+                                <figure class="image is-3by3 is-inline-block">
+                                    <img class="" x-bind:src="community.logo" alt="Community logo">
+                                </figure>
+                            </template>
+                            <template x-if="!community.logo">
+                                <div style="display: inline-block; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center;">
+                                    <i class="fas fa-users" style="font-size: 7em;"></i>
+                                </div>
+                            </template>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="buttons is-centered">
-                            <button class="button is-warning is-small" @click="handleCommunityAction('edit', '{{ community.id }}', 'event')">
-                                <span class="icon"><i class="fas fa-pen"></i></span>
-                            </button>
-                            <button class="button is-danger is-small" @click="handleCommunityAction('delete', '{{ community.id }}', 'event')">
-                                <span class="icon"><i class="fas fa-trash"></i></span>
-                            </button>
-                            <button class="button is-link is-small" {% if not community.url %}title="disabled" disabled{% endif %}>
-                                <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
-                            </button>
+                        <div class="card-content has-text-centered">
+                            <div class="columns is-flex-direction-column">
+                                <p class="title is-5" x-text="community.name"></p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="buttons is-centered">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'event')">
+                                    <span class="icon"><i class="fas fa-pen"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'event')">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                </button>
+                                <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">
+                                    <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+            </template>
         </div>
     </div>
 
     <div x-show="activeTab === 'streams'" style="width: 100%;">
-
         <button class="button is-success" @click="handleCommunityAction('add', null, 'stream')">Add stream community</button>
-
         <div class="columns is-multiline">
-            {% for community in streams_communities %}
-            <div class="column is-one-fifth">
-                <div class="card">
-                    <div class="card-image has-text-centered pt-4">
-                        <figure class="image is-3by3 is-inline-block">
-                            {% if community.logo %}
-                            <img class="" src="{{ community.logo }}" alt="Community logo">
-                            {% else %}
-                            <img class="is-rounded" src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
-                            {% endif %}
-                        </figure>
-                    </div>
-                    <div class="card-content has-text-centered">
-                        <div class="columns is-flex-direction-column">
-                            <p class="title is-5">{{ community.name }}</p>
+             <template x-for="community in communities" :key="community.id">
+                <div class="column is-one-fifth">
+                    <div class="card">
+                        <div class="card-image has-text-centered pt-4">
+                            <template x-if="community.logo">
+                                <figure class="image is-3by3 is-inline-block">
+                                    <img class="" x-bind:src="community.logo" alt="Community logo">
+                                </figure>
+                            </template>
+                            <template x-if="!community.logo">
+                                <div style="display: inline-block; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center;">
+                                    <i class="fas fa-users" style="font-size: 7em;"></i> {# Use inline style for icon size #}
+                                </div>
+                            </template>
                         </div>
-                    </div>
-                    <div class="card-footer">
-                        <div class="buttons is-centered">
-                            <button class="button is-warning is-small" @click="handleCommunityAction('edit', '{{ community.id }}', 'stream')">
-                                <span class="icon"><i class="fas fa-pen"></i></span>
-                            </button>
-                            <button class="button is-danger is-small" @click="handleCommunityAction('delete', '{{ community.id }}', 'stream')">
-                                <span class="icon"><i class="fas fa-trash"></i></span>
-                            </button>
-                            <button class="button is-link is-small" {% if not community.url %}title="disabled" disabled{% endif %}>
-                                <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
-                            </button>
+                        <div class="card-content has-text-centered">
+                            <div class="columns is-flex-direction-column">
+                                <p class="title is-5" x-text="community.name"></p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="buttons is-centered">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'stream')">
+                                    <span class="icon"><i class="fas fa-pen"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'stream')">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                </button>
+                                <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">
+                                    <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
+            </template>
         </div>
     </div>
-
 
 
     <div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
