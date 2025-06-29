@@ -22,10 +22,7 @@ class Signal:
 
         self._validate_platform()
 
-        self.valid_config = self._validate_signals_config()
-        if self.valid_config:
-            self.init_update_communities()
-            self.logger.info(f'Initialised {self.name} collector')
+        self.logger.info(f'Initialised {self.name} collector')
 
     def _validate_scheduler_type(self):
         if not self.scheduler_type:
@@ -44,34 +41,6 @@ class Signal:
                 f"\n\nThe collector {self.name} have a non declared platform: {self.platform}!"
                 f"\nValid platforms are: {CommunityPlatform.valid_values()}"
             )
-
-    def _validate_signals_config(self):
-        """Validate signals configuration."""
-        signals_config = getattr(self.config.SIGNALS, self.name, [])
-        if not signals_config:
-            self.logger.warning(f"Ignoring {self.name} events collector for now. No configuration found.")
-            return False
-        return True
-
-    def init_update_communities(self):
-        self.communities = []
-        for signal in deepcopy(getattr(self.config.SIGNALS, self.name, [])):
-            community = {
-                "name": signal['name'],
-                "monitored": False,
-                "external_id": str(signal['external_id']),
-                "custom_description": signal.get('description', None) if signal.get('description', None) else None,
-                "platform": self.platform,
-                "url": signal.get('url', None),
-                "tags": ",".join(signal.get('tags', [])),
-                "config": signal.get('config', {})
-            }
-            community = Community.upsert(
-                _filter_field=['external_id', 'platform'],
-                _filter_value=[community['external_id'], community['platform']],
-                **community
-            )
-            self.communities.append(community)
 
     def update_communities(self):
         raise ValueError("Not implemented")

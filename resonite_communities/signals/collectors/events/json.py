@@ -15,6 +15,7 @@ class JSONEventsCollector(EventsCollector):
         super().__init__(config, services, scheduler)
 
     def update_communities(self):
+        self.communities = Community.find(platform__in=[CommunityPlatform.JSON])
         for community in self.communities:
             Community.update(
                 filters=(

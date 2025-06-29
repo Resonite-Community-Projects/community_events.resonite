@@ -10,6 +10,3 @@ class StreamsCollector(Collector):
 
     def _validate_scheduler_type(self):
         return True
-
-    def _validate_signals_config(self):
-        return True

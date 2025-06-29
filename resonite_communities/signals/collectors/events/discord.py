@@ -29,9 +29,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         self.guilds = {}
 
-        if not self.valid_config:
-            return
-
     def check_configured_community(self):
 
         # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
@@ -88,7 +85,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             discord_bot = self.services.discord.bot
 
         for guild_bot in discord_bot.guilds:
-            for community in self.communities:
+            for community in Community.find(platform__in=[CommunityPlatform.DISCORD]):
 
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
                 if self.ad_bot and 'private' not in community.tags.split(','):
@@ -109,6 +106,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                         logo=guild_bot.icon.url if guild_bot.icon else "",
                         default_description=guild_bot.description if guild_bot.description else None,
                     )
+                    self.communities.append(community)
                     break
 
     def is_cancel(self, local_event):
