@@ -108,6 +108,7 @@ document.addEventListener('alpine:init', () => {
                     content = `<p>Are you sure you want to delete this community?</p>`;
                     saveFunc = async () => {
                         await performBackendAction('DELETE');
+                        this.closeModal();
                     };
                     break;
 
