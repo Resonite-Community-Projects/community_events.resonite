@@ -161,3 +161,4 @@ cython_debug/
 
 credentials.json
 GeoLite2-Country.mmdb
+backups/*

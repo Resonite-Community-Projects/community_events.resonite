@@ -26,7 +26,7 @@ services:
       - POSTGRES_USER=resonitecommunities
       - POSTGRES_DB=resonitecommunities
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
       interval: 1m30s
@@ -154,8 +154,3 @@ services:
     ports:
     - "6379:6379"
     command: redis-server --save ""
-
-
-volumes:
-  postgres_data:
-    driver: local
