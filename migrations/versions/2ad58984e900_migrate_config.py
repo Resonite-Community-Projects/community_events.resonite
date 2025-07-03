@@ -86,6 +86,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.execute("DELETE FROM event")
-    op.execute("DELETE FROM stream")
-    op.execute("DELETE FROM community")
+    pass
