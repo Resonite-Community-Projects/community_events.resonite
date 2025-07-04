@@ -4,6 +4,7 @@ set -e
 BACKUP_DIR="./backups"
 TARGET_DATE=""
 STACK_NAME=""
+CONFIG_FILE="./stack-aliases.conf"
 
 print_help() {
     cat <<EOF
@@ -14,13 +15,14 @@ Restore PostgreSQL backups using Docker Compose.
 Options:
   --date TIMESTAMP       Restore from specific backup timestamp (e.g. 2025-07-03_1645)
   --date latest          Restore from the latest available backup
-  --stack STACK_NAME     (optional) Specify Docker Compose project name
+  --stack STACK_NAME     Specify Docker Compose project name or alias
+  --config FILE          (optional) Use a specific alias config file (default: ./stack-aliases.conf)
   --list                 List all available backup timestamps
   --help                 Show this help message and exit
 
 Examples:
   $0 --date latest
-  $0 --stack my_stack --date 2025-07-03_1645
+  $0 --stack prod --date 2025-07-03_1645
   $0 --list
 EOF
 }
@@ -38,6 +40,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --stack)
             STACK_NAME="$2"
+            shift 2
+            ;;
+        --config)
+            CONFIG_FILE="$2"
             shift 2
             ;;
         --list)
@@ -59,6 +65,14 @@ while [[ "$#" -gt 0 ]]; do
             ;;
     esac
 done
+
+if [[ -n "$STACK_NAME" && -f "$CONFIG_FILE" ]]; then
+    ALIAS_VALUE=$(grep "^$STACK_NAME=" "$CONFIG_FILE" | cut -d'=' -f2-)
+    if [[ -n "$ALIAS_VALUE" ]]; then
+        echo "Resolved stack alias '$STACK_NAME' to '$ALIAS_VALUE'"
+        STACK_NAME="$ALIAS_VALUE"
+    fi
+fi
 
 COMPOSE="docker compose"
 [[ -n "$STACK_NAME" ]] && COMPOSE+=" -p $STACK_NAME"

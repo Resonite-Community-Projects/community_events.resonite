@@ -4,6 +4,7 @@ set -e
 STACK_NAME=""
 BACKUP_DIR="./backups"
 FORCE=false
+CONFIG_FILE="./stack-aliases.conf"
 
 print_help() {
     cat <<EOF
@@ -12,14 +13,17 @@ Usage: $0 [OPTIONS]
 Truncate stream, event, and community tables in the PostgreSQL database via Docker Compose.
 
 Options:
-  --stack STACK_NAME    (optional) Specify Docker Compose project name
+  --stack STACK_NAME    (optional) Specify Docker Compose project name or alias
+  --config FILE         (optional) Set custom alias config file (default: ./stack-aliases.conf)
   --force               Skip backup check and confirmation
   --help                Show this help message and exit
 
 Examples:
-  $0                         Clean using default Compose context (current folder)
-  $0 --stack my_stack        Clean using a specific stack/project name
-  $0 --force                 Force truncate without backup check
+  $0                           Clean using default Compose context (current folder)
+  $0 --stack prod              Clean using an alias defined in config
+  $0 --stack my_stack          Clean using a specific stack name
+  $0 --force                   Force truncate without backup check
+  $0 --config ./custom.conf    Use a custom alias config file
 EOF
 }
 
@@ -28,6 +32,10 @@ while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --stack)
             STACK_NAME="$2"
+            shift 2
+            ;;
+        --config)
+            CONFIG_FILE="$2"
             shift 2
             ;;
         --force)
@@ -47,6 +55,14 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
+if [[ -n "$STACK_NAME" && -f "$CONFIG_FILE" ]]; then
+    ALIAS_VALUE=$(grep "^$STACK_NAME=" "$CONFIG_FILE" | cut -d'=' -f2-)
+    if [[ -n "$ALIAS_VALUE" ]]; then
+        echo "Resolved stack alias '$STACK_NAME' to '$ALIAS_VALUE'"
+        STACK_NAME="$ALIAS_VALUE"
+    fi
+fi
+
 COMPOSE="docker compose"
 [[ -n "$STACK_NAME" ]] && COMPOSE+=" -p $STACK_NAME"
 
@@ -65,7 +81,6 @@ if [[ "$FORCE" != true ]]; then
     LATEST_BASENAME=$(basename "$LATEST_BACKUP")
     DATE_STR=$(echo "$LATEST_BASENAME" | sed -E 's/community_([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4})\.sql/\1 \2/')
 
-    # Convert to UNIX timestamp
     BACKUP_TIMESTAMP=$(date -d "${DATE_STR:0:10} ${DATE_STR:11:2}:${DATE_STR:13:2}" +%s)
     NOW_TIMESTAMP=$(date +%s)
     AGE_SECONDS=$((NOW_TIMESTAMP - BACKUP_TIMESTAMP))

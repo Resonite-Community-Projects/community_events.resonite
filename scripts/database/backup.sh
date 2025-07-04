@@ -4,6 +4,7 @@ set -e
 BACKUP_DIR="./backups"
 DATE=$(date +"%F_%H%M") # YYYY-MM-DD_HHMM
 STACK_NAME=""
+CONFIG_FILE="./stack-aliases.conf"
 
 print_help() {
     cat <<EOF
@@ -12,18 +13,19 @@ Usage: $0 [OPTIONS]
 Backup PostgreSQL tables using Docker Compose.
 
 Options:
-  --stack STACK_NAME    (optional) Specify Docker Compose project name
+  --stack STACK_NAME    (optional) Specify Docker Compose project name or alias
   --date DATE_TIME      (optional) Override timestamp (format: YYYY-MM-DD_HHMM)
+  --config FILE         (optional) Set custom config file path (default: ./stack-aliases.conf)
   --help                Show this help message and exit
 
 Examples:
   $0                             Run backup in current folder (default stack)
-  $0 --stack my_stack            Run backup for a named stack
-  $0 --date 2025-07-03_1430      Backup using a fixed datetime
+  $0 --stack prod                Use alias from config file
+  $0 --stack my_stack            Use explicit stack name
+  $0 --config ./my_aliases.conf  Use custom config file
 EOF
 }
 
-# Parse args
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --stack)
@@ -32,6 +34,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --date)
             DATE="$2"
+            shift 2
+            ;;
+        --config)
+            CONFIG_FILE="$2"
             shift 2
             ;;
         --help)
@@ -47,7 +53,14 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# Compose command with optional stack
+if [[ -n "$STACK_NAME" && -f "$CONFIG_FILE" ]]; then
+    ALIAS_VALUE=$(grep "^$STACK_NAME=" "$CONFIG_FILE" | cut -d'=' -f2-)
+    if [[ -n "$ALIAS_VALUE" ]]; then
+        echo "Resolved stack alias '$STACK_NAME' to '$ALIAS_VALUE'"
+        STACK_NAME="$ALIAS_VALUE"
+    fi
+fi
+
 COMPOSE="docker compose"
 [[ -n "$STACK_NAME" ]] && COMPOSE+=" -p $STACK_NAME"
 
