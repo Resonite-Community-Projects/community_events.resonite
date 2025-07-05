@@ -16,7 +16,7 @@ Options:
   --date TIMESTAMP       Restore from specific backup timestamp (e.g. 2025-07-03_1645)
   --date latest          Restore from the latest available backup
   --stack STACK_NAME     Specify Docker Compose project name or alias
-  --config FILE          (optional) Use a specific alias config file (default: ./stack-aliases.conf)
+  --config FILE          (optional) Alias config file (default: ./stack-aliases.conf)
   --list                 List all available backup timestamps
   --help                 Show this help message and exit
 
@@ -76,21 +76,24 @@ fi
 
 COMPOSE="docker compose"
 [[ -n "$STACK_NAME" ]] && COMPOSE+=" -p $STACK_NAME"
+STACK_PREFIX="${STACK_NAME:+${STACK_NAME}_}"
 
 if [[ "$TARGET_DATE" == "latest" || -z "$TARGET_DATE" ]]; then
-    TARGET_DATE=$(find "$BACKUP_DIR" -type f -name '*.sql' \
-        | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{4}' \
+    TARGET_DATE=$(find "$BACKUP_DIR" -type f -name "community_${STACK_PREFIX}*.sql" \
+        | sed -E "s|.*community_${STACK_PREFIX}([0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{4})\.sql|\1|" \
         | sort -u | tail -n 1)
+
     if [[ -z "$TARGET_DATE" ]]; then
-        echo "No backup files found in $BACKUP_DIR"
+        echo "No backup files found for community in $BACKUP_DIR"
         exit 1
     fi
-    echo "Using latest backup: $TARGET_DATE"
+
+    echo "Using latest backup date based on community: $TARGET_DATE"
 fi
 
-COMMUNITY_FILE="$BACKUP_DIR/community_${TARGET_DATE}.sql"
-STREAM_FILE="$BACKUP_DIR/stream_${TARGET_DATE}.sql"
-EVENT_FILE="$BACKUP_DIR/event_${TARGET_DATE}.sql"
+COMMUNITY_FILE="$BACKUP_DIR/community_${STACK_PREFIX}${TARGET_DATE}.sql"
+STREAM_FILE="$BACKUP_DIR/stream_${STACK_PREFIX}${TARGET_DATE}.sql"
+EVENT_FILE="$BACKUP_DIR/event_${STACK_PREFIX}${TARGET_DATE}.sql"
 
 echo
 echo "The following backup files will be restored (stack: ${STACK_NAME:-default from folder}):"
@@ -115,7 +118,8 @@ restore() {
 
     if [[ -f "$local_path" ]]; then
         echo "Restoring $name..."
-        $COMPOSE run --rm --env PGPASSWORD='changeme' -v "$(pwd)/backups:/backups" database psql \
+        $COMPOSE run --rm --env PGPASSWORD='changeme' \
+            -v "$(pwd)/backups:/backups" database psql \
             -h 172.17.0.1 -U resonitecommunities -d resonitecommunities \
             --set ON_ERROR_STOP=off -f "$container_path"
     else

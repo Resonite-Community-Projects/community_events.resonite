@@ -14,7 +14,7 @@ Truncate stream, event, and community tables in the PostgreSQL database via Dock
 
 Options:
   --stack STACK_NAME    (optional) Specify Docker Compose project name or alias
-  --config FILE         (optional) Set custom alias config file (default: ./stack-aliases.conf)
+  --config FILE         (optional) Alias config file (default: ./stack-aliases.conf)
   --force               Skip backup check and confirmation
   --help                Show this help message and exit
 
@@ -27,7 +27,6 @@ Examples:
 EOF
 }
 
-# Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --stack)
@@ -69,8 +68,10 @@ COMPOSE="docker compose"
 echo "Using Docker Compose stack: ${STACK_NAME:-default from folder}"
 echo "Looking for latest backup in: $BACKUP_DIR"
 
+STACK_PREFIX="${STACK_NAME:+${STACK_NAME}_}"
+
 if [[ "$FORCE" != true ]]; then
-    LATEST_BACKUP=$(find "$BACKUP_DIR" -type f -name "community_*.sql" | sort | tail -n 1)
+    LATEST_BACKUP=$(find "$BACKUP_DIR" -type f -name "community_${STACK_PREFIX}*.sql" | sort | tail -n 1)
 
     if [[ ! -f "$LATEST_BACKUP" ]]; then
         echo "Error: No backup file found in $BACKUP_DIR"
@@ -79,7 +80,7 @@ if [[ "$FORCE" != true ]]; then
     fi
 
     LATEST_BASENAME=$(basename "$LATEST_BACKUP")
-    DATE_STR=$(echo "$LATEST_BASENAME" | sed -E 's/community_([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4})\.sql/\1 \2/')
+    DATE_STR=$(echo "$LATEST_BASENAME" | sed -E "s/community_${STACK_PREFIX}([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4})\.sql/\1 \2/")
 
     BACKUP_TIMESTAMP=$(date -d "${DATE_STR:0:10} ${DATE_STR:11:2}:${DATE_STR:13:2}" +%s)
     NOW_TIMESTAMP=$(date +%s)

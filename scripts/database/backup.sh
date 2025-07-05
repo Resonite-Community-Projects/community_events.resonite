@@ -71,20 +71,22 @@ echo
 echo "Stop signals manager"
 $COMPOSE --profile "*" stop signals_manager
 
+STACK_PREFIX="${STACK_NAME:+${STACK_NAME}_}"
+
 echo "Backup communities..."
 $COMPOSE run --rm --env PGPASSWORD='changeme' -v "$BACKUP_DIR:/backups" database pg_dump \
   -h 172.17.0.1 -U resonitecommunities -d resonitecommunities -t community \
-  --data-only -F p -f "/backups/community_${DATE}.sql"
+  --data-only -F p -f "/backups/community_${STACK_PREFIX}${DATE}.sql"
 
 echo "Backup streams..."
 $COMPOSE run --rm --env PGPASSWORD='changeme' -v "$BACKUP_DIR:/backups" database pg_dump \
   -h 172.17.0.1 -U resonitecommunities -d resonitecommunities -t stream \
-  --data-only -F p -f "/backups/stream_${DATE}.sql"
+  --data-only -F p -f "/backups/stream_${STACK_PREFIX}${DATE}.sql"
 
 echo "Backup events..."
 $COMPOSE run --rm --env PGPASSWORD='changeme' -v "$BACKUP_DIR:/backups" database pg_dump \
   -h 172.17.0.1 -U resonitecommunities -d resonitecommunities -t event \
-  --data-only -F p -f "/backups/event_${DATE}.sql"
+  --data-only -F p -f "/backups/event_${STACK_PREFIX}${DATE}.sql"
 
 echo "Start signals manager"
 $COMPOSE --profile "*" start signals_manager
