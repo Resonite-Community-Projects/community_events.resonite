@@ -75,9 +75,15 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [[ -n "$STACK_NAME" && -f "$CONFIG_FILE" ]]; then
+    ORIGINAL_STACK_NAME="$STACK_NAME" # Store user-provided name
     ALIAS_VALUE=$(grep "^$STACK_NAME=" "$CONFIG_FILE" | cut -d'=' -f2-)
-    [[ -n "$ALIAS_VALUE" ]] && STACK_NAME="$ALIAS_VALUE"
+    if [[ -n "$ALIAS_VALUE" ]]; then
+        echo "Resolved stack alias '$STACK_NAME' to '$ALIAS_VALUE'"
+        STACK_NAME="$ALIAS_VALUE"
+        USING_ALIAS=true # Set alias flag
+    fi
 fi
+
 
 COMPOSE="docker compose"
 [[ -n "$STACK_NAME" ]] && COMPOSE+=" -p $STACK_NAME"
@@ -105,6 +111,31 @@ if $DRY_RUN; then
     echo "Dry run mode enabled. Use --nodry to apply restore."
 fi
 echo
+
+DETECTED_PROJECT_NAME="$STACK_NAME"
+if [[ -z "$DETECTED_PROJECT_NAME" ]]; then
+    DETECTED_PROJECT_NAME=$(basename "$(pwd)")
+    DETECTED_PROJECT_NAME=${DETECTED_PROJECT_NAME//-/_}
+fi
+
+echo "Verifying if Docker Compose stack '$DETECTED_PROJECT_NAME' has previously run containers..."
+if [[ -z "$(docker ps -a --filter label=com.docker.compose.project="$DETECTED_PROJECT_NAME" --format '{{.ID}}')" ]]; then
+    ERROR_MESSAGE="Error: Docker Compose stack '$DETECTED_PROJECT_NAME' does not appear to have any containers created by it."
+    if $USING_ALIAS; then
+        ERROR_MESSAGE+="\n  This means no containers exist for the resolved stack name '$STACK_NAME' (requested via alias '$ORIGINAL_STACK_NAME')."
+    elif [[ -n "$STACK_NAME" ]]; then
+        ERROR_MESSAGE+="\n  This means no containers exist for the specified stack name '$STACK_NAME'."
+    else
+        ERROR_MESSAGE+="\n  This means no containers exist for the default stack name (derived from current directory: '$DETECTED_PROJECT_NAME')."
+    fi
+    ERROR_MESSAGE+="\n\nPlease ensure:"
+    ERROR_MESSAGE+="\n  1. You are in the correct directory if not using --stack."
+    ERROR_MESSAGE+="\n  2. The --stack name or alias is correct and matches a previously (or currently) running Compose project."
+    ERROR_MESSAGE+="\n  3. The Docker Compose stack has been brought up at least once (e.g., 'docker compose up -d')."
+    echo -e "$ERROR_MESSAGE"
+    exit 1
+fi
+echo "Docker Compose stack '$DETECTED_PROJECT_NAME' found with associated containers."
 
 run() {
     echo "+ $*"
