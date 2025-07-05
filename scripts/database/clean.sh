@@ -9,6 +9,17 @@ DRY_RUN=true
 DATABASE_SERVICE_NAME="database"
 DATABASE_IMAGE="postgres:16"
 
+check_jq_installed() {
+    if ! command -v jq &> /dev/null; then
+        echo "Error: 'jq' is not installed." >&2
+        echo "The 'jq' utility is required for this script to parse JSON output from Docker." >&2
+        echo "" >&2
+        exit 1
+    fi
+}
+
+check_jq_installed
+
 print_help() {
     cat <<EOF
 Usage: $0 [OPTIONS]
