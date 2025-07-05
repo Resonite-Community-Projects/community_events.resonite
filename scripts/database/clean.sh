@@ -2,7 +2,7 @@
 set -e
 
 STACK_NAME=""
-BACKUP_DIR="./backups"
+BACKUP_DIR="$(pwd)/backups"
 FORCE=false
 CONFIG_FILE="./stack-aliases.conf"
 DRY_RUN=true
@@ -16,6 +16,7 @@ Truncate stream, event, and community tables in the PostgreSQL database via Dock
 Options:
   --stack STACK_NAME    (optional) Specify Docker Compose project name or alias
   --config FILE         (optional) Alias config file (default: ./stack-aliases.conf)
+  --backup-dir DIR      (optional) Set custom backup directory (default: ./backups)
   --force               Skip backup check and confirmation
   --nodry               Actually execute truncate (default is dry run)
   --help                Show this help message and exit
@@ -27,6 +28,7 @@ Examples:
   $0 --stack my_stack          Clean using a specific stack name
   $0 --force                   Force truncate without backup check
   $0 --config ./custom.conf    Use a custom alias config file
+  $0 --backup-dir /mnt/mybackups Use custom backup directory for backup check
 EOF
 }
 
@@ -43,6 +45,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --config)
             CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --backup-dir)
+            BACKUP_DIR="$2"
             shift 2
             ;;
         --force)
@@ -83,6 +89,13 @@ COMPOSE="docker compose"
 echo "Using Docker Compose stack: ${STACK_NAME:-default from folder}"
 echo "Looking for latest backup in: $BACKUP_DIR"
 $DRY_RUN && echo "Dry run mode enabled. Use --nodry to truncate."
+
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "Error: Host backup directory not found: $BACKUP_DIR" >&2
+    exit 1
+fi
+echo "Host backup directory exists: $BACKUP_DIR"
+echo
 
 STACK_PREFIX="${STACK_NAME:+${STACK_NAME}_}"
 

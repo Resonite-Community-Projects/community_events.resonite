@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-BACKUP_DIR="./backups"
+BACKUP_DIR="$(pwd)/backups"
 TARGET_DATE=""
 STACK_NAME=""
 CONFIG_FILE="./stack-aliases.conf"
@@ -18,6 +18,7 @@ Options:
   --date latest          Restore from the latest available backup
   --stack STACK_NAME     Specify Docker Compose project name or alias
   --config FILE          (optional) Alias config file (default: ./stack-aliases.conf)
+  --backup-dir DIR       (optional) Set custom backup directory (default: ./backups)
   --list                 List all available backup timestamps
   --nodry                Actually perform restore (default is dry run)
   --help                 Show this help message and exit
@@ -28,6 +29,7 @@ Examples:
   $0 --stack prod --date 2025-07-03_1645
   $0 --stack my_stack --nodry --date latest
   $0 --list
+  $0 --backup-dir /mnt/mybackups --date latest
 EOF
 }
 
@@ -48,6 +50,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --config)
             CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --backup-dir)
+            BACKUP_DIR="$2"
             shift 2
             ;;
         --list)
@@ -158,7 +164,7 @@ restore() {
     if [[ -f "$local_path" ]]; then
         run $COMPOSE run --rm \
             --env PGPASSWORD='changeme' \
-            -v "$(pwd)/backups:/backups" \
+            -v "$BACKUP_DIR:/backups" \
             database psql \
             -h 172.17.0.1 \
             -U resonitecommunities \

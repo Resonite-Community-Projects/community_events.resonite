@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-BACKUP_DIR="./backups"
+BACKUP_DIR="$(pwd)/backups"
 DATE=$(date +"%F_%H%M") # YYYY-MM-DD_HHMM
 STACK_NAME=""
 CONFIG_FILE="./stack-aliases.conf"
@@ -17,6 +17,7 @@ Options:
   --stack STACK_NAME    (optional) Specify Docker Compose project name or alias
   --date DATE_TIME      (optional) Override timestamp (format: YYYY-MM-DD_HHMM)
   --config FILE         (optional) Set custom config file path (default: ./stack-aliases.conf)
+  --backup-dir DIR      (optional) Set custom backup directory (default: ./backups)
   --nodry               Actually execute the backup (default is dry run)
   --help                Show this help message and exit
 
@@ -26,6 +27,7 @@ Examples:
   $0 --stack prod                Use alias from config file
   $0 --stack my_stack            Use explicit stack name
   $0 --config ./my_aliases.conf  Use custom config file
+  $0 --backup-dir /mnt/mybackups Use custom backup directory
 EOF
 }
 
@@ -46,6 +48,10 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --config)
             CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --backup-dir)
+            BACKUP_DIR="$2"
             shift 2
             ;;
         --nodry)
@@ -81,6 +87,13 @@ COMPOSE="docker compose"
 echo "Using Docker Compose stack: ${STACK_NAME:-default from folder}"
 echo "Backup datetime: $DATE"
 $DRY_RUN && echo "Dry run mode enabled. Use --nodry to perform the backup."
+echo
+
+if [ ! -d "$BACKUP_DIR" ]; then
+    echo "Error: Host backup directory not found: $BACKUP_DIR" >&2
+    exit 1
+fi
+echo "Host backup directory exists: $BACKUP_DIR"
 echo
 
 STACK_PREFIX="${STACK_NAME:+${STACK_NAME}_}"
