@@ -6,6 +6,8 @@ BACKUP_DIR="$(pwd)/backups"
 FORCE=false
 CONFIG_FILE="./stack-aliases.conf"
 DRY_RUN=true
+DATABASE_SERVICE_NAME="database"
+DATABASE_IMAGE="postgres:16"
 
 print_help() {
     cat <<EOF
@@ -124,6 +126,59 @@ if [[ -z "$(docker ps -a --filter label=com.docker.compose.project="$DETECTED_PR
 fi
 echo "Docker Compose stack '$DETECTED_PROJECT_NAME' found with associated containers."
 
+DB_CONTAINER_FULL_NAME=$(docker ps -a \
+    --filter label=com.docker.compose.project="$DETECTED_PROJECT_NAME" \
+    --filter label=com.docker.compose.service="$DATABASE_SERVICE_NAME" \
+    --format '{{.Names}}' | head -n 1)
+
+if [[ -z "$DB_CONTAINER_FULL_NAME" ]]; then
+    echo "Error: Could not find a container for service '$DATABASE_SERVICE_NAME' in stack '$DETECTED_PROJECT_NAME'."
+    echo "Please ensure the service name is correct and it has been brought up at least once."
+    exit 1
+fi
+echo "Found database container: $DB_CONTAINER_FULL_NAME"
+
+DB_CONTAINER_ID=$(docker inspect -f '{{.Id}}' "$DB_CONTAINER_FULL_NAME")
+
+NETWORK_INFO=$(docker inspect -f '{{json .NetworkSettings.Networks}}' "$DB_CONTAINER_ID")
+
+DB_NETWORK_NAME=""
+DB_IP=""
+
+NETWORK_ENTRIES=$(echo "$NETWORK_INFO" | jq -c 'to_entries[]')
+
+while IFS= read -r entry; do
+    CURRENT_NET_NAME=$(echo "$entry" | jq -r '.key')
+    CURRENT_NET_IP=$(echo "$entry" | jq -r '.value.IPAddress // empty')
+
+    if [[ -n "$CURRENT_NET_IP" ]]; then
+        DB_NETWORK_NAME="$CURRENT_NET_NAME"
+        DB_IP="$CURRENT_NET_IP"
+        break
+    fi
+done <<< "$NETWORK_ENTRIES"
+
+if [[ -z "$DB_NETWORK_NAME" ]]; then
+    echo "Error: Could not determine an active network with an IP address for container '$DB_CONTAINER_FULL_NAME'."
+    echo "Ensure the container is running and connected to a network."
+    exit 1
+fi
+
+echo "Detected database container network: $DB_NETWORK_NAME"
+echo "Detected database container IP: $DB_IP (direct inspection)"
+
+RESOLVED_DB_IP=$(docker run --rm --network "$DB_NETWORK_NAME" alpine ash -c "ping -c 1 $DATABASE_SERVICE_NAME | head -n 1 | awk '{print \$3}' | sed 's/[():]//g'")
+
+if [[ -z "$RESOLVED_DB_IP" ]]; then
+    echo "Warning: Could not resolve IP address for '$DATABASE_SERVICE_NAME' service name within network '$DB_NETWORK_NAME'."
+    echo "Falling back to directly inspected IP: $DB_IP"
+else
+    DB_IP="$RESOLVED_DB_IP"
+    echo "Resolved database service IP via network DNS: $DB_IP"
+fi
+
+echo
+
 run() {
     echo "+ $*"
     $DRY_RUN || eval "$@"
@@ -165,21 +220,33 @@ fi
 
 run $COMPOSE --profile \'*\' stop signals_manager
 
-run $COMPOSE run --rm \
-    --env PGPASSWORD=\'changeme\' \
-    database psql -h 172.17.0.1 \
+run docker run --rm \
+    --network "$DB_NETWORK_NAME" \
+    -e PGPASSWORD='changeme' \
+    -v "$BACKUP_DIR:/backups" \
+    "$DATABASE_IMAGE" \
+    psql \
+    -h "$DB_IP" \
     -U resonitecommunities -d resonitecommunities \
     -c "'TRUNCATE TABLE stream;'"
 
-run $COMPOSE run --rm \
-    --env PGPASSWORD=\'changeme\' \
-    database psql -h 172.17.0.1 \
+run docker run --rm \
+    --network "$DB_NETWORK_NAME" \
+    -e PGPASSWORD='changeme' \
+    -v "$BACKUP_DIR:/backups" \
+    "$DATABASE_IMAGE" \
+    psql \
+    -h "$DB_IP" \
     -U resonitecommunities -d resonitecommunities \
     -c "'TRUNCATE TABLE event;'"
 
-run $COMPOSE run --rm \
-    --env PGPASSWORD=\'changeme\' \
-    database psql -h 172.17.0.1 \
+run docker run --rm \
+    --network "$DB_NETWORK_NAME" \
+    -e PGPASSWORD='changeme' \
+    -v "$BACKUP_DIR:/backups" \
+    "$DATABASE_IMAGE" \
+    psql \
+    -h "$DB_IP" \
     -U resonitecommunities -d resonitecommunities \
     -c "'TRUNCATE TABLE stream, event, community;'"
 
