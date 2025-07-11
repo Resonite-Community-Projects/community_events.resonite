@@ -83,7 +83,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         guilds = get_user_guilds(access_token)
 
         from resonite_communities.utils import Config
-        from resonite_communities.models.community import Community
+        from resonite_communities.models.community import Community, CommunityPlatform
 
         communities = {community.external_id:community.id for community in Community().find()}
 
@@ -91,10 +91,9 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         for guild in guilds:
             if guild['name'] in private_events_access_communities['guilds']:
                 continue
-            for configured_guild in Config.SIGNALS.DiscordEventsCollector:
-                if str(configured_guild['external_id']) == str(guild['id']):
-                    private_role_id = configured_guild.get(
-                        'config', {}).get('private_role_id')
+            for configured_guild in Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=True):
+                if str(configured_guild.external_id) == str(guild['id']):
+                    private_role_id = configured_guild.config.get('private_role_id')
                     if private_role_id:
                         user_roles, retry_after = get_user_roles_in_guild_safe(
                             access_token, guild['id']
@@ -103,7 +102,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
                             private_events_access_communities['retry_after'] = retry_after
                         for user_role in user_roles:
                             if (
-                                str(user_role) == str(configured_guild.get('config', {}).get('private_role_id')) and
+                                str(user_role) == str(configured_guild.config.get('private_role_id')) and
                                 guild['id'] in communities
                             ):
                                 private_events_access_communities['guilds'].append(
