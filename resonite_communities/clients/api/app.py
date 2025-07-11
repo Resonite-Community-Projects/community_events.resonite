@@ -308,10 +308,16 @@ def get_communities_v2():
 from pydantic import BaseModel
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.models.signal import EventStatus
+from resonite_communities.auth.db import User
 
 class EventUpdateStatusRequest(BaseModel):
     id: str
     status: EventStatus
+
+class UserUpdateStatusRequest(BaseModel):
+    id: str
+    is_superuser: bool
+    is_moderator: bool
 
 @router_v2.post("/admin/events/update_status")
 def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
@@ -329,6 +335,50 @@ def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel
         raise HTTPException(status_code=404, detail="Event not found")
 
     return {"id": data.id, "status": data.status, "result": result}
+
+@router_v2.post("/admin/users/update_status")
+def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        msg = f"Not authenticated."
+        raise HTTPException(status_code=403, detail=msg)
+
+    from sqlalchemy import select, create_engine
+    from sqlmodel import Session
+
+    engine = create_engine(Config.DATABASE_URL, echo=False)
+
+    fields_to_update = {
+        "is_superuser": data.is_superuser,
+        "is_moderator": data.is_moderator,
+        "updated_at": datetime.utcnow(),
+    }
+
+    with Session(engine) as session:
+        instances = []
+
+        query = select(User).where(User.id == data.id)
+
+        rows = session.exec(query).unique().all()
+        for row in rows:
+            instance = row[0]
+            for key, value in fields_to_update.items():
+                print(f"Setting {key} = {value} (type: {type(value)})")
+                setattr(instance, key, value)
+            session.commit()
+            session.refresh(instance)
+            session.expunge(instance)
+            instances.append(instance)
+
+    print(instances)
+
+    result = True
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"id": data.id, "is_superuser": data.is_superuser, "is_moderator": data.is_moderator, "result": result}
+
 
 @router_v2.get("/admin/communities/{community_id}")
 def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):

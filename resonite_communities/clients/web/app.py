@@ -15,7 +15,7 @@ from resonite_communities.clients.web.routers import (
     login,
     logout,
 )
-from resonite_communities.clients.web.routers.admin import metrics, events, communities
+from resonite_communities.clients.web.routers.admin import metrics, events, communities, users
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
@@ -35,6 +35,7 @@ app.include_router(login.router)
 app.include_router(main.router)
 app.include_router(metrics.router)
 app.include_router(events.router)
+app.include_router(users.router)
 app.include_router(communities.router)
 
 app.include_router(
@@ -50,8 +51,9 @@ app.include_router(
 
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc):
-    if request.url.path.startswith("/static"):
-        return await app.default_exception_handler(exc)
+    # TODO: Fixme!
+    #if request.url.path.startswith("/static"):
+    #    return await app.default_exception_handler(exc)
     return RedirectResponse("/")
 
 @app.exception_handler(401)

@@ -37,6 +37,7 @@ class User(SQLAlchemyBaseUserTableUUID, BaseModel):
         "OAuthAccount", lazy="joined"
     )
     is_moderator: Mapped[bool] = Column(Boolean)
+    is_protected: Mapped[bool] = Column(Boolean)
 
 class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, BaseModel):
     pass
