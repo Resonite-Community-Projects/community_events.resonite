@@ -1,15 +1,7 @@
-from datetime import datetime, timezone
-
-from dateutil.parser import parse
-import dateutil
 import requests
-import pytz
 
-import redis
 from easydict import EasyDict as edict
 import toml
-from dateutil.parser import parse
-
 from flask.logging import default_handler
 
 from resonite_communities.utils.text_api import ekey, separator
@@ -39,54 +31,6 @@ Config.clients = edict()
 
 def event_field(event, api_ver, field_name):
     return event.split(separator[api_ver]['field'])[ekey[api_ver][field_name]]
-
-class RedisClient:
-
-    def __init__(self, host='127.0.0.1', port=6379):
-        self.client = redis.Redis(host=host, port=port, db=0)
-
-    def get(self, key):
-        return self.client.get(key)
-
-    def write(self, key, new_events, api_ver, current_communities=[]):
-
-        dt_now = datetime.now(timezone.utc)
-
-        old_events = self.get(key)
-        if old_events:
-            old_events = old_events.decode("utf-8").split(separator[api_ver]['event'])
-        else:
-            old_events = []
-
-        if isinstance(new_events, str):
-            new_events = [new_events]
-
-        events = []
-        for x in old_events:
-            if event_field(x, api_ver, 'community_name') not in current_communities:
-                events.append(x)
-
-        for new_event in new_events:
-            events.append(new_event)
-
-        for event in events:
-            try:
-                if parse(event_field(event, api_ver, 'end_time')).replace(tzinfo=pytz.UTC) < dt_now and event in events:
-                    events.remove(event)
-            except dateutil.parser._parser.ParserError:
-                logging.error(f"Error parsing date: {event_field(event, api_ver, 'end_time')} for event: {event}")
-
-        events = self.sort_events(events, api_ver)
-        events = f"{separator[api_ver]['event']}".join(d for d in events if d)
-        self.client.set(key, events.encode('utf-8'))
-
-    def sort_events(self, events, api_ver):
-        def sorting(key):
-            if key:
-                return event_field(key, api_ver, 'start_time')
-            return ''
-        events.sort(key=sorting)
-        return events
 
 class TwitchClient:
 
