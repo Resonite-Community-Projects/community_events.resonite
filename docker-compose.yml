@@ -47,6 +47,8 @@ services:
       "
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
+      - "./migrations:/app/migrations"
     depends_on:
       database:
         condition: service_healthy
