@@ -35,22 +35,7 @@ with open('config.toml', 'r') as f:
     config = toml.load(f)
 
 Config = edict(config)
-Config.clients = edict()
-
-communities_name = []
-communities_define_multiple_time = []
-for bots in Config.SIGNALS.values():
-    for bot in bots:
-        if 'name' in bot and bot['name'] not in communities_name:
-            communities_name.append(bot['name'])
-        else:
-            if 'name' in bot and bot['name'] not in communities_define_multiple_time:
-                communities_define_multiple_time.append(bot['name'])
-
-if communities_define_multiple_time:
-    logger.error(f'The following communities have been defined too many time: {communities_define_multiple_time}')
-    logger.error('Multiple event source for one community are not supported yet')
-    exit()
+Config.clients = edict() 
 
 def event_field(event, api_ver, field_name):
     return event.split(separator[api_ver]['field'])[ekey[api_ver][field_name]]

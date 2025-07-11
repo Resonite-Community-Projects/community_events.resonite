@@ -105,6 +105,41 @@ document.addEventListener('alpine:init', () => {
                     };
                     break;
 
+                case 'auto_add_discord':
+                    title = `Select a ${communityType} community to add from Discord`;
+                    actionButton = 'Create';
+                    content = await getListDiscordCommunities();
+                    saveFunc = async () => {
+                        const body = serializeFormData();
+                        if (!body) return;
+                        if (!body.selectedCommunityId) {
+                            createNotification('Please select a community before continuing.', 'is-warning');
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/v2/admin/setup/communities/discord/import/${body.selectedCommunityId || ''}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ id: body.selectedCommunityId, visibility: body.visibility })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Import failed: ${response.statusText}`);
+                            }
+
+                            createNotification('Community successfully added from Discord.', 'is-success');
+                            this.reloadCommunityList();
+                        } catch (err) {
+                            console.error('Import failed', err);
+                            createNotification('Failed to add community from Discord.', 'is-danger');
+                        }
+                        this.closeModal();
+                    };
+                    break;
+
                 case 'edit':
                     title = `Edit ${communityType} Community`;
                     actionButton = 'Save';
@@ -143,7 +178,67 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-// Helper functions (can remain outside Alpine.data if they don't need direct Alpine state)
+async function getListDiscordCommunities() {
+    let communitiesList = {};
+    try {
+        const response = await fetch(`/v2/admin/setup/communities/discord`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch Discord community list: ${response.statusText}`);
+        }
+        communities = await response.json();
+    } catch (error) {
+        console.error("Error fetching Discord community list:", error);
+        return [];
+    }
+
+    const formHTML = `
+        <form id="discord-community-form" x-data="{ selected: null, visibility: 'PRIVATE' }">
+
+            <div class="field mb-4">
+                <label class="label">Visibility</label>
+                <div class="buttons has-addons">
+                    <label class="button" :class="{ 'is-primary': visibility === 'PUBLIC' }">
+                        <input type="radio" name="visibility" value="PUBLIC" class="is-hidden" x-model="visibility">
+                        PUBLIC
+                    </label>
+                    <label class="button" :class="{ 'is-primary': visibility === 'PRIVATE' }">
+                        <input type="radio" name="visibility" value="PRIVATE" class="is-hidden" x-model="visibility">
+                        PRIVATE
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="">
+                ${communities.map(c => `
+                    <label class="box cursor-pointer" style="display: block">
+                        <div class="columns is-vcentered">
+                            <div class="column py-0 is-1">
+                                <input type="radio" name="selectedCommunityId" value="${c.id}" class="mr-2" x-model="selected">
+                            </div>
+                            <div class="column py-0">
+                                <div class="columns m-0">
+                                    <div class="column py-0 is-one-third is-align-content-center">
+                                        <img class="" src="${c.logo}" alt="Community logo">
+                                    </div>
+                                    <div class="column">
+                                        <div class="columns m-0 is-flex-direction-column is-justify-content-space-between" style="height: 100%;">
+                                            <strong>${c.name}</strong><br>
+                                            <span class="has-text-grey">${c.default_description || 'No description available'}</span><br>
+                                            <small><strong>ID:</strong> ${c.external_id}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                `).join('')}
+            </div>
+        </form>
+    `;
+    return formHTML;
+}
+
 async function getCommunityForm(communityId = null, communityType = null) {
     let communityData = {};
     if (communityId) {

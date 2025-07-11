@@ -50,7 +50,8 @@
     </div>
 
     <div x-show="activeTab === 'events'" style="width: 100%;">
-        <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community</button>
+        <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community manually</button>
+        <button class="button is-success" @click="handleCommunityAction('auto_add_discord', null, 'event')">Add event community auto</button>
         {# Use x-for to loop through the communities data #}
         <div class="columns is-multiline">
             <template x-for="community in communities" :key="community.id">

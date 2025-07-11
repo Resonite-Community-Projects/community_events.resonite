@@ -372,6 +372,10 @@ class CommunityRequest(BaseModel):
     private_channel_id: str | None = None
     events_url: str | None = None
 
+class DiscordImportRequest(BaseModel):
+    id: str
+    visibility: str
+
 from fastapi import Query
 
 @router_v2.get("/admin/communities/", response_model=list[dict])
@@ -385,9 +389,9 @@ def get_admin_communities_list(
 
     communities = []
     if type == 'event':
-        communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+        communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON], configured__eq=True)
     elif type == 'stream':
-        communities = Community().find(platform__in=[CommunityPlatform.TWITCH])
+        communities = Community().find(platform__in=[CommunityPlatform.TWITCH], configured__eq=True)
     else:
         raise HTTPException(status_code=400, detail="Invalid community type")
 
@@ -468,6 +472,31 @@ def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_u
         raise HTTPException(status_code=404, detail="Community not found")
 
     return {"id": community_id, "message": "Community deleted successfully"}
+
+@router_v2.get("/admin/setup/communities/discord/")
+def discord_communities(user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    discord_communities = Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
+
+    return discord_communities
+
+@router_v2.post("/admin/setup/communities/discord/import/{community_id}")
+def discord_communities(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    updated = Community.update(
+        filters=(Community.id == community_id),
+        configured=True,
+        tags="private" if data.visibility == "PRIVATE" else "public"
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community updated successfully"}
 
 app.include_router(router_v1)
 app.include_router(router_v2)

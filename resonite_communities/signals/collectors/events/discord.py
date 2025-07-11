@@ -29,52 +29,6 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         self.guilds = {}
 
-    def check_configured_community(self):
-
-        # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
-        # aka keep only self.services.discord.bot
-        if self.ad_bot:
-            discord_bot = self.services.discord.ad_bot
-        else:
-            discord_bot = self.services.discord.bot
-
-        # TODO: I should check and warn for:
-        # - We are in a discord community server BUT it's not configured
-        # - A community is configured BUT we are not in the discord community server
-
-        self.logger.info(f'------------:: {self.collector_name} ::--------------')
-        self.logger.info(':: Connected to the following discord community')
-        for guild_bot in discord_bot.guilds:
-            self.connected_communities[guild_bot.id] = guild_bot.name
-            self.logger.info(f"{guild_bot.name} ({guild_bot.id})")
-
-        if self.connected_communities:
-            self.logger.info('')
-            self.logger.info(':: Configured discord community:')
-            for signal in getattr(self.config.SIGNALS, self.name, []):
-                # FIXME: Remove all this test when removing AD_DISCORD_BOT_TOKEN
-                # keep only the print + self.configured_commu...
-                if self.ad_bot and 'private' in signal.tags:
-                    self.logger.info(f"{signal['name']} ({signal['external_id']})")
-                    self.configured_communities[signal['external_id']] = signal['name']
-                if not self.ad_bot and 'public' in signal.tags:
-                    self.logger.info(f"{signal['name']} ({signal['external_id']})")
-                    self.configured_communities[signal['external_id']] = signal['name']
-
-            self.logger.info('')
-            self.logger.info('')
-            self.logger.info('::Community connected but not configured:')
-            for connected_community_id, connected_community_name in self.connected_communities.items():
-                if connected_community_id not in self.configured_communities.keys():
-                    self.logger.info(f"{connected_community_name} ({connected_community_id})")
-
-            self.logger.info('')
-            self.logger.info('::Communities configured but not connected:')
-            for configured_community_id, configured_community_name in self.configured_communities.items():
-                if configured_community_id not in self.connected_communities.keys():
-                    self.logger.info(f"{configured_community_name} ({configured_community_id})")
-        self.logger.info('------------------------------')
-
     def update_communities(self):
 
         # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
@@ -84,31 +38,59 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         else:
             discord_bot = self.services.discord.bot
 
+        database_communities = {
+            c.external_id: c
+            for c in Community.find(platform=CommunityPlatform.DISCORD)
+        }
+
         self.communities = []
         for guild_bot in discord_bot.guilds:
-            for community in Community.find(platform__in=[CommunityPlatform.DISCORD]):
+            external_id = str(guild_bot.id)
+            community = database_communities.get(external_id)
 
+            ad_bot_configured = False
+            if self.ad_bot and not Community.ad_bot_configured:
+                    ad_bot_configured = True
+
+            if community:
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
                 if self.ad_bot and 'private' not in community.tags.split(','):
                     continue
                 elif not self.ad_bot and 'private' in community.tags.split(','):
                     continue
 
-                if community.external_id == str(guild_bot.id):
-                    community.monitored = True
-                    community.config['bot'] = guild_bot
-                    # TODO: This should also have a fallback to the local configuration if their is no information or the other way around
-                    Community.update(
-                        filters=(
-                            (Community.external_id == community.external_id) &
-                            (Community.platform == CommunityPlatform.DISCORD)
-                        ),
-                        monitored=community.monitored,
-                        logo=guild_bot.icon.url if guild_bot.icon else "",
-                        default_description=guild_bot.description if guild_bot.description else None,
-                    )
-                    self.communities.append(community)
-                    break
+                community.monitored = True
+                community.ad_bot_configured = ad_bot_configured
+                community.config["bot"] = guild_bot
+
+                Community.update(
+                    filters=(
+                        (Community.external_id == community.external_id) &
+                        (Community.platform == CommunityPlatform.DISCORD)
+                    ),
+                    monitored=community.monitored,
+                    configured=community.configured,
+                    ad_bot_configured=ad_bot_configured,
+                    logo=guild_bot.icon.url if guild_bot.icon else "",
+                    default_description=guild_bot.description if guild_bot.description else None,
+
+                )
+
+                self.communities.append(community)
+            else:
+                community = Community.add(
+                    platform=CommunityPlatform.DISCORD,
+                    external_id=external_id,
+                    monitored=False,
+                    configured=False,
+                    ad_bot_configured=ad_bot_configured,
+                    name=guild_bot.name,
+                    logo=guild_bot.icon.url if guild_bot.icon else "",
+                    default_description=guild_bot.description or None,
+                    tags="",
+                )
+                community.config["bot"] = guild_bot
+                self.communities.append(community)
 
     def is_cancel(self, local_event):
         """ Check if an event is considered as canceled.
@@ -367,6 +349,5 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.logger.info(f'Discord collector bot {self.name} ready')
-        self.check_configured_community()
         self.update_communities()
         self.init_scheduler()
