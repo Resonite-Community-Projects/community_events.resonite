@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/admin/events")
 async def get_communities(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
     # Only get Resonite events

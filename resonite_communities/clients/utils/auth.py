@@ -11,6 +11,7 @@ from resonite_communities.auth.db import get_async_session, DiscordAccount
 class UserAuthModel(BaseModel):
     discord_account: DiscordAccount | None = None
     is_superuser: bool | None = False
+    is_moderator: bool | None = False
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -19,7 +20,7 @@ async def get_user_auth(user: User = Depends(optional_current_active_user)) -> O
     if not user:
         return
 
-    user_auth_model = UserAuthModel(is_superuser=user.is_superuser)
+    user_auth_model = UserAuthModel(is_superuser=user.is_superuser, is_moderator=user.is_moderator)
 
     get_async_session_context = contextlib.asynccontextmanager(get_async_session)
 

@@ -384,7 +384,7 @@ def get_admin_communities_list(
     type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
     user_auth: UserAuthModel = Depends(get_user_auth)
 ):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     communities = []
@@ -416,7 +416,7 @@ def get_admin_communities_list(
 
 @router_v2.post("/admin/communities/")
 def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     new_community = Community().add(
@@ -438,7 +438,7 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
 
 @router_v2.patch("/admin/communities/{community_id}")
 def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     updated = Community.update(
@@ -463,7 +463,7 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
 
 @router_v2.delete("/admin/communities/{community_id}")
 def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     deleted = Community.delete(id__eq=community_id)
@@ -475,7 +475,7 @@ def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_u
 
 @router_v2.get("/admin/setup/communities/discord/")
 def discord_communities(user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     discord_communities = Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
@@ -484,7 +484,7 @@ def discord_communities(user_auth: UserAuthModel = Depends(get_user_auth)):
 
 @router_v2.post("/admin/setup/communities/discord/import/{community_id}")
 def discord_communities(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     updated = Community.update(

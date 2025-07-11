@@ -237,10 +237,24 @@
             <a class="button m-1" href="/logout/">Logout</a>
             {% if user.is_superuser %}
             <a class="button m-1" href="/admin/metrics/">Admin</a>
+            {% elif user.is_moderator %}
+            <a class="button m-1" href="/admin/communities/">Admin</a>
             {% endif %}
           </div>
           <div class="is-flex-direction-column m-1">
-            <p class="m-1">Connected as <span class="tag has-text-info">{{user.discord_account.name}}</span></p>
+            <p class="m-1">
+              Connected as <span class="tag has-text-info">{{user.discord_account.name}}</span>
+              {% if user.is_superuser or user.is_moderator %}
+              with roles 
+              {% if user.is_superuser %}
+              <span class="tag has-text-info">Administrator</span>
+              {% endif %}
+              {% if user.is_moderator %}
+              <span class="tag has-text-info">Moderator</span>
+              {% endif %}
+              {% endif %}
+              .
+            </p>
             {% if user_communities %}
             <p class="ml-1 mr-1 mt-1">The calendar also include the events from communities you are a member of:</p>
                 <div>

@@ -35,7 +35,7 @@ with open('config.toml', 'r') as f:
     config = toml.load(f)
 
 Config = edict(config)
-Config.clients = edict() 
+Config.clients = edict()
 
 def event_field(event, api_ver, field_name):
     return event.split(separator[api_ver]['field'])[ekey[api_ver][field_name]]
