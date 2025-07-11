@@ -18,8 +18,8 @@ router = APIRouter()
 @router.get("/admin/users")
 async def get_communities(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    #if not user_auth or not user_auth.is_superuser:
-    #    return RedirectResponse(url="/")
+    if not user_auth or not user_auth.is_superuser:
+        return RedirectResponse(url="/")
 
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
