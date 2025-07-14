@@ -322,7 +322,7 @@ class UserUpdateStatusRequest(BaseModel):
 @router_v2.post("/admin/events/update_status")
 def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         msg = f"Not authenticated."
         raise HTTPException(status_code=403, detail=msg)
 
