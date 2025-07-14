@@ -21,7 +21,6 @@ from resonite_communities.signals import (
     SignalSchedulerType,
 )
 from resonite_communities.utils import (
-    RedisClient,
     Config,
     Services,
     TwitchClient,
@@ -35,7 +34,6 @@ if not watchfiles:
     logger.warning("watchfiles not found. --reload option will not be available.")
 
 # Clients initialization
-redis_client = RedisClient(host=os.getenv('REDIS_HOST', 'cache'), port=os.getenv('REDIS_PORT', 6379))
 twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
 discord_client = disnake.Client()
 
@@ -51,7 +49,6 @@ Services.discord.bot = bot
 Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
 Services.discord.client = discord_client
 Services.twitch = twitch_client
-Services.redis = redis_client
 
 if "SENTRY_DSN" in Config:
 
@@ -86,7 +83,7 @@ async def main():
 
     for name, obj in inspect.getmembers(transmitters, predicate=inspect.isclass):
         logger.info(f'Initialization {name} transmitter')
-        obj(Config, scheduler, redis_client)
+        obj(Config, scheduler)
 
         transmitters_count += 1
 
