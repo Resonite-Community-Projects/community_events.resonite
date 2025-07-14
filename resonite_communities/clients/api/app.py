@@ -383,7 +383,7 @@ def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel =
 @router_v2.get("/admin/communities/{community_id}")
 def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     communities = Community().find(id__eq=community_id)
