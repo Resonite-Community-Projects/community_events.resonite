@@ -180,6 +180,8 @@ document.addEventListener('alpine:init', () => {
 
 async function getListDiscordCommunities() {
     let communitiesList = {};
+    console.log("Fetching from", location.href);
+    console.log("Will fetch:", new URL('/v2/admin/whatever', location.href).href);
     try {
         const response = await fetch(`/v2/admin/setup/communities/discord`);
         if (!response.ok) {
