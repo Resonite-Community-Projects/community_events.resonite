@@ -1,94 +1,161 @@
 {% extends "admin/base.html" %}
+{% block alpine_components_head %}
+    <script src="/static/js/alpine/pages/admin_communities.js"></script>
+{% endblock %}
 {% block extended_head %}
-<script src="/static/js/communities.js"></script>
+<script src="/static/js/notification.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/notification.css">
 <style>
     :required,
     .required {
         border-color: red;
     }
+
+    .card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .card-image {
+        margin-bottom: 0.5rem;
+    }
+
+    .card-content {
+        padding: 1rem;
+        flex-grow: 1;
+    }
+
+    .card-content .title {
+        margin-bottom: 0.5rem;
+    }
+
+    .card-footer .buttons {
+        margin: 10px;
+        width: 100%;
+    }
 </style>
 {% endblock %}
 {% block content %}
 
-<div class="tabs is-centered is-boxed is-medium">
-    <ul>
-        <li class="is-active" id="events_communities_tab"><a>Event communities</a></li>
-        <li id="streams_communities_tab"><a>Streams communities</a></li>
-    </ul>
-</div>
-
-<div id="events_communities" style="width: 100%;">
-
-    <button class="button is-success" data-modal-action="add" data-community-type="event">Add event community</button>
-
-    <table class="table is-fullwidth">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th style="text-align: right;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for community in events_communities %}
-            <tr>
-                <td>{{ community.name }}</td>
-                <td style="text-align: right;">
-                    <div>
-                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="event">Info</button>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="event">Edit</button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="event">Delete</button>
-                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<div id="streams_communities" style="display: none; width: 100%;">
-
-    <button class="button is-success" data-modal-action="add" data-community-type="stream">Add stream community</button>
-
-    <table class="table is-fullwidth">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th style="text-align: right;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for community in streams_communities %}
-            <tr>
-                <td>{{ community.name }}</td>
-                <td style="text-align: right;">
-                    <div>
-                        <button class="button is-info" data-modal-action="info" data-community-id="{{ community.id }}" data-community-type="stream">Info</button>
-                        <button class="button is-warning" data-modal-action="edit" data-community-id="{{ community.id }}" data-community-type="stream">Edit</button>
-                        <button class="button is-danger" data-modal-action="delete" data-community-id="{{ community.id }}" data-community-type="stream">Delete</button>
-                        <button class="button is-link" {% if not community.url %}title="disabled" disabled{% endif %}>External link</button>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<div class="modal" id="generic-modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title" id="modal-title">Modal Title</p>
-            <button class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body" id="modal-body">
-            <!-- Content will be dynamically injected here -->
-        </section>
-        <footer class="modal-card-foot">
-            <button class="button is-success" id="modal-save-button">Save</button>
-            <button class="button" id="modal-cancel-button">Cancel</button>
-        </footer>
+<div x-data="{ ...communityModal(), activeTab: 'events' }" x-init="reloadCommunityList()">
+    <div class="tabs is-centered is-boxed is-medium">
+        <ul>
+            <li :class="{ 'is-active': activeTab === 'events' }"><a @click="activeTab = 'events'; reloadCommunityList()">Event communities</a></li>
+            <li :class="{ 'is-active': activeTab === 'streams' }"><a @click="activeTab = 'streams'; reloadCommunityList()">Streams communities</a></li>
+        </ul>
     </div>
+
+    <div x-show="activeTab === 'events'" style="width: 100%;">
+        <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community manually</button>
+        <button class="button is-success" @click="handleCommunityAction('auto_add_discord', null, 'event')">Add event community auto</button>
+        {# Use x-for to loop through the communities data #}
+        <div class="columns is-multiline">
+            <template x-for="community in communities" :key="community.id">
+                <div class="column is-one-fifth">
+                    <div class="card">
+                        <div class="card-image has-text-centered pt-4">
+                            <template x-if="community.logo">
+                                <figure class="image is-3by3 is-inline-block">
+                                    <img class="" x-bind:src="community.logo" alt="Community logo">
+                                </figure>
+                            </template>
+                            <template x-if="!community.logo">
+                                <div style="display: inline-block; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center;">
+                                    <i class="fas fa-users" style="font-size: 7em;"></i>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="card-content has-text-centered">
+                            <div class="columns is-flex-direction-column">
+                                <p class="title is-5" x-text="community.name"></p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="buttons is-centered">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'event')">
+                                    <span class="icon"><i class="fas fa-pen"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'event')">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                </button>
+                                <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">
+                                    <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <div x-show="activeTab === 'streams'" style="width: 100%;">
+        <button class="button is-success" @click="handleCommunityAction('add', null, 'stream')">Add stream community</button>
+        <div class="columns is-multiline">
+             <template x-for="community in communities" :key="community.id">
+                <div class="column is-one-fifth">
+                    <div class="card">
+                        <div class="card-image has-text-centered pt-4">
+                            <template x-if="community.logo">
+                                <figure class="image is-3by3 is-inline-block">
+                                    <img class="" x-bind:src="community.logo" alt="Community logo">
+                                </figure>
+                            </template>
+                            <template x-if="!community.logo">
+                                <div style="display: inline-block; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center;">
+                                    <i class="fas fa-users" style="font-size: 7em;"></i> {# Use inline style for icon size #}
+                                </div>
+                            </template>
+                        </div>
+                        <div class="card-content has-text-centered">
+                            <div class="columns is-flex-direction-column">
+                                <p class="title is-5" x-text="community.name"></p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="buttons is-centered">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'stream')">
+                                    <span class="icon"><i class="fas fa-pen"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'stream')">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                </button>
+                                <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">
+                                    <span class="icon"><i class="fas fa-up-right-from-square"></i></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+
+    <div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
+        <div class="modal-background" @click="closeModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" x-text="modalTitle"></p>
+                <button class="delete" aria-label="close" @click="closeModal()"></button>
+            </header>
+            <section class="modal-card-body" x-html="modalBodyContent" id="modal-body">
+                <!-- Content will be dynamically injected here -->
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @click="saveCallback()" x-text="modalActionButtonText"></button>
+                <button class="button" @click="closeModal()">Cancel</button>
+            </footer>
+        </div>
+    </div>
+
+
+    <div id="notifications"></div>
+
 </div>
 
 {% endblock content %}

@@ -1,27 +1,83 @@
-
 {% extends "base.html" %}
+{% block extended_head %}
+    <style>
+      .hero {
+        padding-bottom: inherit;
+      }
+
+      .hero.is-link .tab.tab-events.is-active {
+        border-color: #fff;
+        border-bottom-color: rgb(255, 255, 255);
+      }
+
+      .hero.is-link .tabs.is-boxed li.is-active a {
+        border-color: #fff;
+        border-bottom-color: rgb(255, 255, 255);
+        background: #fff;
+      }
+
+      .hero.is-link .tabs.is-boxed a:hover {
+        background-color: rgba(10,10,10,.1);
+        color: #fff;
+      }
+
+      .hero.is-link .tabs.is-boxed li.is-active a:hover {
+        color: var(--bulma-tabs-link-active-color);
+        color: var(--bulma-tabs-link-active-color);
+        background: rgb(207, 213, 255);
+      }
+
+      .hero.is-link .tabs a:hover {
+        opacity: 1;
+      }
+    </style>
+{% endblock %}
+{% block alpine_components_head %}
+    <script defer src="/static/js/alpine/pages/index.js"></script>
+    <script defer src="/static/js/alpine/info_toggle.js"></script>
+    <script defer src="/static/js/alpine/copy_facet_url.js"></script>
+{% endblock %}
+{% block hero_foot %}
+        <div class="hero-foot">
+          <nav class="tabs is-boxed is-fullwidth is-large">
+            <div class="container">
+              <ul>
+                <li class="tab tab-events" :class="{ 'is-active': activeTab === 'Events' }">
+                    <a @click="activeTab = 'Events'">Events</a>
+                </li>
+                <li class="tab tab-streams" :class="{ 'is-active': activeTab === 'Streams' }">
+                    <a @click="activeTab = 'Streams'">Streams</a>
+                </li>
+                <li class="tab tab-about" :class="{ 'is-active': activeTab === 'About' }">
+                    <a @click="activeTab = 'About'">About</a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+{% endblock %}
 {% block content %}
-          <div id="Events" class="content-tab" style="display:{{tab|tab_display('Events')}}">
+          <div x-show="activeTab === 'Events'" x-cloak>
 
             <div class="columns">
               <div class="column">
-                <article class="message is-info">
-                  <div class="message-header" id="info_toggle">
+                <article class="message is-info" x-data="infoToggle()">
+                  <div class="message-header" id="info_toggle" @click="toggle()">
                     <p>Info</p>
                     <span class="icon">
-                      <i class="fas fa-angle-up" aria-hidden="true"></i>
+                      <i class="fas" x-bind:class="open ? 'fa-angle-up' : 'fa-angle-down'" aria-hidden="true"></i>
                     </span>
                   </div>
-                  <div class="message-body" id="info">
+                  <div class="message-body" id="info" x-show="open">
                     <p>Want your group listed here? Any question?</p>
                     <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-communities.com</samp>?</p>
-                    <p>More info in <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>More info in <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
               </div>
 
-              <div class="column">
-                <button class="button is-large is-fullwidth is-dark js-copy-facet-url" style="display:none">
+              <div class="column" x-data="copyFacetUrl()">
+                <button class="button is-large is-fullwidth is-dark js-copy-facet-url" @click="copyToClipboard('{{ facet_url }}')">
                   <span>Copy facet resonitedb url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>
@@ -86,17 +142,17 @@
             </article>
             {% endfor %}
 
-            <article class="message is-dark">
-              <div class="message-header" id="info_toggle">
+            <article class="message is-dark" x-data="infoToggle()">
+              <div class="message-header" id="info_toggle" @click="toggle()">
                 <p>Resonite communities followed</p>
                 <span class="icon">
-                  <i class="fas fa-angle-up" aria-hidden="true"></i>
+                  <i class="fas" x-bind:class="open ? 'fa-angle-up' : 'fa-angle-down'" aria-hidden="true"></i>
                 </span>
               </div>
-              <div class="message-body" id="info">
+              <div class="message-body" id="info" x-show="open">
                 <article class="message is-info">
                   <div class="message-body content">
-                    <p>Want your communities events listed here? Any questions? Check the <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>Want your communities events listed here? Any questions? Check the <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
                 <div class="columns is-multiline">
@@ -158,7 +214,7 @@
             </article>
           </div>
 
-          <div id="Streams" class="content-tab" style="display:{{tab|tab_display('Streams')}}">
+          <div x-show="activeTab === 'Streams'" x-cloak>
 
             <article class="message is-info">
               <div class="message-body content">
@@ -211,7 +267,7 @@
               <div class="message-body" id="info">
                 <article class="message is-info">
                   <div class="message-body content">
-                    <p>Want your stream listed here? Any questions? Check the <span onclick="openTab(event,'About')"><a>About</a></span> section.</p>
+                    <p>Want your stream listed here? Any questions? Check the <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
                   </div>
                 </article>
                 <div class="columns is-multiline">
@@ -250,7 +306,7 @@
             </article>
           </div>
 
-          <div id="About" class="content-tab" style="display:{{tab|tab_display('About')}}">
+          <div x-show="activeTab === 'About'" x-cloak>
             <div class="content">
               <p>This service is provided to you by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>. If you have any question about it, you can contact them either on discord or Resonite.</p>
 
@@ -470,3 +526,36 @@
             </div>
           </div>
 {% endblock %}
+<environment_details>
+# VSCode Visible Files
+resonite_communities/clients/web/static/js/communities.js
+resonite_communities/clients/web/static/js/communities.js
+resonite_communities/clients/web/templates/admin/communities.html
+resonite_communities/clients/web/templates/admin/communities.html
+resonite_communities/clients/web/templates/index.html
+
+# VSCode Open Tabs
+resonite_communities/signals/collectors/events/discord.py
+resonite_communities/clients/api/app.py
+resonite_communities/signals/signal.py
+resonite_communities/clients/web/static/js/alpine/info_toggle.js
+resonite_communities/clients/web/templates/admin/events.html
+resonite_communities/clients/web/static/js/alpine/events_alpine.js
+resonite_communities/clients/web/static/js/alpine/tabs.js
+resonite_communities/clients/web/templates/base.html
+resonite_communities/clients/web/templates/index.html
+resonite_communities/clients/web/static/js/notification.js
+resonite_communities/clients/web/static/js/events.js
+resonite_communities/models/types.py
+docker-compose.yml
+resonite_communities/clients/web/routers/main.py
+
+# Current Time
+6/6/2025, 9:11:50 AM (UTC, UTC+0:00)
+
+# Context Window Usage
+285,286 / 1,048.576K tokens used (27%)
+
+# Current Mode
+ACT MODE
+</environment_details>

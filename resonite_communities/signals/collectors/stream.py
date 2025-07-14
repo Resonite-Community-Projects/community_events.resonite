@@ -8,11 +8,5 @@ class StreamsCollector(Collector):
         super().__init__(config, services, scheduler)
         self.model = Stream()
 
-    def _validate_jschema(self):
-        return True
-
     def _validate_scheduler_type(self):
-        return True
-
-    def _validate_signals_config(self):
         return True

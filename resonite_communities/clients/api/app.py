@@ -1,5 +1,6 @@
 import argparse
 import json
+import uvicorn
 import multiprocessing
 from datetime import datetime
 from enum import Enum
@@ -307,15 +308,21 @@ def get_communities_v2():
 from pydantic import BaseModel
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.models.signal import EventStatus
+from resonite_communities.auth.db import User
 
 class EventUpdateStatusRequest(BaseModel):
     id: str
     status: EventStatus
 
+class UserUpdateStatusRequest(BaseModel):
+    id: str
+    is_superuser: bool
+    is_moderator: bool
+
 @router_v2.post("/admin/events/update_status")
 def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         msg = f"Not authenticated."
         raise HTTPException(status_code=403, detail=msg)
 
@@ -329,10 +336,54 @@ def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel
 
     return {"id": data.id, "status": data.status, "result": result}
 
+@router_v2.post("/admin/users/update_status")
+def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        msg = f"Not authenticated."
+        raise HTTPException(status_code=403, detail=msg)
+
+    from sqlalchemy import select, create_engine
+    from sqlmodel import Session
+
+    engine = create_engine(Config.DATABASE_URL, echo=False)
+
+    fields_to_update = {
+        "is_superuser": data.is_superuser,
+        "is_moderator": data.is_moderator,
+        "updated_at": datetime.utcnow(),
+    }
+
+    with Session(engine) as session:
+        instances = []
+
+        query = select(User).where(User.id == data.id)
+
+        rows = session.exec(query).unique().all()
+        for row in rows:
+            instance = row[0]
+            for key, value in fields_to_update.items():
+                print(f"Setting {key} = {value} (type: {type(value)})")
+                setattr(instance, key, value)
+            session.commit()
+            session.refresh(instance)
+            session.expunge(instance)
+            instances.append(instance)
+
+    print(instances)
+
+    result = True
+
+    if not result:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"id": data.id, "is_superuser": data.is_superuser, "is_moderator": data.is_moderator, "result": result}
+
+
 @router_v2.get("/admin/communities/{community_id}")
 def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     communities = Community().find(id__eq=community_id)
@@ -351,8 +402,10 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
         "url": community.url,
         "tags": community.tags,
         "description": community.default_description if not community.custom_description else community.custom_description,
+        "is_custom_description": True if community.custom_description else False,
         "private_role_id": community.config.get("private_role_id", None),
         "private_channel_id": community.config.get("private_channel_id", None),
+        "events_url": community.config.get("events_url", None),
     }
 
 from pydantic import BaseModel
@@ -364,12 +417,56 @@ class CommunityRequest(BaseModel):
     url: str
     tags: str
     description: str
+    resetDescription: bool | None = None
     private_role_id: str | None = None
     private_channel_id: str | None = None
+    events_url: str | None = None
+
+class DiscordImportRequest(BaseModel):
+    id: str
+    visibility: str
+
+from fastapi import Query
+
+@router_v2.get("/admin/communities/", response_model=list[dict])
+def get_admin_communities_list(
+    request: Request,
+    type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
+    user_auth: UserAuthModel = Depends(get_user_auth)
+):
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    communities = []
+    if type == 'event':
+        communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON], configured__eq=True)
+    elif type == 'stream':
+        communities = Community().find(platform__in=[CommunityPlatform.TWITCH], configured__eq=True)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid community type")
+
+    communities_formatted = []
+    for community in communities:
+        communities_formatted.append({
+            "id": str(community.id),
+            "name": community.name,
+            "external_id": community.external_id,
+            "platform": community.platform.value,
+            "url": community.url,
+            "tags": community.tags,
+            "description": community.custom_description if community.custom_description else community.default_description,
+            "is_custom_description": True if community.custom_description else False,
+            "logo": community.logo,
+            "private_role_id": community.config.get("private_role_id", None),
+            "private_channel_id": community.config.get("private_channel_id", None),
+            "events_url": community.config.get("events_url", None),
+        })
+
+    return communities_formatted
 
 @router_v2.post("/admin/communities/")
 def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     new_community = Community().add(
@@ -377,11 +474,13 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
         external_id=data.external_id,
         platform=CommunityPlatform(data.platform.upper()),
         url=data.url,
+        monitored=False,
         tags=data.tags,
         custom_description=data.description,
         config={
             "private_role_id": data.private_role_id,
             "private_channel_id": data.private_channel_id,
+            "events_url": data.events_url,
         },
     )
 
@@ -389,20 +488,21 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
 
 @router_v2.patch("/admin/communities/{community_id}")
 def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
     updated = Community.update(
         filters=(Community.id == community_id),
         name=data.name,
         external_id=data.external_id,
-        platform=CommunityPlatform(data.platform),
+        platform=CommunityPlatform(data.platform.upper()),
         url=data.url,
         tags=data.tags,
-        description=data.description,
+        custom_description=data.description if not data.resetDescription else None,
         config={
             "private_role_id": data.private_role_id,
             "private_channel_id": data.private_channel_id,
+            "events_url": data.events_url,
         },
     )
 
@@ -413,15 +513,40 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
 
 @router_v2.delete("/admin/communities/{community_id}")
 def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not user_auth.is_superuser:
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
-    deleted = Community.delete(filters=(Community.id == community_id))
+    deleted = Community.delete(id__eq=community_id)
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Community not found")
 
     return {"id": community_id, "message": "Community deleted successfully"}
+
+@router_v2.get("/admin/setup/communities/discord/")
+def discord_communities(user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    discord_communities = Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
+
+    return discord_communities
+
+@router_v2.post("/admin/setup/communities/discord/import/{community_id}")
+def discord_communities(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
+    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
+        raise HTTPException(status_code=403, detail="Not authenticated.")
+
+    updated = Community.update(
+        filters=(Community.id == community_id),
+        configured=True,
+        tags="private" if data.visibility == "PRIVATE" else "public"
+    )
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    return {"id": community_id, "message": "Community updated successfully"}
 
 app.include_router(router_v1)
 app.include_router(router_v2)
@@ -436,12 +561,27 @@ def run():
         help="Bind address (default: 0.0.0.0:8000)",
         metavar="<IP:PORT>"
     )
+    parser.add_argument(
+        "-r",
+        "--reload",
+        action="store_true",
+        help="Enable autoreload with uvicorn"
+    )
 
     args = parser.parse_args()
 
-    options = {
-        "bind": args.address,
-        "workers": (multiprocessing.cpu_count() * 2) + 1,
-        "worker_class": "uvicorn.workers.UvicornWorker",
-    }
-    StandaloneApplication(app, options).run()
+    if args.reload:
+        host, port = args.address.split(":")
+        uvicorn.run(
+            "resonite_communities.clients.api.app:app",
+            host=host,
+            port=int(port),
+            reload=True,
+        )
+    else:
+        options = {
+            "bind": args.address,
+            "workers": (multiprocessing.cpu_count() * 2) + 1,
+            "worker_class": "uvicorn.workers.UvicornWorker",
+        }
+        StandaloneApplication(app, options).run()

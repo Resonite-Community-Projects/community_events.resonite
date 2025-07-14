@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block alpine_components_head %}
+<script src="/static/js/alpine/pages/admin_users.js"></script>
+{% endblock %}
+{% block extended_head %}
+<script src="/static/js/notification.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/notification.css">
+<style>
+    .fixed-width {
+        display: inline-block;
+        width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<table class="table is-fullwidth">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th style="text-align: right;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>
+                <div class="columns">
+                    <div class="column">
+                        {% set discord = user.oauth_accounts[0].discord_account if user.oauth_accounts and user.oauth_accounts[0].discord_account else None %}
+                        <p class="is-size-5 has-text-left is-inline-block">{{ discord.name if discord else user.email }}</p>
+                    </div>
+                </div>
+            </td>
+            <td style="text-align: right;">
+
+                <div
+                    x-data="userStatusToggles({
+                        user_id: '{{ user.id }}',
+                        initialSuperuser: {{ 'true' if user.is_superuser else 'false' }},
+                        initialModerator: {{ 'true' if user.is_moderator else 'false' }},
+                        isProtected: {{ 'true' if user.is_protected else 'false' }}
+                    })"
+                >
+
+                    <label class="checkbox">
+                        <input
+                            type="checkbox"
+                            x-model="is_superuser"
+                            :disabled="isProtected"
+                            @change="updateStatus()"
+                        >
+                        Administrator
+                    </label>
+
+                    <label class="checkbox">
+                        <input
+                            type="checkbox"
+                            x-model="is_moderator"
+                            :disabled="isProtected"
+                            @change="updateStatus()"
+                        >
+                        Moderator
+                    </label>
+                </div>
+
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="notifications"></div>
+
+{% endblock content %}

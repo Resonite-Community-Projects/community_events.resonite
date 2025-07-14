@@ -10,29 +10,34 @@ from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event
+from resonite_communities.auth.db import User
 from resonite_communities.utils import Config
 
 router = APIRouter()
 
-@router.get("/admin/events")
+@router.get("/admin/users")
 async def get_communities(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
 
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
+    if not user_auth or not user_auth.is_superuser:
         return RedirectResponse(url="/")
 
-    # Only get Resonite events
-    platform_filter = Event.tags.ilike('%resonite%')
+    from sqlalchemy import select, create_engine
+    from sqlmodel import Session
 
-    # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
-    # If end_time is available, it will be used; otherwise, fallback to start_time.
-    time_filter = case(
-        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
-        else_=Event.start_time  # Otherwise, fallback to start_time
-    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+    engine = create_engine(Config.DATABASE_URL, echo=False)
 
+    from sqlalchemy.orm import joinedload
+    from resonite_communities.auth.db import OAuthAccount
 
-    events = Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
-    #events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
+    with Session(engine) as session:
+        instances = []
+        query = select(User).options(joinedload(User.oauth_accounts).joinedload(OAuthAccount.discord_account))
+        print(query)
+
+        rows = session.exec(query).unique().all()
+        for row in rows:
+            instances.append(row[0])
+        users = instances
 
     try:
         api_url = Config.PUBLIC_DOMAIN[0]
@@ -44,11 +49,14 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     else:
         api_url = f"https://{api_url}"
 
-    return templates.TemplateResponse("admin/events.html", {
+    for user in users:
+        print(user.oauth_accounts[0].discord_account.name)
+
+    return templates.TemplateResponse("admin/users.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
         "api_url": Config.PUBLIC_DOMAIN,
-        "events": events,
+        "users": users,
         "request": request,
     })
 

@@ -1,24 +1,14 @@
 {% extends "admin/base.html" %}
+{% block alpine_components_head %}
+<script src="/static/js/alpine/pages/admin_events.js"></script>
+{% endblock %}
 {% block extended_head %}
+<script src="/static/js/notification.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/notification.css">
 <style>
     .fixed-width {
         display: inline-block;
         width: 150px;
-    }
-
-    #notifications {
-        position: fixed;
-        bottom: 20px;
-        width: 250px;
-        right: 19px;
-    }
-
-    .notification {
-        margin: 5px 0;
-    }
-
-    .notification ul {
-        list-style: initial;
     }
 </style>
 {% endblock %}
@@ -61,22 +51,22 @@
             </td>
             <td style="text-align: right;">
                 <div>
-                    <div class="dropdown">
+                    <div class="dropdown" x-data="{ ...eventStatusDropdown(), open: false }" @click.outside="open = false" :class="{ 'is-active': open }">
                         <div class="dropdown-trigger">
-                            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                                <span>{{ event.status.value }}</span>
+                            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu" @click="open = ! open">
+                                <span x-ref="statusText">{{ event.status.value }}</span>
                                 <span class="icon is-small">
                                     <i class="fas fa-angle-down" aria-hidden="true"></i>
                                 </span>
                             </button>
                         </div>
-                        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                        <div class="dropdown-menu" role="menu">
                             <div class="dropdown-content">
-                                    <a class="dropdown-item" data-status="CANCELED" data-event_id="{{ event.id }}" >CANCELED</a>
-                                    <a class="dropdown-item" data-status="ACTIVE" data-event_id="{{ event.id }}" >ACTIVE</a>
-                                    <a class="dropdown-item" data-status="PENDING" data-event_id="{{ event.id }}" >PENDING</a>
-                                    <a class="dropdown-item" data-status="READY" data-event_id="{{ event.id }}" >READY</a>
-                                    <a class="dropdown-item" data-status="COMPLETED" data-event_id="{{ event.id }}" >COMPLETED</a>
+                                    <a class="dropdown-item" data-status="CANCELED" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'CANCELED'); open = false">CANCELED</a>
+                                    <a class="dropdown-item" data-status="ACTIVE" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'ACTIVE'); open = false">ACTIVE</a>
+                                    <a class="dropdown-item" data-status="PENDING" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'PENDING'); open = false">PENDING</a>
+                                    <a class="dropdown-item" data-status="READY" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'READY'); open = false">READY</a>
+                                    <a class="dropdown-item" data-status="COMPLETED" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'COMPLETED'); open = false">COMPLETED</a>
                             </div>
                         </div>
                     </div>
@@ -87,136 +77,6 @@
     </tbody>
 </table>
 
-<div id="notifications">
-
-</div>
-
-<script>
-    // Event status dropdown control
-    document.addEventListener('DOMContentLoaded', () => {
-        const dropdownTriggers = document.querySelectorAll('.dropdown-trigger')
-
-        dropdownTriggers.forEach(trigger => {
-            const dropdown = trigger.closest('.dropdown');
-
-            // Toggle dropdown
-            trigger.addEventListener('click', () => {
-                dropdown.classList.toggle('is-active');
-            });
-        });
-
-        // Exit dropdown
-        document.addEventListener('click', (event) => {
-            const dropdowns = document.querySelectorAll('.dropdown');
-            dropdowns.forEach(dropdown => {
-                if (!dropdown.contains(event.target)) {
-                    dropdown.classList.remove('is-active');
-                }
-            });
-        });
-    })
-</script>
-
-<script>
-    // Handle event status change
-
-    function createNotification(message, type = 'is-info', result_detail = []) {
-        const notificationsContainer = document.getElementById('notifications');
-
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-
-        const deleteButton = document.createElement('button')
-        deleteButton.className = 'delete';
-        deleteButton.addEventListener('click', () => {
-            notification.remove();
-        });
-
-        notification.appendChild(deleteButton);
-
-        notification.appendChild(document.createTextNode(message));
-
-        if (result_detail && Array.isArray(result_detail)) {
-            const errorList = document.createElement('ul');
-
-            result_detail.forEach(error => {
-                console.log(error)
-                const listItem = document.createElement('li');
-                listItem.textContent = error;
-                errorList.appendChild(listItem);
-            });
-            notification.appendChild(errorList);
-        }
-
-        notificationsContainer.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 5000);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        (document.querySelectorAll('.dropdown-item[data-status]') || []).forEach(($item) => {
-            $item.addEventListener('click', async () => {
-                const status = $item.dataset.status;
-                const event_id =$item.dataset.event_id;
-
-                console.log('Status selected: ', status);
-                console.log('For event: ', event_id);
-
-                const dropdown = $item.closest('.dropdown');
-
-                dropdown.classList.remove('is-active');
-
-                try {
-                    const response = await fetch('/v2/admin/events/update_status', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            id: event_id,
-                            status: status,
-                        })
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Status updated successfully', result);
-                        createNotification('Status update successfully', 'is-success');
-                        const statusSpan = dropdown.querySelector('.dropdown-trigger span')
-
-                        if (['CANCELED', 'ACTIVE', 'PENDING', 'READY', 'COMPLETED'].includes(result.status)) {
-                            statusSpan.textContent = result.status;
-                        } else {
-                            console.log('Invalid status received:', result.status);
-                            createNotification(`Failed to update status: Invalid status '${result.status || 'None'}'`, 'is-danger');
-                        }
-                    } else {
-                        const result = await response.json();
-                        console.log('Failed to update status:', result);
-
-                        if (result.detail && Array.isArray(result.detail)) {
-                            const errorMessages = result.detail.map(error => {
-                                if (typeof error === 'string') {
-                                    return error;
-                                } else if (error.msg) {
-                                    return error.msg;
-                                } else {
-                                    return JSON.stringify(error);
-                                }
-                            });
-                            createNotification(`Failed to update status:`, 'is-danger', errorMessages);
-                        } else {
-                            createNotification(`Failed to update status: ${result.detail || 'Unknown error'}`, 'is-danger');
-                        }
-                    }
-                } catch (error) {
-                    createNotification('An unexpected error occurred. Please try again later.', 'is-danger');
-                }
-            });
-        });
-    });
-</script>
+<div id="notifications"></div>
 
 {% endblock content %}

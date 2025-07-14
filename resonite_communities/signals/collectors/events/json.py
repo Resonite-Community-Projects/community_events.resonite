@@ -5,23 +5,18 @@ from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.signals.collectors.event import EventsCollector
 from resonite_communities.signals import SignalSchedulerType
-from resonite_communities.signals.signal import gen_schema
 
 
 class JSONEventsCollector(EventsCollector):
     scheduler_type = SignalSchedulerType.APSCHEDULER
     platform = CommunityPlatform.JSON
-    jschema = gen_schema(
-        title = "JSONConfig",
-        description = "The configuration of an external source in JSON.",
-        property_external_id_type = "string",
-    )
 
     def __init__(self, config, services, scheduler):
         super().__init__(config, services, scheduler)
 
     def update_communities(self):
-        for community in self.communities:
+        self.communities = []
+        for community in Community.find(platform__in=[CommunityPlatform.JSON]):
             Community.update(
                 filters=(
                     (Community.external_id == community.external_id) &
@@ -29,6 +24,7 @@ class JSONEventsCollector(EventsCollector):
                 ),
                 monitored=True,
             )
+            self.communities.append(community)
 
     def collect(self):
         self.logger.info('Update events collector from external source')

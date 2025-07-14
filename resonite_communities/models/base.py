@@ -183,7 +183,7 @@ class BaseModel(SQLModel):
                 status="active"
             )
         """
-        # TODO: this would be interesting to let the user use the _apply_filter with like a Filter object instead
+        # TODO: this would be interesting to let the user use the _apply_*_filter with like a Filter object instead
 
         fields_to_update['updated_at'] = datetime.utcnow()
         cls._validate_filter(fields_to_update)
@@ -196,6 +196,7 @@ class BaseModel(SQLModel):
             for row in rows:
                 instance = row[0]
                 for key, value in fields_to_update.items():
+                    print(f"Setting {key} = {value} (type: {type(value)})")
                     setattr(instance, key, value)
                 session.commit()
                 session.refresh(instance)
@@ -249,7 +250,9 @@ class BaseModel(SQLModel):
         cls._validate_filter(filters)
         with Session(engine) as session:
             query = select(cls)
-            query = cls._apply_filter(query, filters)
+            query = cls._apply_simple_filter(query, filters)
+            query = cls._apply_operator_filter(query, filters)
+            query = cls._apply_special_directive(query, filters)
             rows = session.exec(query).all()
             deleted = len(rows)
             for row in rows:

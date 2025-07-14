@@ -1,16 +1,29 @@
 {% extends "base.html" %}
+{% block extended_head_admin %}
+    <style>
+      .hero {
+        padding-bottom: 30px;
+      }
+    </style>
+{% endblock %}
 {% block admin_menu %}
-{% if user.is_superuser %}
+{% if user.is_superuser or user.is_moderator %}
       <aside class="menu">
         <p class="menu-label">General</p>
         <ul class="menu-list">
-          <li><a class="{{ 'is-active' if request.url.path == '/admin/communities' else '' }}" href="{{ '/admin/communities' }}">Communities</a></li>
-          <li><a class="{{ 'is-active' if request.url.path == '/admin/events' else '' }}" href="{{ '/admin/events' }}">Events</a></li>
+
         </ul>
         <p class="menu-label">Administration</p>
         <ul class="menu-list">
+          {% if user.is_superuser %}
           <li><a class="{{ 'is-active' if request.url.path == '/admin/metrics' else '' }}" href="{{ '/admin/metrics' }}">Dashboard</a></li>
+          {% endif %}
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/communities' else '' }}" href="{{ '/admin/communities' }}">Communities</a></li>
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/events' else '' }}" href="{{ '/admin/events' }}">Events</a></li>
+          {% if user.is_superuser %}
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/users' else '' }}" href="{{ '/admin/users' }}">Users</a></li>
           <li><a>Configuration</a></li>
+          {% endif %}
       </aside>
       {% endif %}
 {% endblock %}

@@ -26,7 +26,7 @@ services:
       - POSTGRES_USER=resonitecommunities
       - POSTGRES_DB=resonitecommunities
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
       interval: 1m30s
@@ -47,6 +47,8 @@ services:
       "
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
+      - "./migrations:/app/migrations"
     depends_on:
       database:
         condition: service_healthy
@@ -57,7 +59,7 @@ services:
   signals_manager:
     build: .
     restart: always
-    command: poetry run signals_manager
+    command: poetry run signals_manager --reload
     profiles:
       - manager
     depends_on:
@@ -67,13 +69,14 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
 
   api_client:
     build: .
     restart: always
     profiles:
       - client
-    command: poetry run api_client
+    command: poetry run api_client --reload
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -81,6 +84,7 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
+      - "./resonite_communities:/app/resonite_communities"
     ports:
       - '8010:8000'
     labels:
@@ -115,7 +119,7 @@ services:
     restart: always
     profiles:
       - client
-    command: poetry run web_client
+    command: poetry run web_client --reload
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -123,7 +127,7 @@ services:
         condition: service_healthy
     volumes:
       - "./config.toml:/app/config.toml"
-      - "./resonitecommunities:/app/resonitecommunities"
+      - "./resonite_communities:/app/resonite_communities"
     ports:
       - '8001:8001'
     labels:
@@ -152,8 +156,3 @@ services:
     ports:
     - "6379:6379"
     command: redis-server --save ""
-
-
-volumes:
-  postgres_data:
-    driver: local
