@@ -20,11 +20,15 @@ from resonite_communities.signals import (
     transmitters,
     SignalSchedulerType,
 )
-from resonite_communities.utils import (
-    Config,
+from resonite_communities.utils.tools import (
     Services,
     TwitchClient,
 )
+
+from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
+
+Config = ConfigManager(get_session).config
 
 from resonite_communities.utils.logger import get_logger
 
@@ -32,6 +36,8 @@ logger = get_logger('community_events')
 
 if not watchfiles:
     logger.warning("watchfiles not found. --reload option will not be available.")
+
+logger.error(Config.keys())
 
 # Clients initialization
 twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)

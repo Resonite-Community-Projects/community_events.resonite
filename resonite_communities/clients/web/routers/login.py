@@ -3,7 +3,10 @@ from starlette.responses import JSONResponse, RedirectResponse
 from fastapi_users.router.oauth import generate_state_token
 
 from resonite_communities.clients.web.auth import oauth_clients
-from resonite_communities.utils import Config
+
+from resonite_communities.utils.config import ConfigManager
+
+Config = ConfigManager().config
 
 router = APIRouter()
 

@@ -11,7 +11,11 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event
 from resonite_communities.auth.db import User
-from resonite_communities.utils import Config
+
+from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
+
+Config = ConfigManager(get_session).config
 
 router = APIRouter()
 

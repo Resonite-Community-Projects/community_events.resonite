@@ -12,7 +12,12 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 
 from resonite_communities.auth.db import User, get_user_db
-from resonite_communities.utils import get_logger, Config, is_local_env
+from resonite_communities.utils.tools import is_local_env
+from resonite_communities.utils.logger import get_logger
+
+from resonite_communities.utils.config import ConfigManager
+
+Config = ConfigManager().config
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = Config.SECRET
@@ -82,7 +87,6 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         user_data = get_current_user(access_token)
         guilds = get_user_guilds(access_token)
 
-        from resonite_communities.utils import Config
         from resonite_communities.models.community import Community, CommunityPlatform
 
         communities = {community.external_id:community.id for community in Community().find()}

@@ -14,7 +14,11 @@ from resonite_communities.models.community import *
 from resonite_communities.models.signal import *
 from resonite_communities.clients.models.metrics import *
 
-from resonite_communities.utils import Config
+from resonite_communities.utils.config import ConfigManager
+
+Config = ConfigManager().config
+
+from resonite_communities.utils.config.models import *
 
 DATABASE_URL = Config.DATABASE_URL
 

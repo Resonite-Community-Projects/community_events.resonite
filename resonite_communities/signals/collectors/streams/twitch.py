@@ -51,7 +51,7 @@ class TwitchStreamsCollector(StreamsCollector):
                     start_time=parse(broadcaster_stream['start_time']),
                     end_time=parse(broadcaster_stream['end_time']),
                     community_id=Community.find(external_id=broadcaster['config'].external_id)[0].id,
-                    tags=",".join(broadcaster['config'].tags),
+                    tags=",".join(broadcaster.get('config', {}).tags),
                     external_id=broadcaster_stream['id'],
                     scheduler_type=self.scheduler_type.name,
                     status=EventStatus.READY,

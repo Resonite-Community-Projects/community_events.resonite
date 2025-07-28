@@ -1,0 +1,175 @@
+{% extends "admin/base.html" %}
+{% block alpine_components_head %}
+<script src="/static/js/alpine/pages/admin_configuration.js"></script>
+{% endblock %}
+{% block extended_head %}
+<script src="/static/js/notification.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/notification.css">
+{% endblock %}
+
+{% block content %}
+
+<div id="notifications"></div>
+
+<section class="section">
+    <div class="container">
+
+        <form id="adminConfigForm" action="/admin/update/configuration" method="post">
+
+            {% if app_config %}
+            <div class="box">
+                <h2 class="title is-4">App Configuration</h2>
+                <div x-data="{ showPassword: {} }">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Discord Bot Token</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input class="input" :type="showPassword['discord_bot_token'] ? 'text' : 'password'" id="app_config_discord_bot_token" name="app_config_discord_bot_token" value="{{ app_config[0].discord_bot_token }}">
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button" @click="showPassword['discord_bot_token'] = !showPassword['discord_bot_token']">
+                                        <span class="icon"><i class="fas" :class="showPassword['discord_bot_token'] ? 'fa-eye-slash' : 'fa-eye'"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Ad Discord Bot Token</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input class="input" :type="showPassword['ad_discord_bot_token'] ? 'text' : 'password'" id="app_config_ad_discord_bot_token" name="app_config_ad_discord_bot_token" value="{{ app_config[0].ad_discord_bot_token }}">
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button" @click="showPassword['ad_discord_bot_token'] = !showPassword['ad_discord_bot_token']">
+                                        <span class="icon"><i class="fas" :class="showPassword['ad_discord_bot_token'] ? 'fa-eye-slash' : 'fa-eye'"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Refresh Interval</label></div>
+                        <div class="field-body"><div class="control "><input class="input" type="text" id="app_config_refresh_interval" name="app_config_refresh_interval" value="{{ app_config[0].refresh_interval }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Public Domain</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_public_domain" name="app_config_public_domain" value="{{ app_config[0].public_domain | join(', ') }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Private Domain</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_private_domain" name="app_config_private_domain" value="{{ app_config[0].private_domain | join(', ') }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Cloudvar Resonite User</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_resonite_user" name="app_config_cloudvar_resonite_user" value="{{ app_config[0].cloudvar_resonite_user }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Cloudvar Resonite Pass</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input class="input" :type="showPassword['cloudvar_pass'] ? 'text' : 'password'" id="app_config_cloudvar_resonite_pass" name="app_config_cloudvar_resonite_pass" value="{{ app_config[0].cloudvar_resonite_pass }}">
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button" @click="showPassword['cloudvar_pass'] = !showPassword['cloudvar_pass']">
+                                        <span class="icon"><i class="fas" :class="showPassword['cloudvar_pass'] ? 'fa-eye-slash' : 'fa-eye'"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Cloudvar Base Name</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_base_name" name="app_config_cloudvar_base_name" value="{{ app_config[0].cloudvar_base_name }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Cloudvar General Name</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_general_name" name="app_config_cloudvar_general_name" value="{{ app_config[0].cloudvar_general_name }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Facet URL</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_facet_url" name="app_config_facet_url" value="{{ app_config[0].facet_url }}"></div></div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="box" x-data="adminConfiguration" data-monitored-config='{{ monitored_config | tojson | safe }}'>
+                <h2 class="title is-4">Monitored Domains</h2>
+                <template x-for="(domain, index) in domains" :key="domain.id || `new-${index}`">
+                    <div class="box">
+                        <h3 class="title is-5">Domain ID: <span x-text="domain.id || 'New'"></span></h3>
+                        <div class="field">
+                            <label class="label">URL</label>
+                            <div class="control">
+                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_url`" :name="`monitored_config_${domain.id || `new-${index}`}_url`" x-model="domain.url">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_status`" :name="`monitored_config_${domain.id || `new-${index}`}_status`" x-model="domain.status">
+                            </div>
+                        </div>
+                        <button type="button" @click="removeDomain(index)" class="button is-danger">Remove</button>
+                    </div>
+                </template>
+                <button type="button" @click="addDomain()" class="button is-success">Add New Domain</button>
+            </div>
+
+            {% if twitch_config %}
+            <div class="box">
+                <h2 class="title is-4">Twitch Configuration</h2>
+                <div x-data="{ showPassword: {} }">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Client ID</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_client_id" name="twitch_config_client_id" value="{{ twitch_config[0].client_id }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Secret</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input class="input" :type="showPassword['twitch_secret'] ? 'text' : 'password'" id="twitch_config_secret" name="twitch_config_secret" value="{{ twitch_config[0].secret }}">
+                                </div>
+                                <div class="control">
+                                    <button type="button" class="button" @click="showPassword['twitch_secret'] = !showPassword['twitch_secret']">
+                                        <span class="icon"><i class="fas" :class="showPassword['twitch_secret'] ? 'fa-eye-slash' : 'fa-eye'"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Game ID</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_game_id" name="twitch_config_game_id" value="{{ twitch_config[0].game_id }}"></div></div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Account Name</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_account_name" name="twitch_config_account_name" value="{{ twitch_config[0].account_name }}"></div></div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="field">
+                <div class="control">
+                    <button type="submit" class="button is-primary">Save Configuration</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock content %}

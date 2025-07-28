@@ -9,15 +9,19 @@ from fastapi.staticfiles import StaticFiles
 from resonite_communities.auth.users import fastapi_users, auth_backend
 from resonite_communities.clients.web.auth import discord_oauth
 from resonite_communities.clients import StandaloneApplication
-from resonite_communities.utils import Config
 from resonite_communities.clients.web.routers import (
     main,
     login,
     logout,
 )
-from resonite_communities.clients.web.routers.admin import metrics, events, communities, users
+from resonite_communities.clients.web.routers.admin import metrics, events, communities, users, configuration
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
+
+from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
+
+Config = ConfigManager(get_session).config
 
 app = FastAPI()
 app.secret = Config.SECRET
@@ -37,13 +41,14 @@ app.include_router(metrics.router)
 app.include_router(events.router)
 app.include_router(users.router)
 app.include_router(communities.router)
+app.include_router(configuration.router)
 
 app.include_router(
     fastapi_users.get_oauth_router(
         discord_oauth,
         auth_backend,
         Config.SECRET,
-        redirect_url=Config.Discord.client.redirect_uri
+        redirect_url=Config.DISCORD_REDIRECT_URL
     ),
     prefix="/auth/discord",
     tags=["auth"],

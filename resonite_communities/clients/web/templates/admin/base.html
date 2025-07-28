@@ -28,7 +28,7 @@
           <li><a class="{{ 'is-active' if request.url.path == '/admin/events' else '' }}" href="{{ '/admin/events' }}">Events</a></li>
           {% if user.is_superuser %}
           <li><a class="{{ 'is-active' if request.url.path == '/admin/users' else '' }}" href="{{ '/admin/users' }}">Users</a></li>
-          <li><a>Configuration</a></li>
+          <li><a class="{{ 'is-active' if request.url.path == '/admin/configuration' else '' }}" href="{{ '/admin/configuration' }}">Configuration</a></li>
           {% endif %}
       </aside>
       {% endif %}

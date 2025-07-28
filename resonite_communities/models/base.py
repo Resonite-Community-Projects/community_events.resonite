@@ -10,7 +10,10 @@ from sqlmodel import Session, SQLModel
 
 
 from resonite_communities.utils.logger import get_logger
-from resonite_communities.utils import Config
+
+from resonite_communities.utils.config import ConfigManager
+
+Config = ConfigManager().config
 
 engine = create_engine(Config.DATABASE_URL, echo=False)
 

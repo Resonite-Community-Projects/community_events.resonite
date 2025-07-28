@@ -1,4 +1,4 @@
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 import uuid
 
 from fastapi import Depends
@@ -11,7 +11,9 @@ from fastapi_users_db_sqlalchemy.access_token import (
     SQLAlchemyBaseAccessTokenTableUUID,
 )
 
-from resonite_communities.utils import Config
+from resonite_communities.utils.config import ConfigManager
+
+Config = ConfigManager().config
 
 class BaseModel(DeclarativeBase):
     pass
@@ -43,21 +45,27 @@ class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, BaseModel):
     pass
 
 
-engine = create_async_engine(Config.DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://'), echo=False)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+engine_async = create_async_engine(Config.DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://'), echo=False)
+async_session_maker = async_sessionmaker(engine_async, expire_on_commit=False)
 
-#from sqlalchemy import create_engine
-#from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 
 
-#engine = create_engine(Config.DATABASE_URL, echo=False)
-#SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = create_engine(Config.DATABASE_URL.replace("postgresql+asyncpg", "postgresql"), echo=False)
+session_maker = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+from resonite_communities.utils.logger import get_logger
+
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
 
+def get_session() -> Generator[Session, None]:
+    with session_maker() as session:
+        yield session
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User, OAuthAccount)

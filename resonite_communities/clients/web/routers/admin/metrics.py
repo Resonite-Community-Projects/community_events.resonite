@@ -12,7 +12,11 @@ from resonite_communities.clients.models.metrics import Metrics
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
-from resonite_communities.utils import Config
+
+from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
+
+Config = ConfigManager(get_session).config
 
 router = APIRouter()
 
@@ -57,6 +61,7 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
             _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
 
         metrics_domains = {}
+
         for monitored_url in Config.MONITORED_DOMAINS:
             if monitored_url['url'] in _metrics_domains:
                 metrics_domains[monitored_url['url']] = _metrics_domains[monitored_url['url']]

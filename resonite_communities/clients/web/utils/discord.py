@@ -1,6 +1,6 @@
 import requests
 
-from resonite_communities.utils import get_logger
+from resonite_communities.utils.logger import get_logger
 
 
 def get_current_user(access_token):
