@@ -17,6 +17,14 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+          SECRET: ${{ secrets.SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          CACHE_URL: ${{ env.CACHE_URL }}
+          DISCORD_CLIENT_ID: ${{ env.DISCORD_CLIENT_ID }}
+          DISCORD_REDIRECT_URL: ${{ env.DISCORD_REDIRECT_URL }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
@@ -24,6 +32,14 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+          SECRET: ${{ secrets.SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          CACHE_URL: ${{ env.CACHE_URL }}
+          DISCORD_CLIENT_ID: ${{ env.DISCORD_CLIENT_ID }}
+          DISCORD_REDIRECT_URL: ${{ env.DISCORD_REDIRECT_URL }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
@@ -31,4 +47,12 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+          SECRET: ${{ secrets.SECRET }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          CACHE_URL: ${{ env.CACHE_URL }}
+          DISCORD_CLIENT_ID: ${{ env.DISCORD_CLIENT_ID }}
+          DISCORD_REDIRECT_URL: ${{ env.DISCORD_REDIRECT_URL }}
         run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
