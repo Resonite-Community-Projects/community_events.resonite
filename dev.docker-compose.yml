@@ -157,9 +157,9 @@ services:
       - SECRET_FILE=/run/secrets/secret
       - SECRET_KEY_FILE=/run/secrets/secret_key
       - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
-      - CACHE_URL=${{ env.CACHE_URL }}
-      - DISCORD_CLIENT_ID=${{ env.DISCORD_CLIENT_ID }}
-      - DISCORD_REDIRECT_URL=${{ env.DISCORD_REDIRECT_URL }}
+      - CACHE_URL=${CACHE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
     labels:
       - traefik.enable=true
       - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
