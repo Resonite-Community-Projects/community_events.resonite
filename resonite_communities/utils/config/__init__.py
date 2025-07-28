@@ -28,19 +28,28 @@ class ConfigManager:
             'DISCORD_REDIRECT_URL',
             'SENTRY_DSN',
         ]
+        config = {}
         missing_vars = []
 
         for var in required_vars:
-            if os.getenv(var) is None:
+            value = None
+            file_path = os.getenv(f"{var}_FILE")
+
+            if file_path and os.path.isfile(file_path):
+                with open(file_path, 'r') as f:
+                    value = f.read().strip()
+            else:
+                value = os.getenv(var)
+
+            if value is None:
                 missing_vars.append(var)
+            else:
+                config[var] = value
 
         if missing_vars:
             raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-        return {
-            var: os.environ[var]
-            for var in required_vars
-        }
+        return config
 
     def _load_db_config(self):
         config = {}

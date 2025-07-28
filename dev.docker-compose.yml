@@ -52,6 +52,15 @@ services:
       "
     volumes:
       - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${{ env.CACHE_URL }}
+      - DISCORD_CLIENT_ID=${{ env.DISCORD_CLIENT_ID }}
+      - DISCORD_REDIRECT_URL=${{ env.DISCORD_REDIRECT_URL }}
     depends_on:
       database:
         condition: service_healthy
@@ -70,8 +79,15 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${{ env.CACHE_URL }}
+      - DISCORD_CLIENT_ID=${{ env.DISCORD_CLIENT_ID }}
+      - DISCORD_REDIRECT_URL=${{ env.DISCORD_REDIRECT_URL }}
 
   api_client:
     build: .
@@ -84,10 +100,17 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
     ports:
       - '8000:8000'
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${{ env.CACHE_URL }}
+      - DISCORD_CLIENT_ID=${{ env.DISCORD_CLIENT_ID }}
+      - DISCORD_REDIRECT_URL=${{ env.DISCORD_REDIRECT_URL }}
     labels:
       - traefik.enable=true
 
@@ -126,10 +149,17 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
     ports:
       - '8001:8001'
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${{ env.CACHE_URL }}
+      - DISCORD_CLIENT_ID=${{ env.DISCORD_CLIENT_ID }}
+      - DISCORD_REDIRECT_URL=${{ env.DISCORD_REDIRECT_URL }}
     labels:
       - traefik.enable=true
       - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
@@ -166,6 +196,16 @@ secrets:
     environment: POSTGRES_USER
   postgres_db:
     environment: POSTGRES_DB
+  database_url:
+    environment: DATABASE_URL
+  discord_secret:
+    environment: DISCORD_SECRET
+  secret:
+    environment: SECRET
+  secret_key:
+    environment: SECRET_KEY
+  sentry_dsn:
+    environment: SENTRY_DSN
 
 volumes:
   postgres_data:
