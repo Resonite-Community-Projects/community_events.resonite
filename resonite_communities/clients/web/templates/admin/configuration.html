@@ -5,6 +5,15 @@
 {% block extended_head %}
 <script src="/static/js/notification.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/notification.css">
+<style>
+.field.has-addons .control {
+    display: flex;
+    align-items: center;
+}
+.field-info {
+    flex-direction: column;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,6 +24,7 @@
     <div class="container">
 
         <form id="adminConfigForm" action="/admin/update/configuration" method="post">
+            <span class="is-size-4 has-text-danger">Application must be restarted if values are changed!</span>
 
             {% if app_config %}
             <div class="box">
@@ -24,7 +34,7 @@
                         <div class="field-label is-normal">
                             <label class="label">Discord Bot Token</label>
                         </div>
-                        <div class="field-body">
+                        <div class="field-info field-body">
                             <div class="field has-addons">
                                 <div class="control is-expanded">
                                     <input class="input" :type="showPassword['discord_bot_token'] ? 'text' : 'password'" id="app_config_discord_bot_token" name="app_config_discord_bot_token" value="{{ app_config[0].discord_bot_token }}">
@@ -35,13 +45,14 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
                         </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label">Ad Discord Bot Token</label>
                         </div>
-                        <div class="field-body">
+                        <div class="field-info field-body">
                             <div class="field has-addons">
                                 <div class="control is-expanded">
                                     <input class="input" :type="showPassword['ad_discord_bot_token'] ? 'text' : 'password'" id="app_config_ad_discord_bot_token" name="app_config_ad_discord_bot_token" value="{{ app_config[0].ad_discord_bot_token }}">
@@ -52,6 +63,7 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
                         </div>
                     </div>
                     <div class="field is-horizontal">
@@ -68,13 +80,16 @@
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Cloudvar Resonite User</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_resonite_user" name="app_config_cloudvar_resonite_user" value="{{ app_config[0].cloudvar_resonite_user }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="app_config_cloudvar_resonite_user" name="app_config_cloudvar_resonite_user" value="{{ app_config[0].cloudvar_resonite_user }}"></div>
+                            <!-- <span class="is-size-7 has-text-warning">Value not in use, please ignore!</span> -->
+                        </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label">Cloudvar Resonite Pass</label>
                         </div>
-                        <div class="field-body">
+                        <div class="field-info field-body">
                             <div class="field has-addons">
                                 <div class="control is-expanded">
                                     <input class="input" :type="showPassword['cloudvar_pass'] ? 'text' : 'password'" id="app_config_cloudvar_resonite_pass" name="app_config_cloudvar_resonite_pass" value="{{ app_config[0].cloudvar_resonite_pass }}">
@@ -85,15 +100,22 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- <span class="is-size-7 has-text-warning">Value not in use, please ignore!</span> -->
                         </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Cloudvar Base Name</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_base_name" name="app_config_cloudvar_base_name" value="{{ app_config[0].cloudvar_base_name }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="app_config_cloudvar_base_name" name="app_config_cloudvar_base_name" value="{{ app_config[0].cloudvar_base_name }}"></div>
+                            <!-- <span class="is-size-7 has-text-warning">Value not in use, please ignore!</span> -->
+                        </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Cloudvar General Name</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_cloudvar_general_name" name="app_config_cloudvar_general_name" value="{{ app_config[0].cloudvar_general_name }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="app_config_cloudvar_general_name" name="app_config_cloudvar_general_name" value="{{ app_config[0].cloudvar_general_name }}"></div>
+                            <!-- <span class="is-size-7 has-text-warning">Value not in use, please ignore!</span> -->
+                        </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Facet URL</label></div>
@@ -132,13 +154,16 @@
                 <div x-data="{ showPassword: {} }">
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Client ID</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_client_id" name="twitch_config_client_id" value="{{ twitch_config[0].client_id }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="twitch_config_client_id" name="twitch_config_client_id" value="{{ twitch_config[0].client_id }}"></div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
+                        </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
                             <label class="label">Secret</label>
                         </div>
-                        <div class="field-body">
+                        <div class="field-info field-body">
                             <div class="field has-addons">
                                 <div class="control is-expanded">
                                     <input class="input" :type="showPassword['twitch_secret'] ? 'text' : 'password'" id="twitch_config_secret" name="twitch_config_secret" value="{{ twitch_config[0].secret }}">
@@ -149,15 +174,22 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
                         </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Game ID</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_game_id" name="twitch_config_game_id" value="{{ twitch_config[0].game_id }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="twitch_config_game_id" name="twitch_config_game_id" value="{{ twitch_config[0].game_id }}"></div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
+                        </div>
                     </div>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Account Name</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="twitch_config_account_name" name="twitch_config_account_name" value="{{ twitch_config[0].account_name }}"></div></div>
+                        <div class="field-info field-body">
+                            <div class="control"><input class="input" type="text" id="twitch_config_account_name" name="twitch_config_account_name" value="{{ twitch_config[0].account_name }}"></div>
+                            <!-- <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span> -->
+                        </div>
                     </div>
                 </div>
             </div>
