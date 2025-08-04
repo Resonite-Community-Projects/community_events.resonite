@@ -9,8 +9,6 @@ class AppConfig(SQLModel, table=True):
     discord_bot_token: str = Field()
     ad_discord_bot_token: str = Field()
     refresh_interval: int = Field(default=2)
-    public_domain: str = Field()
-    private_domain: str = Field()
     cloudvar_resonite_user: str = Field()
     cloudvar_resonite_pass: str = Field()
     cloudvar_base_name: str = Field()

@@ -50,8 +50,6 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
     app_config_objects = load(AppConfig)
     app_config = []
     for config in app_config_objects:
-        config.public_domain = config.public_domain.split(',')
-        config.private_domain = config.private_domain.split(',')
         app_config.append(config)
     monitored_config_objects = load(MonitoredDomain)
     monitored_config = [

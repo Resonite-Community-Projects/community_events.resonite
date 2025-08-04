@@ -80,8 +80,6 @@ def migrate_configuration_to_db():
                     'DISCORD_BOT_TOKEN': 'discord_bot_token',
                     'AD_DISCORD_BOT_TOKEN': 'ad_discord_bot_token',
                     'REFRESH_INTERVAL': 'REFRESH_INTERVAL',
-                    'PUBLIC_DOMAIN': 'PUBLIC_DOMAIN',
-                    'PRIVATE_DOMAIN': 'PRIVATE_DOMAIN',
                     'CLOUDVAR_RESONITE_USER': 'CLOUDVAR_RESONITE_USER',
                     'CLOUDVAR_RESONITE_PASS': 'CLOUDVAR_RESONITE_PASS',
                     'CLOUDVAR_BASE_NAME': 'CLOUDVAR_BASE_NAME',
@@ -91,10 +89,7 @@ def migrate_configuration_to_db():
 
                 if key in field_mapping:
                     db_field = field_mapping[key]
-                    if key in ['PUBLIC_DOMAIN', 'PRIVATE_DOMAIN']:
-                        app_config_data[db_field] = ",".join(value)
-                    else:
-                        app_config_data[db_field] = value
+                    app_config_data[db_field] = value
 
             if app_config_data:
                 columns = ', '.join(app_config_data.keys())
@@ -116,8 +111,6 @@ def upgrade() -> None:
         sa.Column('discord_bot_token', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('ad_discord_bot_token', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('refresh_interval', sa.Integer(), nullable=False),
-        sa.Column('public_domain', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column('private_domain', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('cloudvar_resonite_user', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('cloudvar_resonite_pass', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column('cloudvar_base_name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),

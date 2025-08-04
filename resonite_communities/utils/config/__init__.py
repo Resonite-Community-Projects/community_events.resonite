@@ -19,6 +19,8 @@ class ConfigManager:
 
     def _load_infrastructure_config(self):
         required_vars = [
+            'PUBLIC_DOMAIN',
+            'PRIVATE_DOMAIN',
             'DATABASE_URL',
             'CACHE_URL',
             'SECRET_KEY',
@@ -49,6 +51,10 @@ class ConfigManager:
         if missing_vars:
             raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
+
+        config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
+        config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',')
+
         return config
 
     def _load_db_config(self):
@@ -63,8 +69,6 @@ class ConfigManager:
                     'DISCORD_BOT_TOKEN': app_config.discord_bot_token,
                     'AD_DISCORD_BOT_TOKEN': app_config.ad_discord_bot_token,
                     'REFRESH_INTERVAL': app_config.refresh_interval,
-                    'PUBLIC_DOMAIN': app_config.public_domain.split(','),
-                    'PRIVATE_DOMAIN': app_config.private_domain.split(','),
                     'CLOUDVAR_RESONITE_USER': app_config.cloudvar_resonite_user,
                     'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass,
                     'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name,
