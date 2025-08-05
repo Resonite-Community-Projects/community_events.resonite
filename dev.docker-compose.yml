@@ -67,6 +67,8 @@ services:
       - CACHE_URL=${CACHE_URL}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     depends_on:
       database:
         condition: service_healthy
@@ -100,6 +102,8 @@ services:
       - CACHE_URL=${CACHE_URL}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
 
   api_client:
     build: .
@@ -129,6 +133,8 @@ services:
       - CACHE_URL=${CACHE_URL}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
 
@@ -184,6 +190,8 @@ services:
       - CACHE_URL=${CACHE_URL}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
       - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
