@@ -56,7 +56,7 @@ Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOK
 Services.discord.client = discord_client
 Services.twitch = twitch_client
 
-if "SENTRY_DSN" in Config:
+if Config.SENTRY_DSN:
 
     sentry_sdk.init(
         dsn=Config.SENTRY_DSN,
