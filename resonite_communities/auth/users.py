@@ -17,7 +17,7 @@ from resonite_communities.utils.logger import get_logger
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config
+Config = ConfigManager().config()
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = Config.SECRET

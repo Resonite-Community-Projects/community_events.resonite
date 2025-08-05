@@ -6,7 +6,7 @@ from resonite_communities.clients.web.auth import oauth_clients
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config
+Config = ConfigManager().config()
 
 router = APIRouter()
 

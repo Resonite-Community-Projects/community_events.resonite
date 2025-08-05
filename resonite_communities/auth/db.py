@@ -13,7 +13,7 @@ from fastapi_users_db_sqlalchemy.access_token import (
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config
+Config = ConfigManager().config()
 
 class BaseModel(DeclarativeBase):
     pass

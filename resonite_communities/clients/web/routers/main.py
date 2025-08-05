@@ -15,7 +15,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+config_manager = ConfigManager(get_session)
 
 router = APIRouter()
 
@@ -82,7 +82,7 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
         request = request,
         name = 'index.html',
         context = {
-            'facet_url': Config.FACET_URL,
+            'facet_url': config_manager.db_config().FACET_URL,
             'events': events,
             'communities' : communities,
             'streams' : streams,

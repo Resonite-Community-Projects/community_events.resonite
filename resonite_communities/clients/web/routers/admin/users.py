@@ -15,7 +15,7 @@ from resonite_communities.auth.db import User
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+Config = ConfigManager(get_session).config()
 
 router = APIRouter()
 

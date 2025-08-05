@@ -16,7 +16,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+config_manager = ConfigManager(get_session)
 
 router = APIRouter()
 
@@ -61,10 +61,11 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
             _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
 
         metrics_domains = {}
+        Config = config_manager.db_config()
 
         for monitored_url in Config.MONITORED_DOMAINS:
-            if monitored_url['url'] in _metrics_domains:
-                metrics_domains[monitored_url['url']] = _metrics_domains[monitored_url['url']]
+            if monitored_url.url in _metrics_domains:
+                metrics_domains[monitored_url.url] = _metrics_domains[monitored_url.url]
 
         versions_result = (
             await session.execute(

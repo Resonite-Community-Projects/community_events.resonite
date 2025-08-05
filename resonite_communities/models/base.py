@@ -13,7 +13,7 @@ from resonite_communities.utils.logger import get_logger
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config
+Config = ConfigManager().config()
 
 engine = create_engine(Config.DATABASE_URL, echo=False)
 

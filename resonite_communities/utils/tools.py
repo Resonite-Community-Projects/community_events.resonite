@@ -9,7 +9,7 @@ from resonite_communities.utils.text_api import ekey, separator
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+config_manager = ConfigManager(get_session)
 
 from resonite_communities.utils.logger import get_logger
 
@@ -26,6 +26,8 @@ class TwitchClient:
 
         self._auth()
         self.broadcasters = {}
+        self.logger.error(client_id)
+        self.logger.error(secret)
 
     def _parse_error(self, response):
         try:
@@ -87,6 +89,7 @@ class TwitchClient:
         return broadcaster_info
 
     def get_schedule(self, broadcaster):
+        Config = config_manager.db_config()
         events = []
         if not self.ready:
             return events
@@ -118,6 +121,7 @@ Services.discord = edict()
 
 def check_is_local_env():
     """Check if we are in the development environment based on the local domain."""
+    Config = config_manager.db_config()
     public_domains = Config.PUBLIC_DOMAIN
     if not isinstance(public_domains, list):
         public_domains = [public_domains]

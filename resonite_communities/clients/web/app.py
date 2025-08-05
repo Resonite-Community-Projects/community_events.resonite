@@ -21,7 +21,7 @@ from resonite_communities.clients.utils.geoip import get_geoip_db_path
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+Config = ConfigManager(get_session).config()
 
 app = FastAPI()
 app.secret = Config.SECRET

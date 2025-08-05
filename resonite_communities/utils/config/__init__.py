@@ -13,9 +13,9 @@ class ConfigManager:
     def __init__(self, db_session=None):
         self.db_session = db_session
         self.infrastructure_config = self._load_infrastructure_config()
-        self.db_config = self._load_db_config() if db_session else {}
-        self.config = self._build_legacy_config()
-        self.logger = get_logger('ss')
+        self.db_config = self._load_db_config
+        self.config = self._build_legacy_config
+        self.logger = get_logger(__name__)
 
     def _load_infrastructure_config(self):
         required_vars = [
@@ -58,7 +58,10 @@ class ConfigManager:
         return config
 
     def _load_db_config(self):
-        config = {}
+        config = self.infrastructure_config.copy()
+
+        if not self.db_session:
+            return edict(config)
 
         stmt = select(AppConfig)
         for session in self.db_session():
@@ -93,12 +96,12 @@ class ConfigManager:
                     'account_name': twitch_config.account_name
                 }
 
-        return config
+        return edict(config)
 
     def _build_legacy_config(self):
         config = self.infrastructure_config.copy()
 
-        config.update(self.db_config)
+        config.update(self.db_config())
 
         Config = edict(config)
         Config.clients = edict()
@@ -128,9 +131,6 @@ class ConfigManager:
             session.commit()
             session.refresh(app_config)
 
-            self.db_config = self._load_db_config()
-            self.config = self._build_legacy_config()
-
     def update_monitored_domain(self, domain_id: int, **kwargs):
         for session in self.db_session():
             stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id)
@@ -144,18 +144,12 @@ class ConfigManager:
                 session.commit()
                 session.refresh(monitored_domain)
 
-            self.db_config = self._load_db_config()
-            self.config = self._build_legacy_config()
-
     def add_monitored_domain(self, url: str, status: str):
         for session in self.db_session():
             new_domain = MonitoredDomain(url=url, status=status)
             session.add(new_domain)
             session.commit()
             session.refresh(new_domain)
-
-            self.db_config = self._load_db_config()
-            self.config = self._build_legacy_config()
 
     def delete_monitored_domain(self, domain_id: int):
         for session in self.db_session():
@@ -165,9 +159,6 @@ class ConfigManager:
             if domain_to_delete:
                 session.delete(domain_to_delete)
                 session.commit()
-
-            self.db_config = self._load_db_config()
-            self.config = self._build_legacy_config()
 
     def update_twitch_config(self, **kwargs):
         for session in self.db_session():
@@ -187,5 +178,3 @@ class ConfigManager:
                 session.commit()
                 session.refresh(twitch_config)
 
-            self.db_config = self._load_db_config()
-            self.config = self._build_legacy_config()

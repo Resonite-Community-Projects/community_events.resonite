@@ -30,7 +30,7 @@ from fastapi_cache.coder import PickleCoder
 
 from redis import asyncio as aioredis
 
-Config = ConfigManager(get_session).config
+Config = ConfigManager(get_session).config()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:

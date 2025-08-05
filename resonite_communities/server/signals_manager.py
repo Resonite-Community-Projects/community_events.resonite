@@ -28,7 +28,7 @@ from resonite_communities.utils.tools import (
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config
+Config = ConfigManager(get_session).config()
 
 from resonite_communities.utils.logger import get_logger
 
