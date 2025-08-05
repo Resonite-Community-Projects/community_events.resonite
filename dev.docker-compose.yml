@@ -52,6 +52,12 @@ services:
       "
     volumes:
       - "/home/root_man/.config/dev.community_events.resonite.toml:/app/config.toml"
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
     environment:
       - DATABASE_URL_FILE=/run/secrets/database_url
       - DISCORD_SECRET_FILE=/run/secrets/discord_secret
@@ -79,6 +85,12 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
     environment:
       - DATABASE_URL_FILE=/run/secrets/database_url
       - DISCORD_SECRET_FILE=/run/secrets/discord_secret
@@ -102,6 +114,12 @@ services:
         condition: service_healthy
     ports:
       - '8000:8000'
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
     environment:
       - DATABASE_URL_FILE=/run/secrets/database_url
       - DISCORD_SECRET_FILE=/run/secrets/discord_secret
@@ -151,6 +169,12 @@ services:
         condition: service_healthy
     ports:
       - '8001:8001'
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
     environment:
       - DATABASE_URL_FILE=/run/secrets/database_url
       - DISCORD_SECRET_FILE=/run/secrets/discord_secret
