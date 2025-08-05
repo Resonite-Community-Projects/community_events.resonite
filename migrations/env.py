@@ -16,7 +16,7 @@ from resonite_communities.clients.models.metrics import *
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config
+Config = ConfigManager().config()
 
 from resonite_communities.utils.config.models import *
 
