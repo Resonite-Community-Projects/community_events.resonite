@@ -52,6 +52,23 @@ services:
       "
     volumes:
       - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${CACHE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     depends_on:
       database:
         condition: service_healthy
@@ -65,13 +82,28 @@ services:
     command: poetry run signals_manager
     profiles:
       - manager
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${CACHE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     depends_on:
       migrations:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
 
   api_client:
     build: .
@@ -84,10 +116,25 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
     ports:
       - '9000:8000'
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${CACHE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
 
@@ -132,10 +179,25 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
-    volumes:
-      - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
     ports:
       - '9001:8001'
+    secrets:
+      - database_url
+      - discord_secret
+      - secret
+      - secret_key
+      - sentry_dsn
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/database_url
+      - DISCORD_SECRET_FILE=/run/secrets/discord_secret
+      - SECRET_FILE=/run/secrets/secret
+      - SECRET_KEY_FILE=/run/secrets/secret_key
+      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - CACHE_URL=${CACHE_URL}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
       - traefik.http.routers.prod_web_client.rule=Host(`resonite-communities.com`)
@@ -172,6 +234,16 @@ secrets:
     environment: POSTGRES_USER
   postgres_db:
     environment: POSTGRES_DB
+  database_url:
+    environment: DATABASE_URL
+  discord_secret:
+    environment: DISCORD_SECRET
+  secret:
+    environment: SECRET
+  secret_key:
+    environment: SECRET_KEY
+  sentry_dsn:
+    environment: SENTRY_DSN
 
 volumes:
   postgres_data:
