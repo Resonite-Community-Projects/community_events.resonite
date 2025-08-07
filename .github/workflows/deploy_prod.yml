@@ -26,6 +26,8 @@ jobs:
           CACHE_URL: ${{ vars.CACHE_URL }}
           DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
         run: docker compose -f prod.docker-compose.yml -p prod_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
@@ -41,6 +43,8 @@ jobs:
           CACHE_URL: ${{ vars.CACHE_URL }}
           DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
         run: docker compose -f prod.docker-compose.yml -p prod_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
@@ -56,4 +60,6 @@ jobs:
           CACHE_URL: ${{ vars.CACHE_URL }}
           DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
         run: docker compose -f prod.docker-compose.yml -p prod_community_eventsresonite --profile "*" up -d
