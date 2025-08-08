@@ -27,7 +27,25 @@
 
             {% if app_config %}
             <div class="box">
-                <h2 class="title is-4">App Configuration</h2>
+                <h2 class="title is-4">General Configuration</h2>
+                <div x-data="{ showPassword: {} }">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Refresh Interval</label></div>
+                        <div class="field-info field-body">
+                            <div class="control">
+                                <input class="input" type="text" id="app_config_refresh_interval" name="app_config_refresh_interval" value="{{ app_config[0].refresh_interval }}"></div>
+                                <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span>
+                            </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Facet URL</label></div>
+                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_facet_url" name="app_config_facet_url" value="{{ app_config[0].facet_url }}"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <h2 class="title is-4">Discord Configuration</h2>
                 <div x-data="{ showPassword: {} }">
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
@@ -65,14 +83,12 @@
                             <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span>
                         </div>
                     </div>
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal"><label class="label">Refresh Interval</label></div>
-                        <div class="field-info field-body">
-                            <div class="control">
-                                <input class="input" type="text" id="app_config_refresh_interval" name="app_config_refresh_interval" value="{{ app_config[0].refresh_interval }}"></div>
-                                <span class="is-size-7 has-text-danger">Application must be restarted if this value is changed!</span>
-                            </div>
-                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <h2 class="title is-4">Resonite Configuration</h2>
+                <div x-data="{ showPassword: {} }">
                     <div class="field is-horizontal">
                         <div class="field-label is-normal"><label class="label">Cloudvar Resonite User</label></div>
                         <div class="field-info field-body">
@@ -112,36 +128,10 @@
                             <span class="is-size-7 has-text-warning">Value not in use, please ignore!</span>
                         </div>
                     </div>
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal"><label class="label">Facet URL</label></div>
-                        <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_facet_url" name="app_config_facet_url" value="{{ app_config[0].facet_url }}"></div></div>
-                    </div>
                 </div>
             </div>
             {% endif %}
 
-            <div class="box" x-data="adminConfiguration" data-monitored-config='{{ monitored_config | tojson | safe }}'>
-                <h2 class="title is-4">Monitored Domains</h2>
-                <template x-for="(domain, index) in domains" :key="domain.id || `new-${index}`">
-                    <div class="box">
-                        <h3 class="title is-5">Domain ID: <span x-text="domain.id || 'New'"></span></h3>
-                        <div class="field">
-                            <label class="label">URL</label>
-                            <div class="control">
-                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_url`" :name="`monitored_config_${domain.id || `new-${index}`}_url`" x-model="domain.url">
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label class="label">Status</label>
-                            <div class="control">
-                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_status`" :name="`monitored_config_${domain.id || `new-${index}`}_status`" x-model="domain.status">
-                            </div>
-                        </div>
-                        <button type="button" @click="removeDomain(index)" class="button is-danger">Remove</button>
-                    </div>
-                </template>
-                <button type="button" @click="addDomain()" class="button is-success">Add New Domain</button>
-            </div>
 
             {% if twitch_config %}
             <div class="box">
@@ -189,6 +179,29 @@
                 </div>
             </div>
             {% endif %}
+
+            <div class="box" x-data="adminConfiguration" data-monitored-config='{{ monitored_config | tojson | safe }}'>
+                <h2 class="title is-4">Monitored Domains</h2>
+                <template x-for="(domain, index) in domains" :key="domain.id || `new-${index}`">
+                    <div class="box">
+                        <h3 class="title is-5">Domain ID: <span x-text="domain.id || 'New'"></span></h3>
+                        <div class="field">
+                            <label class="label">URL</label>
+                            <div class="control">
+                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_url`" :name="`monitored_config_${domain.id || `new-${index}`}_url`" x-model="domain.url">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <input class="input" type="text" :id="`monitored_config_${domain.id || `new-${index}`}_status`" :name="`monitored_config_${domain.id || `new-${index}`}_status`" x-model="domain.status">
+                            </div>
+                        </div>
+                        <button type="button" @click="removeDomain(index)" class="button is-danger">Remove</button>
+                    </div>
+                </template>
+                <button type="button" @click="addDomain()" class="button is-success">Add New Domain</button>
+            </div>
 
             <div class="field">
                 <div class="control">
