@@ -15,7 +15,7 @@ from resonite_communities.auth.db import User
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config()
+config_manager = ConfigManager(get_session)
 
 router = APIRouter()
 
@@ -28,7 +28,9 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
 
-    engine = create_engine(Config.DATABASE_URL, echo=False)
+    config = config_manager.db_config()
+
+    engine = create_engine(config.DATABASE_URL, echo=False)
 
     from sqlalchemy.orm import joinedload
     from resonite_communities.auth.db import OAuthAccount
@@ -44,7 +46,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
         users = instances
 
     try:
-        api_url = Config.PUBLIC_DOMAIN[0]
+        api_url = config.PUBLIC_DOMAIN[0]
     except KeyError:
         api_url = None
 
@@ -59,7 +61,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     return templates.TemplateResponse("admin/users.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
-        "api_url": Config.PUBLIC_DOMAIN,
+        "app_config": config,
         "users": users,
         "request": request,
     })

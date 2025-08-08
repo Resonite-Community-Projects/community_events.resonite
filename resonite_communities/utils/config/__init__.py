@@ -76,6 +76,7 @@ class ConfigManager:
                     'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass,
                     'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name,
                     'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name,
+                    'NORMAL_USER_LOGIN': app_config.normal_user_login,
                     'FACET_URL': app_config.facet_url,
                 })
 

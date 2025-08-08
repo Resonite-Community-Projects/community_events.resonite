@@ -75,9 +75,8 @@
                   </div>
                 </article>
               </div>
-
               <div class="column" x-data="copyFacetUrl()">
-                <button class="button is-large is-fullwidth is-dark js-copy-facet-url" @click="copyToClipboard('{{ facet_url }}')">
+                <button class="button is-large is-fullwidth is-dark js-copy-facet-url" @click="copyToClipboard('{{ app_config.FACET_URL }}')">
                   <span>Copy facet resonitedb url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>

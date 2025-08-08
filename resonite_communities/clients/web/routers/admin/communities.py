@@ -7,6 +7,12 @@ from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform
+
+from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
+
+config_manager = ConfigManager(get_session)
+
 router = APIRouter()
 
 # TODO: Look if this is still used
@@ -21,6 +27,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
 
     return templates.TemplateResponse("admin/communities.html", {
         "userlogo" : logo_base64,
+        "app_config": config_manager.db_config(),
         "user" : deepcopy(user_auth),
         "events_communities": events_communities,
         "streams_communities": streams_communities,

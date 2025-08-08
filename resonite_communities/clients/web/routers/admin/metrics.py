@@ -61,9 +61,9 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
             _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
 
         metrics_domains = {}
-        Config = config_manager.db_config()
+        config = config_manager.db_config()
 
-        for monitored_url in Config.MONITORED_DOMAINS:
+        for monitored_url in config.MONITORED_DOMAINS:
             if monitored_url.url in _metrics_domains:
                 metrics_domains[monitored_url.url] = _metrics_domains[monitored_url.url]
 
@@ -157,4 +157,5 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
         "heatmap_data": heatmap_data,
         "day_labels": day_labels,
         "hour_labels": hour_labels,
+        "app_config": config,
     })

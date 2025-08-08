@@ -14,7 +14,7 @@ from resonite_communities.models.signal import Event
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config()
+config_manager = ConfigManager(get_session)
 
 router = APIRouter()
 
@@ -38,8 +38,10 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     events = Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
     #events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
 
+    config = config_manager.db_config()
+
     try:
-        api_url = Config.PUBLIC_DOMAIN[0]
+        api_url = config.PUBLIC_DOMAIN[0]
     except KeyError:
         api_url = None
 
@@ -51,7 +53,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     return templates.TemplateResponse("admin/events.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
-        "api_url": Config.PUBLIC_DOMAIN,
+        "app_config": config,
         "events": events,
         "request": request,
     })

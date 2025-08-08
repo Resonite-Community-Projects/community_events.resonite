@@ -89,6 +89,8 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
     # Process AppConfig
     app_config_data = {}
     for key, value in form_data.items():
+        if key == 'app_config_normal_user_login':
+            value = True if value == 'ENABLED' else False
         if key.startswith("app_config_"):
             app_config_data[key.replace("app_config_", "")] = value
     if app_config_data:

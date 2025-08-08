@@ -16,8 +16,10 @@ from resonite_communities.utils.tools import is_local_env
 from resonite_communities.utils.logger import get_logger
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.auth.db import get_session
 
 Config = ConfigManager().config()
+config_manager = ConfigManager(get_session)
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = Config.SECRET
@@ -149,6 +151,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
                 await session.commit()
 
+        config_db = config_manager.db_config()
+
+        if not config_db.NORMAL_USER_LOGIN and not (user.is_superuser or user.is_moderator):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied. You must be a superuser or moderator to log in."
+            )
         return user
 
 

@@ -228,6 +228,7 @@
           </div>
         </div>
 
+        {% if app_config.NORMAL_USER_LOGIN or user.is_superuser or user.is_moderator %}
         <div class="container box user-info login is-flex">
         {% if user %}
           <div class="is-flex is-flex-direction-column m-1">
@@ -281,6 +282,7 @@
           </div>
         {% endif %}
         </div>
+        {% endif %}
 
         {% block hero_foot %}{% endblock %}
       </section>

@@ -41,6 +41,27 @@
                         <div class="field-label is-normal"><label class="label">Facet URL</label></div>
                         <div class="field-body"><div class="control"><input class="input" type="text" id="app_config_facet_url" name="app_config_facet_url" value="{{ app_config[0].facet_url }}"></div></div>
                     </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">User Auth</label></div>
+                        <div class="field-info field-body">
+                            <div class="control">
+                                <div class="buttons has-addons">
+                                    <div x-data="{ app_config_normal_user_login: '{{ 'ENABLED' if app_config[0].normal_user_login else 'DISABLED' }}' }">
+                                        <label class="button" :class="{ 'is-primary': app_config_normal_user_login === 'ENABLED' }">
+                                            <input type="radio" name="app_config_normal_user_login" value="ENABLED" class="is-hidden" x-model="app_config_normal_user_login">
+                                                ENABLED
+                                        </label>
+                                        <label class="button" :class="{ 'is-primary': app_config_normal_user_login === 'DISABLED' }">
+                                            <input type="radio" name="app_config_normal_user_login" value="DISABLED" class="is-hidden" x-model="app_config_normal_user_login">
+                                                DISABLED
+                                        </label>
+                                    </div>
+                                </div>
+                                <span class="is-size-7 has-text-warning">This only disable NON moderator and NON administrator users to login!</span>
+                            </div>
+                    </div>
+            </div>
+
                 </div>
             </div>
 

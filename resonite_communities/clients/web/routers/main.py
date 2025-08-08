@@ -82,7 +82,7 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
         request = request,
         name = 'index.html',
         context = {
-            'facet_url': config_manager.db_config().FACET_URL,
+            "app_config": config_manager.db_config(),
             'events': events,
             'communities' : communities,
             'streams' : streams,
