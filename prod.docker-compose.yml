@@ -50,8 +50,6 @@ services:
         exit $EXIT_CODE;
       fi
       "
-    volumes:
-      - "/home/root_man/.config/prod.community_events.resonite.toml:/app/config.toml"
     secrets:
       - database_url
       - discord_secret
