@@ -102,10 +102,15 @@ async def main():
 
     # Stat Discord bot
     logger.info('Starting Discord bots...')
-    await asyncio.gather(
-        bot.start(Config.DISCORD_BOT_TOKEN),
-        ad_bot.start(Config.AD_DISCORD_BOT_TOKEN),
-    )
+    if Config.AD_DISCORD_BOT_TOKEN:
+        await asyncio.gather(
+            bot.start(Config.DISCORD_BOT_TOKEN),
+            ad_bot.start(Config.AD_DISCORD_BOT_TOKEN),
+        )
+    else:
+        await asyncio.gather(
+            bot.start(Config.DISCORD_BOT_TOKEN),
+        )
 
     # End process
     logger.info('Stopping...')
