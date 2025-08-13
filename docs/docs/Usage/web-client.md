@@ -1,25 +1,26 @@
 # Web Client
 
-!!! construction "This need to be documented"
+The Web Client allows to view a list of events as well as streams without running Resonite.
 
-!!! note
+This page provides information about the project's web client, which allows users to browse events and streams from any web browser.
 
-    Probably for the future new resonite community web client made by Phil
+## Features
 
+*   View a list of upcoming events and streams streams.
+*   Log in with Discord to see private events (Using Discord and with correct Discord roles).
 
-# Legacy WebUI client
-
-The WebUI client is directly using the functions internally and don't talk to the API in HTTP. Its use a simple css
-framework called [Bulma](https://bulma.io/) and are loaded directly from differents CDN for now.
-
-Date are formated directly without taking in account of the timezone of the webbrowser.
-
-There is a support of the discord timestamp but only for the `R` format.
-
-And the resonite session URL is automaticaly detected from the description if no URL already present in the locatization parameter.
-It will automaticaly use the first, and only the first, URL starting with `http(s)://cloudx.azurewebsites.net` for set the locatization
-parameter.
+### Screenshots
 
 ![Web client - Events](https://raw.githubusercontent.com/Resonite-Community-Projects/community_events.resonite/refs/heads/assets/Web%20client/events.webp)
 
 ![Web client - Streams](https://raw.githubusercontent.com/Resonite-Community-Projects/community_events.resonite/refs/heads/assets/Web%20client/streams.webp)
+
+## Usage Guide
+
+To use the web client, simply visit the [website](https://resonite-communities.com).
+
+## Legacy vs. New Client
+
+Currently, the primary web client is a simple, server-rendered application. It is stable and functional, but it is considered a **Legacy Web Client** and will eventually be replaced.
+
+We are thinking about developing a **New Web Client** that will be more feature-rich and built using a modern JavaScript framework. You can follow its progress and contribute on its dedicated [GitHub repository](https://github.com/Resonite-Community-Projects/resonite-events-frontend).

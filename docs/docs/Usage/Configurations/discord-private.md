@@ -4,9 +4,9 @@
 
     Please do not share this page for now with anyone without authorization from [brodokk](mailto:brodokk@resonite-communities.com).
 
-For some communities it can happen they need to have private events for various reasons. Or they simply want to keep their community private.
+For some communities, there's a need for private events or to keep their community private for various reasons. However, only a limited number of communities will be accepted under this system, and only for very good reasons.
 
-But keep in mind few communities will be accepted under this system and only for very good reason. Example of community that can't use this system: Group of friends who want to do a movie night.
+Examples of valid reasons for a private community include: corporate events, private workshops, or communities that need to enforce a strict age verification process. Examples of communities that typically cannot use this system include: groups of friends who want to host a private movie night.
 
 ### **1. Add the bot to your discord server**
 
@@ -39,13 +39,36 @@ For our system you will need to give us the voice channel id as well as the role
 
 
 
-### **3. Contact us to enable your community**
+### **3. Submit your community for review**
 
-At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration.
+At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration. To ensure a smooth process and allow us to track all requests efficiently, please submit your community for review using one of the following methods:
 
-To proceed, please send a message to [brodokk](mailto:brodokk@resonite-communities.com) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html) as well as the reason **why** you want a private community. If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
+
+*   **Direct Email**: If the above options are not suitable, you may send a message to [brodokk](mailto:brodokk@resonite-communities.com).
+
+We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html) and review your reason for requesting a private community. If everything is in order, we will update our configuration accordingly, and your events will appear in our system. We typically review new community submissions once a week, so you can expect to hear back from us within 7-10 business days.
 
 ### **4. Let your community know**
 
-In the case of private events you will need to use a different client. Please contact [brodokk](mailto:brodokk@resonite-communities.com) directly if during the previous step you didn't
-have this information or you have questions.
+In the case of private events, you will need to use a client that supports private event viewing. Currently, private events can only be viewed using the [Private Web Client](link to Private Web Client here). You will need to log in with your Discord account to see the events you have access to.
+
+If you have questions about accessing private events or need further assistance, please contact [brodokk](mailto:brodokk@resonite-communities.com).
+
++++
+This guide for private communities is very thorough and provides clear instructions. The warnings and notes are well-placed and effective. Here are a few suggestions to make it even better:
+
+1.  **Clarify the "Why"**: The document states that private communities are only for "very good reason." It would be helpful to provide a few examples of what constitutes a good reason. This would help manage expectations and reduce the number of unqualified requests.
+    *   "Examples of valid reasons for a private community include: corporate events, private workshops, or communities that need to enforce a strict age verification process."
+
+2.  **Streamline the Contact Process**: The process currently relies on emailing a single person. To make this more scalable and transparent, you could consider using a different method.
+    *   **GitHub Issue Template**: Create a GitHub issue template for private community requests. This would allow you to track all requests in one place and would provide a clear set of questions for the applicant to answer.
+    *   **Google Form**: A Google Form could also be used to collect applications in a structured way.
+
+3.  **Visual Aids**: A few screenshots showing how to get the voice channel ID and role ID from Discord would be very helpful. Many users may not be familiar with how to do this.
+    *   "To get a role ID, right-click the role in your server settings and select 'Copy Role ID'. You may need to enable Developer Mode in your Discord settings first."
+
+4.  **Client Information**: The last step mentions that a different client is needed for private events. It would be helpful to provide more information about this client directly in the documentation, rather than requiring users to ask for it.
+    *   "Private events can only be viewed using the [Private Web Client](link to client). You will need to log in with your Discord account to see the events you have access to."
+
+By implementing these suggestions, you can create a more robust and user-friendly process for managing private communities.
++++

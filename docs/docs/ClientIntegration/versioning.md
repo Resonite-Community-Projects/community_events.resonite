@@ -1,9 +1,10 @@
 # Versioning
 
-For our internal facet clients we log how many users are using a said facet/client version.
 
-The format is: `<client name>-<build date in format %Y%m%d>-<build time %h:%m>`.
+The versioning help users to get information if there is an update or now. For ease to follow this we have standardize this system toward all our clients.
 
-Feel free to use it to help us but keep in mind the following client name are used:
+Format: `<client name>-<build date in format %Y%m%d>-<build time %h:%m>`.
 
-- `facet`
+The following client name are used for now:
+
+- `facet`: For the [Facet Client](/Usage/facet-client/)

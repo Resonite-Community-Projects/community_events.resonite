@@ -20,7 +20,11 @@ theme:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - attr_list
   - md_in_html
   - pymdownx.emoji:
@@ -55,14 +59,20 @@ nav:
     - ClientIntegration/http-api-usage.md
     - ClientIntegration/versioning.md
   - Developer Guide:
-    - DeveloperGuide/development.md
-    - DeveloperGuide/requirements.md
-    - DeveloperGuide/installation.md
-    - DeveloperGuide/server-configuration.md
-    - DeveloperGuide/server-installation.md
-    - DeveloperGuide/usage.md
-    - DeveloperGuide/migrations.md
-    - DeveloperGuide/testing.md
-    - DeveloperGuide/architecture.md
+    - DeveloperGuide/development-guide.md
+    - Deployment:
+      - DeveloperGuide/deployment/deployment.md
+      - DeveloperGuide/deployment/requirements.md
+      - DeveloperGuide/deployment/installation.md
+      - DeveloperGuide/deployment/configuration.md
+    - Development:
+      - DeveloperGuide/development/development.md
+      - DeveloperGuide/development/architecture.md
+      - DeveloperGuide/development/requirements.md
+      - DeveloperGuide/development/setup.md
+      - DeveloperGuide/development/installation.md
+      - DeveloperGuide/development/usage.md
+      - DeveloperGuide/development/migrations.md
+      - DeveloperGuide/development/testing.md
   - Support:
     - support.md

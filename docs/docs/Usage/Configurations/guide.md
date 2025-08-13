@@ -3,6 +3,7 @@
 To have your events pulled from our systems please check the systems below.
 
 - [Discord event system](discord.md)
+- [Hosted JSON File](hosted-JSON.md)
 
 ## Event Submission Guidelines
 
@@ -14,4 +15,3 @@ Since a source can contain events that take place in various locations — both 
 ### Formatting Requirement:
 
 Before submitting your event, make sure to remove any new lines and certain special characters (`` ` ``) from your submission. This helps prevent formatting issues and ensures our event calendar functions smoothly when displaying your events.
-

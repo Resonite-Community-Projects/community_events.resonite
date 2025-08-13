@@ -29,7 +29,7 @@ template: page.html
 
     If you want to help contributing by adding features, fix bugs or enhancing the documentation.
 
-    [:octicons-arrow-right-24: Developer Guide](../DeveloperGuide/development.md)
+    [:octicons-arrow-right-24: Developer Guide](../DeveloperGuide/development-guide.md)
 
 -   :material-help-circle:{ .lg .middle } __Get help__
 

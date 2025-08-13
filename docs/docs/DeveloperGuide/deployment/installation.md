@@ -1,4 +1,13 @@
-# Server Installation
+---
+title: Installation
+prev: DeveloperGuide/deployment/requirements.md
+next: DeveloperGuide/deployment/configuration.md
+---
+
+
+!!! Info
+
+    This is a simple explanation of our current stack is configured for you to do the same if you ever want to run your own server for your own community.
 
 !!! info
 
@@ -6,7 +15,9 @@
 
     You **don't need** to create your own based on this instruction as this is an explanation from the already exist docker compose file. But use the command as needed.
 
-We use docker compose `profiles` to separate each componants in groups: `database`, `manager` and `clients`.
+We use docker compose `profiles` to separate each components in groups: `database`, `manager` and `clients`.
+
+About the `config.toml` please see the section [Server Configuration](server-configuration.md).
 
 !!! tips
 
@@ -24,7 +35,7 @@ Running the database can be simply done via the following command:
 docker compose --profile database up -d
 ```
 
-Example of configuration file (fully working but extract still from the docker compose example file at the root of the project):
+Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
 
 ```yaml
 services:
@@ -57,12 +68,12 @@ volumes:
 
 The service for the migration in the docker compose file is run directly by the the manager service and clients.
 
-Example of configuration file (fully owrking but extract still from the docker compose example file at the root of the project):
+Example of docker compose stack file (fully working but extract still from the docker compose example file at the root of the project):
 
 ```yaml
 services:
 
-  # Here goes the database docker compose configuration
+  # Here goes the database docker compose service definition
 
   migrations:
     build: backend
@@ -90,14 +101,14 @@ Running the manager can be simply done via the following command:
 docker compose --profile manager --profile database up -d
 ```
 
-Example of configuration file (fully working but extract still from the docker compose example file at the root of the project):
+Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
 
 ```yaml
 services:
 
-  # Here goes the database docker compose configuration
+  # Here goes the database docker compose service definition
 
-  # Here goes the manager docker compose configuration
+  # Here goes the manager docker compose service definition
 
   signals_manager:
     build: backend
@@ -140,14 +151,14 @@ Running the manager can be simply done via the following command:
 docker compose --profile clients --profile database up -d
 ```
 
-Example of configuration file (fully working but extract still from the docker compose example file at the root of the project):
+Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
 
 ```yaml
 services:
 
-  # Here goes the database docker compose configuration
+  # Here goes the database docker compose service definition
 
-  # Here goes the manager docker compose configuration
+  # Here goes the manager docker compose service definition
 
   api_client:
     build: backend
@@ -212,12 +223,13 @@ We use traefik to handle this notion of new and old url.
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  # Here goes the database docker compose configuration
+  # Here goes the database docker compose service definition
 
-  # Here goes the manager docker compose configuration
+  # Here goes the manager docker compose service definition
 
-  # Here goes the api client docker compose configuration
-  # Labels for the api client docker compose configuration
+  # Here goes the api client docker compose service definition
+
+  # Labels for the api client docker compose service definition
       labels:
       - traefik.enable=true
 
@@ -233,8 +245,9 @@ We use traefik to handle this notion of new and old url.
       - traefik.http.routers.api_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
       - traefik.http.routers.api_client_legacy_public.entrypoints=web
 
-  # Here goes the web client docker compose configuration
-  # Labels for the web client docker compose configuration
+  # Here goes the web client docker compose service definition
+
+  # Labels for the web client docker compose service definition
     labels:
       - traefik.enable=true
       - traefik.http.routers.web_client.rule=Host(`resonite-communities.local`)

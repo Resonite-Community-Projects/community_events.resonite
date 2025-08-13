@@ -8,11 +8,13 @@ Simply click on the following button to add the bot to your discord, there is no
 
 Once the Discord bot has been added, make sure to create an event using [Discord’s event system](https://support.discord.com/hc/en-us/articles/4409494125719-Scheduled-Events) to have your event appear on the public events list.
 
-## **2. Contact us to enable your community**
+## **2. Submit your community for review**
 
-At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration.
+At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration. To ensure a smooth process and allow us to track all requests efficiently, please submit your community for review using the following method:
 
-To proceed, please send a message to [brodokk](mailto:brodokk@resonite-communities.com) — to submit your community for review. We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html). If everything is in order, we will update our configuration accordingly, and your event will appear in our system.
+*   **Direct Email**: If the above options are not suitable, you may send a message to [brodokk](mailto:brodokk@resonite-communities.com).
+
+We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html). If everything is in order, we will update our configuration accordingly, and your events will appear in our system.
 
 !!! info
 
@@ -28,3 +30,4 @@ When submitting a community to be listed to the public events list, please make 
 
 
 > **Need help?** If something doesn’t work, [contact us](/support).
+

@@ -4,14 +4,14 @@
 
 > Built & maintained by the Resonite Community Projects organization
 
-- [Facet Client](facet-client.md) to be installed in Resonite on the Dash.
-- [Web Client](web-client.md) to be used directly from any web browser.
+- [Facet Client](facet-client.md): designed for in-world use within Resonite or in your Dash, allowing you to browse events without leaving the game.
+- [Web Client](web-client.md): full-featured client that can be accessed from any modern web browser on any device.
 
 ## Thrid-party Clients
 
 > Built by independent contributors outside the Community Projects organization
 
-- [Event Slinger](event-slinger.md) to be used when either on your Android phone (including a tablet mode) or Windows device.
+- [Event Slinger](event-slinger.md): native mobile and desktop client for Android and Windows, offering a streamlined experience for browsing events.
 
 ## Matrix feature list
 

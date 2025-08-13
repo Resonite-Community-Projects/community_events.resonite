@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+
+  <style>
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pagination__inner {
+      margin: 0 .8rem 1.2rem;
+      margin-bottom: 0;
+      padding-top: .6rem;
+    }
+
+    .pagination__link {
+      align-items: end;
+      display: flex;
+      flex-grow: 0.01;
+      margin-bottom: .4rem;
+      margin-top: 1rem;
+      max-width: 100%;
+      outline-color: var(--md-accent-fg-color);
+      overflow: hidden;
+      transition: color 125ms;
+    }
+
+    .pagination__link__next {
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .pagination__button {
+      margin: .2rem;
+      padding: .4rem;
+    }
+
+    .pagination__direction {
+      font-size: .64rem;
+      opacity: .7;
+    }
+
+  </style>
+{% endblock %}
+
+{% block content %}
+  {{ super() }}
+
+  {% set ns = namespace(prev_page=none, next_page=none) %}
+
+  {% if page.meta.prev %}
+    {% for p in nav.pages %}
+      {% if p.file.src_path == page.meta.prev %}
+        {% set ns.prev_page = p %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if page.meta.next %}
+    {% for p in nav.pages %}
+      {% if p.file.src_path == page.meta.next %}
+        {% set ns.next_page = p %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% if ns.prev_page or ns.next_page %}
+    <nav class="pagination__inner">
+      <hr>
+      <div class="md-grid md-flex pagination">
+
+        {% if ns.prev_page %}
+          <div class="md-flex__cell md-flex__cell--shrink">
+            <a
+              href="{{ ns.prev_page.url | url }}"
+              class="pagination__link"
+              aria-label="Previous: {{ ns.prev_page.title | e }}"
+            >
+              <div class="pagination__button md-icon">
+                {% set icon = config.theme.icon.previous or "material/arrow-left" %}
+                {% include ".icons/" ~ icon ~ ".svg" %}
+              </div>
+              <div class="">
+                <span class="pagination__direction">
+                  Previous
+                </span>
+                <div class="">
+                  {{ ns.prev_page.title}}
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endif %}
+
+        <div class="md-flex__cell"></div>
+
+        {% if ns.next_page %}
+          <div class="md-flex__cell md-flex__cell--shrink">
+            <a
+              href="{{ ns.next_page.url | url }}"
+              class="pagination__link pagination__link__next"
+              aria-label="Next: {{ ns.next_page.title | e }}"
+            >
+              <div class="">
+                <span class="pagination__direction">
+                  Next
+                </span>
+                <div class="">
+                  {{ ns.next_page.title }}
+                </div>
+              </div>
+              <div class="pagination__button md-icon">
+                {% set icon = config.theme.icon.next or "material/arrow-right" %}
+                {% include ".icons/" ~ icon ~ ".svg" %}
+              </div>
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </nav>
+  {% endif %}
+  {% endblock %}
