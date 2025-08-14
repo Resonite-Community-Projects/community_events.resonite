@@ -27,7 +27,9 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
+        run: |
+          docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" build \
+            docker compose -f stacks/dev/official.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
         env:
@@ -44,7 +46,10 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
+        run: |
+          docker compose -f stacks/dev/router.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull \
+            docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull \
+            docker compose -f stacks/dev/official.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
         env:
@@ -61,4 +66,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f dev.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
+        run: |
+          docker compose -f stacks/dev/router.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d \
+            docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d \
+            docker compose -f stacks/dev/official.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d

@@ -1,20 +1,5 @@
 services:
 
-  traefik:
-    image: traefik:v3.3
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.web.forwardedHeaders.insecure"
-      - "--entryPoints.web.address=:80"
-      - "--accesslog=true"
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   database:
     image: postgres:16
     profiles:
@@ -214,11 +199,6 @@ services:
       - traefik.http.routers.dev_docs.rule=Host(`docs.dev.resonite-communities.com`)
       - traefik.http.routers.dev_docs.entrypoints=web
 
-  cache:
-    image: redis:7.0-alpine
-    restart: always
-    command: redis-server --save ""
-
 secrets:
   postgres_password:
     environment: POSTGRES_PASSWORD
@@ -240,3 +220,8 @@ secrets:
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  default:
+    name: dev_community_network
+    external: true

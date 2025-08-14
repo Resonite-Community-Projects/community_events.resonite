@@ -1,19 +1,4 @@
 services:
-
-  traefik:
-    image: traefik:v3.3
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.web.address=:80"
-      - "--accesslog=true"
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   database:
     image: postgres:16
     profiles:
@@ -26,7 +11,7 @@ services:
       - POSTGRES_USER=resonitecommunities
       - POSTGRES_DB=resonitecommunities
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ../../data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
       interval: 1m30s
@@ -35,9 +20,9 @@ services:
       start_period: 30s
 
   migrations:
-    build: .
+    build: ../..
     env_file:
-      - .env
+      - ../../env.d/community.env
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -49,8 +34,8 @@ services:
       "
     volumes:
       #- "./config.toml:/app/config.toml"
-      - "./resonite_communities:/app/resonite_communities"
-      - "./migrations:/app/migrations"
+      - "../../resonite_communities:/app/resonite_communities"
+      - "../../migrations:/app/migrations"
     depends_on:
       database:
         condition: service_healthy
@@ -59,9 +44,9 @@ services:
       - client
 
   signals_manager:
-    build: .
+    build: ../..
     env_file:
-      - .env
+      - ../../env.d/community.env
     restart: always
     command: poetry run signals_manager --reload
     profiles:
@@ -73,12 +58,12 @@ services:
         condition: service_healthy
     volumes:
       #- "./config.toml:/app/config.toml"
-      - "./resonite_communities:/app/resonite_communities"
+      - "../../resonite_communities:/app/resonite_communities"
 
   api_client:
-    build: .
+    build: ../..
     env_file:
-      - .env
+      - ../../env.d/community.env
     restart: always
     profiles:
       - client
@@ -90,9 +75,9 @@ services:
         condition: service_healthy
     volumes:
       #- "./config.toml:/app/config.toml"
-      - "./resonite_communities:/app/resonite_communities"
+      - "../../resonite_communities:/app/resonite_communities"
     ports:
-      - '8010:8000'
+      - '8000:8000'
     labels:
       - traefik.enable=true
 
@@ -121,9 +106,9 @@ services:
       - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
 
   web_client:
-    build: .
+    build: ../..
     env_file:
-      - .env
+      - ../../env.d/community.env
     restart: always
     profiles:
       - client
@@ -134,23 +119,23 @@ services:
       database:
         condition: service_healthy
     volumes:
-      #- "./config.toml:/app/config.toml"
-      - "./resonite_communities:/app/resonite_communities"
+      #- "../../config.toml:/app/config.toml"
+      - "../../resonite_communities:/app/resonite_communities"
     ports:
       - '8001:8001'
     labels:
       - traefik.enable=true
 
-      - traefik.http.routers.web_client.rule=Host(`resonite-communities.local`)
-      - traefik.http.routers.web_client.entrypoints=web
+      - traefik.http.routers.web_client_community.rule=Host(`resonite-communities.local`)
+      - traefik.http.routers.web_client_community.entrypoints=web
 
       # Public events legacy API route
-      - traefik.http.routers.dev_web_client_legacy_public.rule=Host(`3rd.resonite-communities.local`)
-      - traefik.http.routers.dev_web_client_legacy_public.entrypoints=web
+      - traefik.http.routers.dev_web_client_legacy_public_community.rule=Host(`3rd.resonite-communities.local`)
+      - traefik.http.routers.dev_web_client_legacy_public_community.entrypoints=web
 
   mkdocs:
     build:
-      context: .
+      context: ../..
       dockerfile: Dockerfile.mkdocs
     ports:
       - "8002:8000"
@@ -160,12 +145,12 @@ services:
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.local`)
-      - traefik.http.routers.docs.entrypoints=web
+      - traefik.http.routers.docs_community.rule=Host(`docs.resonite-communities.local`)
+      - traefik.http.routers.docs_community.entrypoints=web
+    volumes:
+      - "../../doc:/app/docs"
 
-  cache:
-    image: redis:7.0-alpine
-    restart: always
-    ports:
-    - "6379:6379"
-    command: redis-server --save ""
+networks:
+  default:
+    name: local_community_network
+    external: true

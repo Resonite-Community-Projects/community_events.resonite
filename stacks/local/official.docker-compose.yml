@@ -1,0 +1,123 @@
+services:
+  database:
+    image: postgres:16
+    profiles:
+      - database
+    restart: unless-stopped
+    ports:
+      - 5435:5432
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=resonitecommunities
+      - POSTGRES_DB=resonitecommunities
+    volumes:
+      - ../../data/postgres_official:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  migrations:
+    build: ../..
+    env_file:
+      - ../../env.d/official.env
+    command: >
+      /bin/bash -c "
+      poetry run alembic upgrade head;
+      EXIT_CODE=$?;
+      if [ $EXIT_CODE -ne 0 ]; then
+        echo 'Alembic migration failed with exit code' $EXIT_CODE;
+        exit $EXIT_CODE;
+      fi
+      "
+    volumes:
+      #- "./config.toml:/app/config.toml"
+      - "../../resonite_communities:/app/resonite_communities"
+      - "../../migrations:/app/migrations"
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles:
+      - manager
+      - client
+
+  signals_manager:
+    build: ../..
+    env_file:
+      - ../../env.d/official.env
+    restart: always
+    command: poetry run signals_manager --reload
+    profiles:
+      - manager
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      #- "./config.toml:/app/config.toml"
+      - "../../resonite_communities:/app/resonite_communities"
+
+  api_client:
+    build: ../..
+    env_file:
+      - ../../env.d/official.env
+    restart: always
+    profiles:
+      - client
+    command: poetry run api_client --reload
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      #- "./config.toml:/app/config.toml"
+      - "../../resonite_communities:/app/resonite_communities"
+    ports:
+      - '8100:8000'
+    labels:
+      - traefik.enable=true
+
+      # Modern API route
+      - traefik.http.routers.api_client_official.rule=Host(`resonite.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client_official.entrypoints=web
+
+      # Public events legacy API route
+      - traefik.http.routers.api_client_legacy_public_official.rule=Host(`resonite.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_client_legacy_public_official.entrypoints=web
+
+      # Public events legacy API V2 route
+      - traefik.http.routers.prod_api_v2_client_legacy_public_official.rule=Host(`resonite.local`) && PathPrefix(`/v2`)
+      - traefik.http.routers.prod_api_v2_client_legacy_public_official.entrypoints=web
+
+  web_client:
+    build: ../..
+    env_file:
+      - ../../env.d/official.env
+    restart: always
+    profiles:
+      - client
+    command: poetry run web_client --reload
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      #- "./config.toml:/app/config.toml"
+      - "../../resonite_communities:/app/resonite_communities"
+    ports:
+      - '8101:8001'
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.web_client_official.rule=Host(`resonite.local`)
+      - traefik.http.routers.web_client_official.entrypoints=web
+
+networks:
+  default:
+    name: local_official_network
+    external: true
