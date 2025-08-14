@@ -18,9 +18,11 @@ class ConfigManager:
         self.logger = get_logger(__name__)
 
     def _load_infrastructure_config(self):
+        optional_vars = [
+            'PRIVATE_DOMAIN',
+        ]
         required_vars = [
             'PUBLIC_DOMAIN',
-            'PRIVATE_DOMAIN',
             'DATABASE_URL',
             'CACHE_URL',
             'SECRET_KEY',
@@ -32,8 +34,11 @@ class ConfigManager:
         ]
         config = {}
         missing_vars = []
+        vars = required_vars + optional_vars
+        import logging
+        logging.error(vars)
 
-        for var in required_vars:
+        for var in vars:
             value = None
             file_path = os.getenv(f"{var}_FILE")
 
@@ -43,7 +48,7 @@ class ConfigManager:
             else:
                 value = os.getenv(var)
 
-            if value is None:
+            if var not in optional_vars and value is None:
                 missing_vars.append(var)
             else:
                 config[var] = value
@@ -53,7 +58,8 @@ class ConfigManager:
 
 
         config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
-        config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',')
+        if config['PRIVATE_DOMAIN']:
+            config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',')
 
         return config
 
@@ -67,22 +73,22 @@ class ConfigManager:
         for session in self.db_session():
             app_config = session.execute(stmt).scalars().first()
 
-            if app_config:
-                config.update({
-                    'DISCORD_BOT_TOKEN': app_config.discord_bot_token,
-                    'AD_DISCORD_BOT_TOKEN': app_config.ad_discord_bot_token,
-                    'REFRESH_INTERVAL': app_config.refresh_interval,
-                    'CLOUDVAR_RESONITE_USER': app_config.cloudvar_resonite_user,
-                    'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass,
-                    'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name,
-                    'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name,
-                    'NORMAL_USER_LOGIN': app_config.normal_user_login,
-                    'FACET_URL': app_config.facet_url,
-                    'TITLE_TEXT': app_config.title_text,
-                    'HERO_COLOR': app_config.hero_color,
-                    'INFO_TEXT': app_config.info_text,
-                    'FOOTER_TEXT': app_config.footer_text,
-                })
+            config.update({
+                'INITIATED': app_config.initiated if app_config else False,
+                'DISCORD_BOT_TOKEN': app_config.discord_bot_token if app_config else '',
+                'AD_DISCORD_BOT_TOKEN': app_config.ad_discord_bot_token if app_config else '',
+                'REFRESH_INTERVAL': app_config.refresh_interval if app_config else '',
+                'CLOUDVAR_RESONITE_USER': app_config.cloudvar_resonite_user if app_config else '',
+                'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass if app_config else '',
+                'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name if app_config else '',
+                'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name if app_config else '',
+                'NORMAL_USER_LOGIN': app_config.normal_user_login if app_config else False,
+                'FACET_URL': app_config.facet_url if app_config else '',
+                'TITLE_TEXT': app_config.title_text if app_config else '',
+                'HERO_COLOR': app_config.hero_color if app_config else '',
+                'INFO_TEXT': app_config.info_text if app_config else '',
+                'FOOTER_TEXT': app_config.footer_text if app_config else '',
+            })
 
             stmt = select(MonitoredDomain)
             domains = session.execute(stmt).scalars().all()
@@ -93,13 +99,12 @@ class ConfigManager:
 
             stmt = select(TwitchConfig)
             twitch_config = session.execute(stmt).scalars().first()
-            if twitch_config:
-                config['Twitch'] = {
-                    'client_id': twitch_config.client_id,
-                    'secret': twitch_config.secret,
-                    'game_id': twitch_config.game_id,
-                    'account_name': twitch_config.account_name
-                }
+            config['Twitch'] = {
+                'client_id': twitch_config.client_id if twitch_config else '',
+                'secret': twitch_config.secret if twitch_config else '',
+                'game_id': twitch_config.game_id if twitch_config else '',
+                'account_name': twitch_config.account_name if twitch_config else ''
+            }
 
         return edict(config)
 

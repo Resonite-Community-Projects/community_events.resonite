@@ -1,5 +1,5 @@
 services:
-  database:
+  database_official:
     image: postgres:16
     profiles:
       - database
@@ -8,12 +8,12 @@ services:
       - 5435:5432
     environment:
       - POSTGRES_PASSWORD=changeme
-      - POSTGRES_USER=resonitecommunities
-      - POSTGRES_DB=resonitecommunities
+      - POSTGRES_USER=resonitecommunities_official
+      - POSTGRES_DB=resonitecommunities_official
     volumes:
       - ../../data/postgres_official:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
+      test: ["CMD-SHELL", "pg_isready -U resonitecommunities_official"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -37,7 +37,7 @@ services:
       - "../../resonite_communities:/app/resonite_communities"
       - "../../migrations:/app/migrations"
     depends_on:
-      database:
+      database_official:
         condition: service_healthy
     profiles:
       - manager
@@ -54,7 +54,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     volumes:
       #- "./config.toml:/app/config.toml"
@@ -71,7 +71,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     volumes:
       #- "./config.toml:/app/config.toml"
@@ -104,7 +104,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     volumes:
       #- "./config.toml:/app/config.toml"

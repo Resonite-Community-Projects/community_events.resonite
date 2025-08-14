@@ -40,7 +40,10 @@ if not watchfiles:
 logger.error(Config.keys())
 
 # Clients initialization
-twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
+twitch_client = None
+discord_client = None
+if Config.Twitch:
+    twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
 discord_client = disnake.Client()
 
 intents = disnake.Intents.all()
@@ -99,6 +102,10 @@ async def main():
     # Start scheduler
     logger.info('Starting scheduler...')
     scheduler.start()
+
+    if not Config.DISCORD_BOT_TOKEN or not Config.AD_DISCORD_BOT_TOKEN:
+        logger.warning('No discord bot token configured at all!')
+        return
 
     # Stat Discord bot
     logger.info('Starting Discord bots...')

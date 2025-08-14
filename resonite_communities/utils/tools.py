@@ -128,9 +128,9 @@ def check_is_local_env():
 
     private_domains = Config.PRIVATE_DOMAIN
     if not isinstance(private_domains, list):
-        private_domains = [private_domains]
+        private_domains = [private_domains] if private_domains else []
     if (
-        any(domain.endswith(".local") for domain in public_domains) and
+        any(domain.endswith(".local") for domain in public_domains) or
         any(domain.endswith(".local") for domain in private_domains)
     ):
         return True
