@@ -42,7 +42,7 @@ Third-party client made by Martysh.
 
 *   **Windows**: Download the `.exe` installer from the [release page](https://codeberg.org/Martysh12/event_slinger/releases) and run it.
 *   **Android**: Download the `.apk` file from the [release page](https://codeberg.org/Martysh12/event_slinger/releases) and sideload it onto your device. You may need to enable installation from unknown sources in your device settings.
-*   **Linux**: See the [repository]](https://codeberg.org/Martysh12/event_slinger) to compile it form source.
+*   **Linux**: See the [repository](https://codeberg.org/Martysh12/event_slinger) to compile it form source.
 
 ## Support
 
