@@ -9,7 +9,7 @@ class AppConfig(SQLModel, table=True):
     initiated: bool | None = Field()
     discord_bot_token: str | None = Field()
     ad_discord_bot_token: str | None = Field()
-    refresh_interval: int | None = Field(default=2)
+    refresh_interval: int | None = Field()
     cloudvar_resonite_user: str | None = Field()
     cloudvar_resonite_pass: str | None = Field()
     cloudvar_base_name: str | None = Field()
