@@ -19,6 +19,7 @@ from resonite_communities.auth.db import get_session
 from resonite_communities.utils.logger import get_logger
 
 Config = ConfigManager(get_session).config()
+config_manager = ConfigManager(get_session)
 
 router = APIRouter()
 
@@ -47,10 +48,7 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
                 instances.append(row[0])
             return instances
 
-    app_config_objects = load(AppConfig)
-    app_config = []
-    for config in app_config_objects:
-        app_config.append(config)
+    app_config = config_manager.db_config()
     monitored_config_objects = load(MonitoredDomain)
     monitored_config = [
         {"id": domain.id, "url": domain.url, "status": domain.status}

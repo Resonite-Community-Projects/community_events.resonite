@@ -30,7 +30,7 @@ document.addEventListener('alpine:init', () => {
             function resetCopyBtn(oldStatus) {
                 CopyFacetResoniteDBUrl.classList.remove(oldStatus);
                 CopyFacetResoniteDBUrl.classList.add('is-dark');
-                CopyFacetResoniteDBUrl.querySelector('span').innerHTML = 'Copy facet resonitedb url';
+                CopyFacetResoniteDBUrl.querySelector('span').innerHTML = 'Copy facet folder url';
             }
 
             function setStatusCopyBtn(msg, status) {
@@ -42,9 +42,9 @@ document.addEventListener('alpine:init', () => {
 
             try {
                 var successful = document.execCommand('copy');
-                setStatusCopyBtn('Successfully copied resonitedb url', 'is-success');
+                setStatusCopyBtn('Successfully copied url', 'is-success');
             } catch (err) {
-                setStatusCopyBtn('Error copy resonitedb url', 'is-danger');
+                setStatusCopyBtn('Error copying url', 'is-danger');
             }
 
             document.body.removeChild(textArea);

@@ -78,6 +78,10 @@ class ConfigManager:
                     'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name,
                     'NORMAL_USER_LOGIN': app_config.normal_user_login,
                     'FACET_URL': app_config.facet_url,
+                    'TITLE_TEXT': app_config.title_text,
+                    'HERO_COLOR': app_config.hero_color,
+                    'INFO_TEXT': app_config.info_text,
+                    'FOOTER_TEXT': app_config.footer_text,
                 })
 
             stmt = select(MonitoredDomain)

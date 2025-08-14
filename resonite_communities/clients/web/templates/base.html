@@ -5,7 +5,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if not app_config.TITLE_TEXT %}
     <title>resonite-communities.com</title>
+    {% else %}
+    <title>{{ app_config.TITLE_TEXT }}</title>
+    {% endif %}
     <link rel="icon" href="data:image/jpeg;base64,{{ logo | safe }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
@@ -25,10 +29,19 @@
 
     <style>
       [x-cloak] { display: none !important; }
+
       .no-scroll {
         overflow: hidden;
         }
 
+        .hero.is-link {
+          {% if not app_config.HERO_COLOR %}
+          background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
+          {% else %}
+          background: {{ app_config.HERO_COLOR }};
+          {% endif %}
+        }
+c
         .hero.is-small .hero-body {
             padding: 0em 1.5rem;
         }
@@ -220,7 +233,11 @@
               <a href="/">
                 <div class="container content">
                     <img class="logo is-hidden-mobile" src="data:image/jpeg;base64,{{ userlogo | safe }}">
+                    {% if not app_config.TITLE_TEXT %}
                     <h1 class="title has-text-primary-95">Resonite Communities</h1>
+                    {% else %}
+                    <h1 class="title has-text-primary-95">{{ app_config.TITLE_TEXT }}</h1>
+                    {% endif %}
                     <h2 class="subtitle has-text-primary-95"><strong>Non</strong> Exhaustive Communites Events Aggregator</h2>
                 </div>
               </a>
@@ -300,8 +317,12 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
+        {% if not app_config.FOOTER_TEXT %}
         <strong>Resonite communites</strong> by GrayBoltWolf and <a href="https://brodokk.space">Brodokk</a>.
         Website and API <a href="https://github.com/Resonite-Community-Projects/community_events.resonite">source code</a>.
+        {% else %}
+        {{ app_config.FOOTER_TEXT }}
+        {% endif %}
       </p>
     </div>
   </footer>

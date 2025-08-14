@@ -69,15 +69,19 @@
                     </span>
                   </div>
                   <div class="message-body" id="info" x-show="open">
+                    {% if not app_config.INFO_TEXT %}
                     <p>Want your group listed here? Any question?</p>
                     <p><samp>events.resonite.boltwolf.net</samp>? <samp>resonite-communities.com</samp>?</p>
                     <p>More info in <span @click="activeTab = 'About'"><a>About</a></span> section.</p>
+                    {% else %}
+                    {{ app_config.INFO_TEXT }}
+                    {% endif %}
                   </div>
                 </article>
               </div>
               <div class="column" x-data="copyFacetUrl()">
                 <button class="button is-large is-fullwidth is-dark js-copy-facet-url" @click="copyToClipboard('{{ app_config.FACET_URL }}')">
-                  <span>Copy facet resonitedb url</span>
+                  <span>Copy facet folder url</span>
                     <span class="icon is-small">
                     <i class="fas fa-solid fa-clipboard"></i>
                   </span>

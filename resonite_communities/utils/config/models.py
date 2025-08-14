@@ -15,6 +15,10 @@ class AppConfig(SQLModel, table=True):
     cloudvar_general_name: str = Field()
     facet_url: str = Field()
     normal_user_login: bool = Field()
+    hero_color: str | None = Field()
+    title_text: str | None = Field()
+    info_text: str | None = Field()
+    footer_text: str | None = Field()
 
 
 class MonitoredDomain(SQLModel, table=True):
