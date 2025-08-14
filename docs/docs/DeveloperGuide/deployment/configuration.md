@@ -154,3 +154,17 @@ of communities: Event and Streams.
 
 Nothing special.
 
+
+## Templating
+
+It's possible to configure a bit the theme. There is different keys available in the database for that.
+
+| Key | Type | Description |
+| :--- | :--- | :--- |
+| `Hero color` | `str` | CSS formatted value for `background` |
+| `Title Text` | `str` | Title of the service  |
+| `Info Text` | `html` | HTML formatted code |
+| `Footer Text` | `html` | HTML formatted code |
+
+If you ever want to update the logo and you happen to use docker, simply mount the new
+logo in a volume and override the existing one at `resonite_communities/clients/web/static/images/icon.png`.
