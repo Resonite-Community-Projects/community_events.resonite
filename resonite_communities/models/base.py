@@ -199,7 +199,7 @@ class BaseModel(SQLModel):
             for row in rows:
                 instance = row[0]
                 for key, value in fields_to_update.items():
-                    print(f"Setting {key} = {value} (type: {type(value)})")
+                    #print(f"Setting {key} = {value} (type: {type(value)})")
                     setattr(instance, key, value)
                 session.commit()
                 session.refresh(instance)

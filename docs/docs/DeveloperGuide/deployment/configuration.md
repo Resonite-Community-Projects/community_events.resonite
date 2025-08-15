@@ -78,6 +78,24 @@ CACHE_URL = "redis://cache"
 | `DISCORD_SECRET` | `str` | the secret of the Discord client |
 | `DISCORD_REDIRECT_URL` | `str` | the callback url for Discord API to call when finishing the authentification process on their end. |
 
+#### Discord bot configuration
+
+When creating the bot on Discord Application interface you need to set some parameters to work.
+
+##### Installation section
+
+Installation context set to **only** `Guild Install`
+
+Set the scope to `bot`, we don't need the `applications_commands`
+
+##### Bot section
+
+Enable the following intents:
+
+- `Presence`
+- `Server Members`
+- `Message Content`
+
 ## Database configuration
 
 Use for application-level settings that you might want to change without restarting the server, such as community settings and refresh intervals. These can be managed through the admin interface.

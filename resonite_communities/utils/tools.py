@@ -26,8 +26,6 @@ class TwitchClient:
 
         self._auth()
         self.broadcasters = {}
-        self.logger.error(client_id)
-        self.logger.error(secret)
 
     def _parse_error(self, response):
         try:

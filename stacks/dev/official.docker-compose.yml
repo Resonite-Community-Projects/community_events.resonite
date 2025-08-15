@@ -1,6 +1,6 @@
 services:
 
-  database:
+  database_official:
     image: postgres:16
     profiles:
       - database
@@ -25,7 +25,7 @@ services:
       start_period: 30s
 
   migrations:
-    build: .
+    build: ../..
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -53,14 +53,14 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     depends_on:
-      database:
+      database_official:
         condition: service_healthy
     profiles:
       - manager
       - client
 
   signals_manager:
-    build: .
+    build: ../..
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -68,7 +68,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     secrets:
       - database_url
@@ -89,7 +89,7 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
 
   api_client:
-    build: .
+    build: ../..
     restart: always
     profiles:
       - client
@@ -122,31 +122,19 @@ services:
       - traefik.enable=true
 
       # Modern API route
-      - traefik.http.routers.dev_api_v1_client.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.dev_api_v1_client.entrypoints=web
-
-      # Private events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_private.entrypoints=web
-
-      # Private events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_private2.rule=Host(`3rd.adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_private2.entrypoints=web
+      - traefik.http.routers.dev_api_v1_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.dev_api_v1_client_official.entrypoints=web
 
       # Public events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_public.entrypoints=web
-
-      # Public events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_public2.rule=Host(`3rd.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_public2.entrypoints=web
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.entrypoints=web
 
       # Public events legacy API V2 route
-      - traefik.http.routers.dev_api_v2_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.dev_api_v2_client_legacy_public.entrypoints=web
+      - traefik.http.routers.dev_api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.dev_api_v2_client_legacy_public_official.entrypoints=web
 
   web_client:
-    build: .
+    build: ../..
     restart: always
     profiles:
       - client
@@ -154,7 +142,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     ports:
       - '8101:8001'
@@ -177,12 +165,8 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_client.entrypoints=web
-
-      # Public events legacy API route
-      - traefik.http.routers.dev_web_client_legacy_public.rule=Host(`3rd.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_client_legacy_public.entrypoints=web
+      - traefik.http.routers.dev_web_client_official.rule=Host(`official.dev.resonite-communities.com`)
+      - traefik.http.routers.dev_web_client_official.entrypoints=web
 
 secrets:
   postgres_password:

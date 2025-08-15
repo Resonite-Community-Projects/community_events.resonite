@@ -37,8 +37,6 @@ logger = get_logger('community_events')
 if not watchfiles:
     logger.warning("watchfiles not found. --reload option will not be available.")
 
-logger.error(Config.keys())
-
 # Clients initialization
 twitch_client = None
 discord_client = None
@@ -103,21 +101,22 @@ async def main():
     logger.info('Starting scheduler...')
     scheduler.start()
 
-    if not Config.DISCORD_BOT_TOKEN or not Config.AD_DISCORD_BOT_TOKEN:
+    if not Config.DISCORD_BOT_TOKEN and not Config.AD_DISCORD_BOT_TOKEN:
         logger.warning('No discord bot token configured at all!')
         return
 
-    # Stat Discord bot
     logger.info('Starting Discord bots...')
-    if Config.AD_DISCORD_BOT_TOKEN:
-        await asyncio.gather(
-            bot.start(Config.DISCORD_BOT_TOKEN),
-            ad_bot.start(Config.AD_DISCORD_BOT_TOKEN),
-        )
-    else:
-        await asyncio.gather(
-            bot.start(Config.DISCORD_BOT_TOKEN),
-        )
+
+    tasks = []
+
+    if Config.DISCORD_BOT_TOKEN:
+        tasks.append(bot.start(Config.DISCORD_BOT_TOKEN))
+
+    if Config.DISCORD_BOT_TOKEN and Config.AD_DISCORD_BOT_TOKEN:
+        tasks.append(ad_bot.start(Config.AD_DISCORD_BOT_TOKEN))
+
+    if tasks:
+        await asyncio.gather(*tasks)
 
     # End process
     logger.info('Stopping...')

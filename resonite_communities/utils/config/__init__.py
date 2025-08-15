@@ -35,8 +35,6 @@ class ConfigManager:
         config = {}
         missing_vars = []
         vars = required_vars + optional_vars
-        import logging
-        logging.error(vars)
 
         for var in vars:
             value = None
