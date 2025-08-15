@@ -97,7 +97,7 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
-      database:
+      database_official:
         condition: service_healthy
     ports:
       - '8100:8000'
