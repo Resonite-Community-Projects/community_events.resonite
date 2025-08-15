@@ -1,7 +1,7 @@
 ---
 title: Installation
-prev: DeveloperGuide/deployment/requirements.md
-next: DeveloperGuide/deployment/configuration.md
+prev: AdministratorGuide/deployment/requirements.md
+next: AdministratorGuide/configuration/configuration.md
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 title: Architecture
-prev: DeveloperGuide/development/development.md
-next: DeveloperGuide/development/requirements.md
+prev: DeveloperGuide/development.md
+next: DeveloperGuide/requirements.md
 ---
 
 

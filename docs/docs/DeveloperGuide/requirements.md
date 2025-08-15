@@ -1,7 +1,7 @@
 ---
 title: Requirements
-prev: DeveloperGuide/development/architecture.md
-next: DeveloperGuide/development/setup.md
+prev: DeveloperGuide/architecture.md
+next: DeveloperGuide/setup.md
 ---
 
 While everything should be able to run out-of-the-box with devcontainer (See [the installation section](installation.md)) here is basic requirements for the project to be able to run.

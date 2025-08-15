@@ -1,6 +1,6 @@
 ---
 title: Testing
-prev: DeveloperGuide/development/migrations.md
+prev: DeveloperGuide/migrations.md
 ---
 
 For now their is no unit test but this is the thing to keep in mind when doing functional testing.

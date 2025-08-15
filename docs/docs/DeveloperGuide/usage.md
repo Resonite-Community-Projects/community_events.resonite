@@ -1,7 +1,7 @@
 ---
 title: Usage
-prev: DeveloperGuide/development/installation.md
-next: DeveloperGuide/development/migrations.md
+prev: DeveloperGuide/installation.md
+next: DeveloperGuide/migrations.md
 ---
 
 The system is splited in different instances.

@@ -148,7 +148,7 @@ services:
       - traefik.http.routers.docs_community.rule=Host(`docs.resonite-communities.local`)
       - traefik.http.routers.docs_community.entrypoints=web
     volumes:
-      - "../../doc:/app/docs"
+      - "../../docs:/docs"
 
 networks:
   default:

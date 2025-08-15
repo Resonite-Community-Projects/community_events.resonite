@@ -1,7 +1,7 @@
 ---
 title: Migrations
-prev: DeveloperGuide/development/usage.md
-next: DeveloperGuide/development/testing.md
+prev: DeveloperGuide/usage.md
+next: DeveloperGuide/testing.md
 ---
 
 For handling the migrations of the database we use Alembic.

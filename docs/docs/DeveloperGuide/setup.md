@@ -1,7 +1,7 @@
 ---
 title: Setup
-prev: DeveloperGuide/development/requirements.md
-next: DeveloperGuide/development/installation.md
+prev: DeveloperGuide/requirements.md
+next: DeveloperGuide/installation.md
 ---
 
 Since the installation process of this requirement can be really different from one Operating System to another we will not cover them here. Please refer to the documentation available for your Operating System.

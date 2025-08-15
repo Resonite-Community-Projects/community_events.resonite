@@ -1,6 +1,6 @@
 ---
 title: Configuration
-prev: DeveloperGuide/deployment/installation.md
+prev: AdministratorGuide/deployment/installation.md
 ---
 
 

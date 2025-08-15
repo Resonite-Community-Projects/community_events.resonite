@@ -1,7 +1,7 @@
 ---
 title: Installation
-prev: DeveloperGuide/development/setup.md
-next: DeveloperGuide/development/usage.md
+prev: DeveloperGuide/setup.md
+next: DeveloperGuide/usage.md
 ---
 
 This section only cover **our** stacks, including the developement instance as well as the production instance.
