@@ -40,7 +40,7 @@ services:
       start_period: 30s
 
   migrations:
-    build: .
+    build: ../..
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -75,7 +75,7 @@ services:
       - client
 
   signals_manager:
-    build: .
+    build: ../..
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -104,7 +104,7 @@ services:
         condition: service_healthy
 
   api_client:
-    build: .
+    build: ../..
     restart: always
     profiles:
       - client
@@ -167,7 +167,7 @@ services:
 
 
   web_client:
-    build: .
+    build: ../..
     restart: always
     profiles:
       - client
@@ -207,7 +207,7 @@ services:
 
   mkdocs:
     build:
-      context: .
+      context: ../..
       dockerfile: Dockerfile.mkdocs
     ports:
       - "9002:8000"
