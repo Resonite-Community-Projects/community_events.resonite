@@ -76,60 +76,60 @@ jobs:
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
         run: docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
 
-  official:
-    runs-on: SANVM07
-    environment: dev_official
+  # official:
+  #   runs-on: SANVM07
+  #   environment: dev_official
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Build app
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
-          SECRET: ${{ secrets.SECRET }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          CACHE_URL: ${{ vars.CACHE_URL }}
-          DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
-          DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
-          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
-          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" build
+  #     - name: Build app
+  #       env:
+  #         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  #         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  #         POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  #         DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+  #         SECRET: ${{ secrets.SECRET }}
+  #         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  #         SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  #         CACHE_URL: ${{ vars.CACHE_URL }}
+  #         DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
+  #         DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+  #         PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+  #         PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+  #       run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" build
 
-      - name: Update 3rd party docker images
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
-          SECRET: ${{ secrets.SECRET }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          CACHE_URL: ${{ vars.CACHE_URL }}
-          DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
-          DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
-          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
-          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" pull
+  #     - name: Update 3rd party docker images
+  #       env:
+  #         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  #         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  #         POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  #         DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+  #         SECRET: ${{ secrets.SECRET }}
+  #         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  #         SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  #         CACHE_URL: ${{ vars.CACHE_URL }}
+  #         DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
+  #         DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+  #         PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+  #         PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+  #       run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" pull
 
-      - name: Spin up containers
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
-          SECRET: ${{ secrets.SECRET }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          CACHE_URL: ${{ vars.CACHE_URL }}
-          DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
-          DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
-          PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
-          PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
-        run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" up -d
+  #     - name: Spin up containers
+  #       env:
+  #         POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  #         POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  #         POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  #         DISCORD_SECRET: ${{ secrets.DISCORD_SECRET }}
+  #         SECRET: ${{ secrets.SECRET }}
+  #         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  #         SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  #         CACHE_URL: ${{ vars.CACHE_URL }}
+  #         DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
+  #         DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
+  #         PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
+  #         PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+  #       run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" up -d
