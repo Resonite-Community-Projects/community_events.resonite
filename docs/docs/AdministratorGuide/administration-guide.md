@@ -1,13 +1,13 @@
 ---
 title: Administration Guide
-next: AdministratorGuide/deployment/deployment.md
+next: AdministratorGuide/deployment/requirements.md
 ---
 
 !!! danger
 
     This project is not intended for self-hosting. At present, only the Resonite team is hosting their own instance.
 
-    If want to contribute to the project please see [Developer Guide](../DeveloperGuide/development-guide.md).
+    If you want to contribute to the project please see [Developer Guide](../DeveloperGuide/development-guide.md).
 
     If you were looking to host your own independent instance, that is not currently supported. The documentation here is used mainly for the Resonite team to host their own instance.
 
@@ -18,3 +18,5 @@ It includes:
 - Explain the requirements
 - Deploying the system using Docker and Docker Compose
 - Configuring services and environment variables
+
+While specific deployment method can vary based on your infrastructure and preferences, this guide focuses on using Docker and Docker Compose stacks.

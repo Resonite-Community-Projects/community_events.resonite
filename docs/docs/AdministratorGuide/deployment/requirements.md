@@ -1,10 +1,14 @@
 ---
 title: Requirements
-prev: AdministratorGuide/deployment/deployment.md
+prev: AdministratorGuide/administration-guide.md
 next: AdministratorGuide/deployment/installation.md
 ---
 
 !!! construction
+
+## Hardware
+
+Any machine with 1 vCPU and 1 GB of RAM should be enough.
 
 ## Domain names
 

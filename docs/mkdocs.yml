@@ -70,10 +70,11 @@ nav:
   - Administrator Guide:
     - AdministratorGuide/administration-guide.md
     - Deployment:
-      - AdministratorGuide/deployment/deployment.md
       - AdministratorGuide/deployment/requirements.md
       - AdministratorGuide/deployment/installation.md
     - Configuration:
       - AdministratorGuide/configuration/configuration.md
+      - AdministratorGuide/configuration/infrastructure.md
+      - AdministratorGuide/configuration/database.md
   - Support:
     - support.md
