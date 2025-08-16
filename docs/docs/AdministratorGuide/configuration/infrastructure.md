@@ -1,6 +1,6 @@
 ---
 title: Infrastructure
-prev: AdministratorGuide/configuration/infrastructure.md
+prev: AdministratorGuide/configuration/configuration.md
 next: AdministratorGuide/configuration/database.md
 ---
 

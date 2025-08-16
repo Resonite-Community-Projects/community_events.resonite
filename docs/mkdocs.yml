@@ -72,6 +72,7 @@ nav:
     - Deployment:
       - AdministratorGuide/deployment/requirements.md
       - AdministratorGuide/deployment/installation.md
+      - AdministratorGuide/deployment/running.md
     - Configuration:
       - AdministratorGuide/configuration/configuration.md
       - AdministratorGuide/configuration/infrastructure.md
