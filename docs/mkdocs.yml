@@ -76,5 +76,8 @@ nav:
       - AdministratorGuide/configuration/configuration.md
       - AdministratorGuide/configuration/infrastructure.md
       - AdministratorGuide/configuration/database.md
+      - AdministratorGuide/configuration/signals.md
+      - AdministratorGuide/configuration/users.md
+      - AdministratorGuide/configuration/events.md
   - Support:
     - support.md

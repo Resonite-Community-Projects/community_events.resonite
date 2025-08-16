@@ -17,8 +17,6 @@ next: AdministratorGuide/configuration/configuration.md
 
 We use docker compose `profiles` to separate each components in groups: `database`, `manager` and `clients`.
 
-About the `config.toml` please see the section [Server Configuration](server-configuration.md).
-
 !!! tips
 
     You can run the whole docker compose stack with this simple command:
@@ -27,190 +25,23 @@ About the `config.toml` please see the section [Server Configuration](server-con
     docker compose --profile "*" up -d
     ```
 
-## Running the database
-
-Running the database can be simply done via the following command:
-
-```console
-docker compose --profile database up -d
-```
-
-Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
-
-```yaml
-services:
-  database:
-    image: postgres:16
-    profiles:
-      - database
-    restart: unless-stopped
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_PASSWORD=changeme
-      - POSTGRES_USER=resonitecommunities
-      - POSTGRES_DB=resonitecommunities
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-
-volumes:
-  postgres_data:
-    driver: local
-```
-
-### Migrations
-
-The service for the migration in the docker compose file is run directly by the the manager service and clients.
-
-Example of docker compose stack file (fully working but extract still from the docker compose example file at the root of the project):
-
-```yaml
-services:
-
-  # Here goes the database docker compose service definition
-
-  migrations:
-    build: backend
-    command: poetry run alembic upgrade head
-    depends_on:
-      database:
-        condition: service_healthy
-    profiles:
-      - manager
-      - clients
-
-  # Here goes the volume information for the database
-
-```
-
-## Running the manager
-
-!!! warning
-
-    This require the database to be running.
-
-Running the manager can be simply done via the following command:
-
-```console
-docker compose --profile manager --profile database up -d
-```
-
-Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
-
-```yaml
-services:
-
-  # Here goes the database docker compose service definition
-
-  # Here goes the manager docker compose service definition
-
-  signals_manager:
-    build: backend
-    restart: always
-    command: poetry run signals_manager
-    profiles:
-      - manager
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-      database:
-        condition: service_healthy
-    volumes:
-      - "./backend/config.toml:/app/config.toml"
-
-  # Here goes the volume information for the database
-```
-
-!!! tip
-
-    If you want to the manager container you also need to stop the database one too:
-
-    ```console
-    docker compose --profile client --profile database down
-    ```
-
-    And to restart it use the `up` command.
-
-## Running the clients
-
-!!! warning
-
-    This require the database to be running.
-
-    It's also a good idea to have the manager running to fill the database with signals.
-
-Running the manager can be simply done via the following command:
-
-```console
-docker compose --profile clients --profile database up -d
-```
-
-Example of docker compose stac file (fully working but extract still from the docker compose example file at the root of the project):
-
-```yaml
-services:
-
-  # Here goes the database docker compose service definition
-
-  # Here goes the manager docker compose service definition
-
-  api_client:
-    build: backend
-    restart: always
-    profiles:
-      - client
-    command: poetry run api_client
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-      database:
-        condition: service_healthy
-    volumes:
-      - "./backend/config.toml:/app/config.toml"
-    ports:
-      - '8000:8000'
-  web_client:
-    build: backend
-    restart: always
-    profiles:
-      - client
-    command: poetry run web_client
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-      database:
-        condition: service_healthy
-    volumes:
-      - "./backend/config.toml:/app/config.toml"
-    ports:
-      - '8001:8001'
-
-  # Here goes the volume information for the database
-```
-
-!!! tip
-
-    If you want to the clients containers you also need to stop the database one too:
-
-    ```console
-    docker compose --profile client --profile database down
-    ```
-
-    And to restart it use the `up` command.
-
 ## Running the proxy
 
-We use traefik to handle this notion of new and old url.
+We use traefik to handle the routing in our stack. The label are indicated here directly instead of per stack.
+
+Running the proxy can be simply done via the following command:
+
+```console
+docker compose --profile "router" up -d
+```
+
+Stack example:
 
 ```yaml
   traefik:
     image: traefik:v3.3
+    profiles:
+      - router
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -252,6 +83,191 @@ We use traefik to handle this notion of new and old url.
       - traefik.enable=true
       - traefik.http.routers.web_client.rule=Host(`resonite-communities.local`)
       - traefik.http.routers.web_client.entrypoints=web
+
+  # Here goes the volume information for the database
+```
+
+## Running the database
+
+Running the database can be simply done via the following command:
+
+```console
+docker compose --profile "database" up -d
+```
+
+Stack example:
+
+```yaml
+services:
+  database:
+    image: postgres:16
+    profiles:
+      - database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=resonitecommunities
+      - POSTGRES_DB=resonitecommunities
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resonitecommunities"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    driver: local
+```
+
+### Migrations
+
+!!! warning
+
+    This service is run through the `manager` and `clients` services.
+
+Stack example:
+
+```yaml
+services:
+
+  # Here goes the database docker compose service definition
+
+  migrations:
+    build: backend
+    command: >
+      /bin/bash -c "
+      poetry run alembic upgrade head;
+      EXIT_CODE=$?;
+      if [ $EXIT_CODE -ne 0 ]; then
+        echo 'Alembic migration failed with exit code' $EXIT_CODE;
+        exit $EXIT_CODE;
+      fi
+      "
+    depends_on:
+      database:
+        condition: service_healthy
+    profiles:
+      - manager
+      - clients
+
+  # Here goes the volume information for the database
+
+```
+
+## Running the manager
+
+!!! warning
+
+    This service require the `database` and the `proxy` services.
+
+Running the manager can be simply done via the following command:
+
+```console
+docker compose --profile "database" --profile "proxy" --profile "manager" up -d
+```
+
+!!! note
+
+    When you need to put down the signals manager you also need to precise the profiles the same way your run it.
+
+    ```console
+    docker compose --profile "database" --profile "proxy" --profile "manager" down
+    ```
+
+Stack example:
+
+```yaml
+services:
+
+  # Here goes the database docker compose service definition
+
+  # Here goes the manager docker compose service definition
+
+  signals_manager:
+    build: backend
+    restart: always
+    command: poetry run signals_manager
+    profiles:
+      - manager
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      - "./backend/config.toml:/app/config.toml"
+
+  # Here goes the volume information for the database
+```
+
+## Running the clients
+
+!!! warning
+
+    This service require the `database` and the `proxy` services.
+
+!!! tip
+
+    It's a good idea to have the signals manager running to fill the database with events and streams.
+
+Running the signals manager can be simply done via the following command:
+
+```console
+docker compose --profile "database" --profile "proxy" --profile "clients"  up -d
+```
+
+!!! note
+
+    When you need to put down the clients you also need to precise the profiles the same way your run it.
+
+    ```console
+    docker compose --profile "database" --profile "proxy" --profile "clients" down
+    ```
+
+Stack example:
+
+```yaml
+services:
+
+  # Here goes the database docker compose service definition
+
+  # Here goes the manager docker compose service definition
+
+  api_client:
+    build: backend
+    restart: always
+    profiles:
+      - client
+    command: poetry run api_client
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      - "./backend/config.toml:/app/config.toml"
+    ports:
+      - '8000:8000'
+  web_client:
+    build: backend
+    restart: always
+    profiles:
+      - client
+    command: poetry run web_client
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    volumes:
+      - "./backend/config.toml:/app/config.toml"
+    ports:
+      - '8001:8001'
 
   # Here goes the volume information for the database
 ```
