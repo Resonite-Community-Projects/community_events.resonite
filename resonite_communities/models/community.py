@@ -13,6 +13,10 @@ class CommunityPlatform(CEEnum):
     DISCORD = 'DISCORD'
     TWITCH = 'TWITCH'
     JSON = 'JSON'
+    JSON_COMMUNITY_EVENT = 'JSON_COMMUNITY_EVENT'
+
+events_platforms = [CommunityPlatform.DISCORD, CommunityPlatform.JSON, CommunityPlatform.JSON_COMMUNITY_EVENT]
+streams_platforms = [CommunityPlatform.TWITCH]
 
 class Community(BaseModel, table=True):
     __table_args__ = (UniqueConstraint("external_id", "platform"),)
@@ -28,6 +32,7 @@ class Community(BaseModel, table=True):
     monitored: bool = Field()
     configured: bool | None = Field(default=False)
     ad_bot_configured: bool | None = Field(default=False)
+    remote: bool | None = Field(default=False)
     url: str | None = Field()
     members_count: int | None = Field(default=0)
     tags: str | None = Field()

@@ -12,7 +12,7 @@ from sqlalchemy import and_, not_, case
 from resonite_communities.clients import StandaloneApplication
 from resonite_communities.models.signal import Event, Stream, EventStatus
 from resonite_communities.models.community import Community
-from resonite_communities.models.community import CommunityPlatform, Community
+from resonite_communities.models.community import CommunityPlatform, Community, events_platforms, streams_platforms
 from resonite_communities.utils.tools import is_local_env
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
@@ -296,7 +296,7 @@ def get_events_v2(request: Request, format_type: FormatType = None, communities:
 
 @router_v2.get("/communities")
 def get_communities_v2():
-    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+    communities = Community().find(platform__in=events_platforms)
 
     communities_formated = []
     for community in communities:
@@ -305,6 +305,10 @@ def get_communities_v2():
             "description": community.custom_description if community.custom_description else community.default_description,
             "url": community.url,
             "icon": community.logo,
+            "external_id": community.external_id,
+            "platform": community.platform,
+            "public": True if 'public' in community.tags else False,
+            "configured": community.configured,
         })
     return communities_formated
 
@@ -426,6 +430,7 @@ class CommunityRequest(BaseModel):
     private_role_id: str | None = None
     private_channel_id: str | None = None
     events_url: str | None = None
+    selected_community_external_ids: dict | None = None
 
 class DiscordImportRequest(BaseModel):
     id: str
@@ -444,9 +449,9 @@ def get_admin_communities_list(
 
     communities = []
     if type == 'event':
-        communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON], configured__eq=True)
+        communities = Community().find(platform__in=events_platforms, configured__eq=True)
     elif type == 'stream':
-        communities = Community().find(platform__in=[CommunityPlatform.TWITCH], configured__eq=True)
+        communities = Community().find(platform__in=streams_platforms, configured__eq=True)
     else:
         raise HTTPException(status_code=400, detail="Invalid community type")
 
@@ -477,10 +482,10 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
     new_community = Community().add(
         name=data.name,
         external_id=data.external_id,
-        platform=CommunityPlatform(data.platform.upper()),
+        platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
         url=data.url,
         monitored=False,
-        configured=True if data.platform == 'Twitch' else False, # TODO: Add youtube and probably best to have 2 "kind" of community: events and streams
+        configured=True,
         tags=data.tags,
         custom_description=data.description,
         config={
@@ -497,11 +502,15 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
+    import logging
+    logging.error(data)
+    logging.error(data.selected_community_external_ids)
+
     updated = Community.update(
         filters=(Community.id == community_id),
         name=data.name,
         external_id=data.external_id,
-        platform=CommunityPlatform(data.platform.upper()),
+        platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
         url=data.url,
         tags=data.tags,
         custom_description=data.description if not data.resetDescription else None,

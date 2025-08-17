@@ -80,7 +80,8 @@ document.addEventListener('alpine:init', () => {
                 const body = {};
                 inputs.forEach(input => {
                     if (input.type === 'checkbox') {
-                        body[input.name] = input.checked;
+                        if (!body[input.name]) body[input.name] = {};
+                        body[input.name][input.value] = input.checked;
                     } else if (input.type === 'radio') {
                         if (input.checked) {
                             body[input.name] = input.value;
@@ -269,26 +270,28 @@ async function getCommunityForm(communityId = null, communityType = null) {
 
     if (communityType === 'event') {
         formOptions = `
-        <option ${platformValue === 'Discord' ? 'selected' : ''}>Discord</option>
+        <option ${platformValue === 'DISCORD' ? 'selected' : ''}>Discord</option>
         <option ${platformValue === 'JSON' ? 'selected' : ''}>JSON</option>
+        <option ${platformValue === 'JSON_COMMUNITY_EVENT' ? 'selected' : ''}>JSON Community Event</option>
         `
-        formCommunityConfiguration = `
-        <p style='font-size: 150%;'>Configuration</p>
-        <div class="field">
-            <label class="label">Private Role ID</label>
-            <div class="control">
-                <input name="private_role_id" class="input" type="text" value="${privateRoleIdValue}" placeholder="Private Role ID">
-            </div>
-        </div>
-        <div class="field">
-            <label class="label">Private Channel ID</label>
-            <div class="control">
-                <input name="private_channel_id" class="input" type="text" value="${privateChannelIdValue}" placeholder="Private Channel ID">
-            </div>
-        </div>`
 
-        if (platformValue === 'JSON') {
-            formCommunityConfiguration += `
+        if (platformValue === 'DISCORD') {
+            formCommunityConfiguration = `
+            <p style='font-size: 150%;'>Configuration</p>
+            <div class="field">
+                <label class="label">Private Role ID</label>
+                <div class="control">
+                    <input name="private_role_id" class="input" type="text" value="${privateRoleIdValue}" placeholder="Private Role ID">
+                </div>
+            </div>
+            <div class="field">
+                <label class="label">Private Channel ID</label>
+                <div class="control">
+                    <input name="private_channel_id" class="input" type="text" value="${privateChannelIdValue}" placeholder="Private Channel ID">
+                </div>
+            </div>`
+        } else if (platformValue === 'JSON') {
+            formCommunityConfiguration = `
             <div class="field">
                 <label class="label">Server URL</label>
                 <div class="control">
@@ -296,6 +299,79 @@ async function getCommunityForm(communityId = null, communityType = null) {
                 </div>
             </div>
             `
+        } else if (platformValue === 'JSON_COMMUNITY_EVENT') {
+            try {
+                const local_response = await fetch(`/v2/communities`);
+                if (!local_response.ok) {
+                    throw new Error(`Failed to fetch community data: ${local_response.statusText}`);
+                }
+                local_communities = await local_response.json();
+            } catch (error) {
+                console.error("Error fetching community data:", error);
+            }
+            console.log(local_communities)
+            try {
+                const remote_response = await fetch(`${eventsURLValue}/v2/communities`);
+                if (!remote_response.ok) {
+                    throw new Error(`Failed to fetch community data: ${remote_response.statusText}`);
+                }
+                remote_communities = await remote_response.json();
+            } catch (error) {
+                console.error("Error fetching community data:", error);
+            }
+            formCommunityConfiguration = `
+            <div class="field">
+                <label class="label">Server URL</label>
+                <div class="control">
+                    <input name="events_url" class="input" type="text" value="${eventsURLValue}" placeholder="Server URL">
+                </div>
+                ${
+                    eventsURLValue
+                        ? `
+                            <label class="label">Remote communities</label>
+                            <p class="help">Select from this list all communities you want to follow.</p>
+                            <div class="community-list">
+                            ${remote_communities
+                                .filter(c => c.configured !== false)
+                                .map(c => {
+                                    const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id);
+                                    return `
+                                        <label class="box cursor-pointer" style="display: block; ${alreadyLocal ? 'background-color: #f5f5f5; color: #999;' : ''}">
+                                            <div class="columns is-vcentered">
+                                                <div class="column py-0 is-1">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="selected_community_external_ids" 
+                                                        value="${c.external_id}" 
+                                                        class="mr-2" 
+                                                        ${alreadyLocal ? 'disabled' : ''}
+                                                    >
+                                                </div>
+                                                <div class="column py-0">
+                                                    <div class="columns m-0">
+                                                        <div class="column py-0 is-one-third is-align-content-center">
+                                                            <img src="${c.icon || 'https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png'}" alt="Community logo">
+                                                        </div>
+                                                        <div class="column">
+                                                            <div class="columns m-0 is-flex-direction-column is-justify-content-space-between" style="height: 100%;">
+                                                                <strong>${c.name}</strong><br>
+                                                                <span class="has-text-grey">${c.description || 'No description available'}</span><br>
+                                                                <small><strong>ID:</strong> ${c.external_id}</small><br>
+                                                                ${alreadyLocal ? '<small class="has-text-warning">Already configured locally</small>' : ''}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `
+                        : ''
+                }
+            </div>
+            `;
         }
     } else if (communityType === 'stream') {
         formOptions = `

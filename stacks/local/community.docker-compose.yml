@@ -81,6 +81,12 @@ services:
     labels:
       - traefik.enable=true
 
+      # CORS middleware
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+
+
       # Modern API route
       - traefik.http.routers.api_client.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
       - traefik.http.routers.api_client.entrypoints=web
@@ -104,6 +110,7 @@ services:
       # Public events legacy API V2 route
       - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
       - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
+      - traefik.http.routers.prod_api_v2_client_legacy_public.middlewares=cors
 
   web_client:
     build: ../..
@@ -147,6 +154,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.docs_community.rule=Host(`docs.resonite-communities.local`)
       - traefik.http.routers.docs_community.entrypoints=web
+
     volumes:
       - "../../docs:/docs"
 

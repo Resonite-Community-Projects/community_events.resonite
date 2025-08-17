@@ -6,7 +6,7 @@ from starlette.responses import RedirectResponse
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
-from resonite_communities.models.community import Community, CommunityPlatform
+from resonite_communities.models.community import Community, CommunityPlatform, events_platforms, streams_platforms
 
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.auth.db import get_session
@@ -22,8 +22,8 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
-    events_communities = Community().find(platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON], configured__eq=True)
-    streams_communities = Community().find(platform__in=[CommunityPlatform.TWITCH], configured__eq=True)
+    events_communities = Community().find(platform__in=events_platforms, configured__eq=True)
+    streams_communities = Community().find(platform__in=streams_platforms, configured__eq=True)
 
     return templates.TemplateResponse("admin/communities.html", {
         "userlogo" : logo_base64,

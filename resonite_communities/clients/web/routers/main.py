@@ -7,7 +7,7 @@ from sqlalchemy import case, and_, not_, or_
 from fastapi import APIRouter, Request, Depends
 
 from resonite_communities.models.signal import Event, Stream, EventStatus
-from resonite_communities.models.community import CommunityPlatform, Community
+from resonite_communities.models.community import CommunityPlatform, Community, events_platforms
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
@@ -75,7 +75,7 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
     )
     streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
 
-    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON])
+    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=events_platforms)
     user_communities = Community().find(id__in=user_auth.discord_account.user_communities) if user_auth else []
 
     return templates.TemplateResponse(
