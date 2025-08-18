@@ -4,10 +4,93 @@ prev: AdministratorGuide/deployment/requirements.md
 next: AdministratorGuide/deployment/running.md
 ---
 
+Part of the installation explanation is based on our current stack.
 
-!!! Info
+We use two different "features" that could be seen as uncommon for basic setup:
 
-    This is a simple explanation of our current stack is configured for you to do the same if you ever want to run your own server for your own community.
+- Docker profiles
+- Treafik (as a router)
+
+However you will find here different versions, one simple and one complex. The last is one is based on our stack.
+
+## Simple installation
+
+```yaml
+services:
+
+  database:
+    image: postgres:16
+    profiles:
+      - database
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_USER=myuser
+      - POSTGRES_DB=mydb
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  migrations:
+    build: .
+    command: >
+      /bin/bash -c "
+      poetry run alembic upgrade head;
+      EXIT_CODE=$?;
+      if [ $EXIT_CODE -ne 0 ]; then
+        echo 'Alembic migration failed with exit code' $EXIT_CODE;
+        exit $EXIT_CODE;
+      fi
+      "
+    depends_on:
+      database:
+        condition: service_healthy
+
+  signals_manager:
+    build: .
+    restart: always
+    command: poetry run signals_manager
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+
+
+  api_client:
+    build: .
+    restart: always
+    command: poetry run api_client
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    ports:
+      - '9000:8000'
+
+  web_client:
+    build: .
+    restart: always
+    command: poetry run web_client
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      database:
+        condition: service_healthy
+    ports:
+      - '9001:8001'
+
+```
+
+## Complex installation
 
 !!! info
 
@@ -15,7 +98,11 @@ next: AdministratorGuide/deployment/running.md
 
     You **don't need** to create your own based on this instruction as this is an explanation from the already exist docker compose file. But use the command as needed.
 
-We use docker compose `profiles` to separate each components in groups: `database`, `manager` and `clients`.
+Our different Docker Compose `profiles` are:
+
+- `database`: anything related to the database
+- `manager`: anything related to the signal manager
+- `clients`: anything related to the different clients
 
 !!! tips
 
@@ -25,7 +112,7 @@ We use docker compose `profiles` to separate each components in groups: `databas
     docker compose --profile "*" up -d
     ```
 
-## Running the proxy
+### Running the proxy
 
 We use traefik to handle the routing in our stack. The label are indicated here directly instead of per stack.
 
@@ -87,7 +174,7 @@ Stack example:
   # Here goes the volume information for the database
 ```
 
-## Running the database
+### Running the database
 
 Running the database can be simply done via the following command:
 
@@ -124,7 +211,7 @@ volumes:
     driver: local
 ```
 
-### Migrations
+#### Migrations
 
 !!! warning
 
@@ -138,7 +225,7 @@ services:
   # Here goes the database docker compose service definition
 
   migrations:
-    build: backend
+    build: .
     command: >
       /bin/bash -c "
       poetry run alembic upgrade head;
@@ -159,7 +246,7 @@ services:
 
 ```
 
-## Running the manager
+### Running the manager
 
 !!! warning
 
@@ -189,7 +276,7 @@ services:
   # Here goes the manager docker compose service definition
 
   signals_manager:
-    build: backend
+    build: .
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -200,12 +287,12 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
 
   # Here goes the volume information for the database
 ```
 
-## Running the clients
+### Running the clients
 
 !!! warning
 
@@ -239,7 +326,7 @@ services:
   # Here goes the manager docker compose service definition
 
   api_client:
-    build: backend
+    build: .
     restart: always
     profiles:
       - client
@@ -250,7 +337,7 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
     ports:
       - '8000:8000'
   web_client:
@@ -265,7 +352,7 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - "./backend/config.toml:/app/config.toml"
+      - "./config.toml:/app/config.toml"
     ports:
       - '8001:8001'
 
