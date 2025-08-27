@@ -159,16 +159,16 @@ services:
       - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=web
       - traefik.http.routers.api_v2_client_legacy_public_community.middlewares=cors
 
-  web_client:
+  web_client_community:
     build: ../..
     restart: always
     profiles:
       - client
     command: poetry run web_client
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     ports:
       - '8001:8001'
