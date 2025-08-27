@@ -20,6 +20,7 @@ class ConfigManager:
     def _load_infrastructure_config(self):
         optional_vars = [
             'PRIVATE_DOMAIN',
+            'DEV_COMMUNITY_API_URL',
         ]
         required_vars = [
             'PUBLIC_DOMAIN',
@@ -185,4 +186,3 @@ class ConfigManager:
                 session.add(twitch_config)
                 session.commit()
                 session.refresh(twitch_config)
-

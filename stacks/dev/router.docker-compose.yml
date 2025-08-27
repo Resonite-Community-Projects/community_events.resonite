@@ -13,11 +13,8 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
-      - community_network
-      - official_network
+      - shared_backend_network
 
 networks:
-  community_network:
-    name: dev_community_network
-  official_network:
-    name: dev_official_network
+  shared_backend_network:
+    name: shared_backend_network

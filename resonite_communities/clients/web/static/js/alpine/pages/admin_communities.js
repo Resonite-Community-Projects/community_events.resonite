@@ -257,6 +257,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
     const nameValue = communityData.name || '';
     const platformIdValue = communityData.external_id || '';
     const platformValue = communityData.platform || '';
+    const platformOnRemoteValue = communityData.platform_on_remote || '';
     const urlValue = communityData.url || '';
     const tagsValue = communityData.tags || '';
     const descriptionValue = communityData.description || '';
@@ -275,7 +276,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
         <option ${platformValue === 'JSON_COMMUNITY_EVENT' ? 'selected' : ''}>JSON Community Event</option>
         `
 
-        if (platformValue === 'DISCORD') {
+        if (platformValue === 'DISCORD' && !platformOnRemoteValue) {
             formCommunityConfiguration = `
             <p style='font-size: 150%;'>Configuration</p>
             <div class="field">
@@ -332,9 +333,9 @@ async function getCommunityForm(communityId = null, communityType = null) {
                             <p class="help">Select from this list all communities you want to follow.</p>
                             <div class="community-list">
                             ${remote_communities
-                                .filter(c => c.configured !== false)
+                                .filter(c => c.configured !== false && c.public === true)
                                 .map(c => {
-                                    const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id);
+                                    const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id); // TODO: Update this code to match on external_id + platform instead
                                     return `
                                         <label class="box cursor-pointer" style="display: block; ${alreadyLocal ? 'background-color: #f5f5f5; color: #999;' : ''}">
                                             <div class="columns is-vcentered">
@@ -342,7 +343,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
                                                     <input 
                                                         type="checkbox" 
                                                         name="selected_community_external_ids" 
-                                                        value="${c.external_id}" 
+                                                        value="${c.id}" 
                                                         class="mr-2" 
                                                         ${alreadyLocal ? 'disabled' : ''}
                                                     >
@@ -356,7 +357,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
                                                             <div class="columns m-0 is-flex-direction-column is-justify-content-space-between" style="height: 100%;">
                                                                 <strong>${c.name}</strong><br>
                                                                 <span class="has-text-grey">${c.description || 'No description available'}</span><br>
-                                                                <small><strong>ID:</strong> ${c.external_id}</small><br>
+                                                                <small><strong>ID:</strong> ${c.id}</small><br>
                                                                 ${alreadyLocal ? '<small class="has-text-warning">Already configured locally</small>' : ''}
                                                             </div>
                                                         </div>

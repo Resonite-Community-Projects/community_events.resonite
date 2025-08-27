@@ -37,6 +37,17 @@
         margin: 10px;
         width: 100%;
     }
+
+    .remote-community-indicator {
+        background-color: hsl(204, 86%, 90%);
+        color: #333;
+        padding: 0.25rem 0.5rem;
+        margin-top: 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+        display: block;
+        width: 100%;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -72,6 +83,9 @@
                         <div class="card-content has-text-centered">
                             <div class="columns is-flex-direction-column">
                                 <p class="title is-5" x-text="community.name"></p>
+                                <template x-if="community.platform_on_remote">
+                                    <p class="subtitle is-7 remote-community-indicator">Remote Community</p>
+                                </template>
                             </div>
                         </div>
                         <div class="card-footer">
@@ -114,6 +128,9 @@
                         <div class="card-content has-text-centered">
                             <div class="columns is-flex-direction-column">
                                 <p class="title is-5" x-text="community.name"></p>
+                                <template x-if="community.platform_on_remote">
+                                    <p class="subtitle is-7 remote-community-indicator">Remote Community</p>
+                                </template>
                             </div>
                         </div>
                         <div class="card-footer">

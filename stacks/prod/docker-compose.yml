@@ -136,33 +136,40 @@ services:
     labels:
       - traefik.enable=true
 
+      # CORS middleware
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+
       # Modern API route
-      - traefik.http.routers.prod_api_client.rule=Host(`resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.prod_api_client.entrypoints=web
+      - traefik.http.routers.api_client.rule=Host(`resonite-communities.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client.entrypoints=web
 
       # Private events legacy API v1 route
-      - traefik.http.routers.prod_api_v1_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_private.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private.entrypoints=web
 
       # Private events legacy API v2 route
       - traefik.http.routers.prod_api_v2_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v2`)
       - traefik.http.routers.prod_api_v2_client_legacy_private.entrypoints=web
 
       # Private events legacy API v1 route 2
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.rule=Host(`adult-events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_private2.rule=Host(`adult-events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private2.entrypoints=web
 
       # Public events legacy API v1 route
-      - traefik.http.routers.prod_api_v1_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_public.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public.entrypoints=web
 
       # Public events legacy API v1 route 2
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_public2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public2.entrypoints=web
 
-      # Public events legacy API V2 route
-      - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
+      # Public events legacy API v2 route
+      - traefik.http.routers.api_v2_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.api_v2_client_legacy_public.entrypoints=web
+      - traefik.http.routers.api_v2_client_legacy_public.middlewares=cors
+
 
 
 
@@ -202,8 +209,8 @@ services:
       - traefik.http.routers.prod_web_client.entrypoints=web
 
       # Private events legacy API route 2
-      - traefik.http.routers.prod_web_client_legacy_public.rule=Host(`events.resonite.boltwolf.net`)
-      - traefik.http.routers.prod_web_client_legacy_public.entrypoints=web
+      - traefik.http.routers.web_client_legacy_public.rule=Host(`events.resonite.boltwolf.net`)
+      - traefik.http.routers.web_client_legacy_public.entrypoints=web
 
   mkdocs:
     build:
@@ -217,8 +224,8 @@ services:
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.prod_docs.rule=Host(`docs.resonite-communities.com`)
-      - traefik.http.routers.prod_docs.entrypoints=web
+      - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.com`)
+      - traefik.http.routers.docs.entrypoints=web
 
   cache:
     image: redis:7.0-alpine

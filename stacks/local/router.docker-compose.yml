@@ -13,11 +13,11 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
-      - community_network
-      - official_network
+      shared_backend_network:
+        aliases:
+          - resonite-communities.local
+          - resonite.local
 
 networks:
-  community_network:
-    name: local_community_network
-  official_network:
-    name: local_official_network
+  shared_backend_network:
+    name: shared_backend_network

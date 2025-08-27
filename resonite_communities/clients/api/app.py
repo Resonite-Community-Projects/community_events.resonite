@@ -162,6 +162,8 @@ def get_filtered_events(
             })
         elif version == "v2":
             versioned_events.append({
+                "id": str(signal.id),
+                "external_id": str(signal.external_id),
                 "name": signal.name,
                 #"description": signal.custom_description if signal.custom_description else signal.default_description,
                 "description": signal.description,
@@ -174,6 +176,7 @@ def get_filtered_events(
                 "community_name": signal.community.name, # TODO: Connect this to a session
                 "community_url": signal.community.url,
                 "tags": signal.tags,
+                "status": signal.status,
                 # source
             })
         else:
@@ -301,6 +304,7 @@ def get_communities_v2():
     communities_formated = []
     for community in communities:
         communities_formated.append({
+            "id": community.id,
             "name": community.name,
             "description": community.custom_description if community.custom_description else community.default_description,
             "url": community.url,
@@ -311,6 +315,22 @@ def get_communities_v2():
             "configured": community.configured,
         })
     return communities_formated
+
+@router_v2.get("/communities/{community_id}")
+def get_communities_v2(community_id: str):
+    community = Community().find(id=community_id)[0]
+
+    return {
+        "id": community.id,
+        "name": community.name,
+        "description": community.custom_description if community.custom_description else community.default_description,
+        "url": community.url,
+        "icon": community.logo,
+        "external_id": community.external_id,
+        "platform": community.platform,
+        "public": True if 'public' in community.tags else False,
+        "configured": community.configured,
+    }
 
 # TODO: Temporary
 
@@ -408,6 +428,7 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
         "name": community.name,
         "external_id": community.external_id,
         "platform": community.platform.value,
+        "platform_on_remote": community.platform_on_remote,
         "url": community.url,
         "tags": community.tags,
         "description": community.default_description if not community.custom_description else community.custom_description,
@@ -470,6 +491,7 @@ def get_admin_communities_list(
             "private_role_id": community.config.get("private_role_id", None),
             "private_channel_id": community.config.get("private_channel_id", None),
             "events_url": community.config.get("events_url", None),
+            "platform_on_remote": community.platform_on_remote,
         })
 
     return communities_formatted
@@ -497,14 +519,48 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
 
     return {"id": new_community.id, "message": "Community created successfully"}
 
+import requests
+
 @router_v2.patch("/admin/communities/{community_id}")
 def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         raise HTTPException(status_code=403, detail="Not authenticated.")
 
+
     import logging
-    logging.error(data)
-    logging.error(data.selected_community_external_ids)
+    from resonite_communities.utils.tools import is_local_env
+
+    if data.platform == 'JSON Community Event':
+        for selected_community_id, selected_community_to_add in data.selected_community_external_ids.items():
+            logging.error(f"{selected_community_id}: {selected_community_to_add}")
+            if selected_community_to_add:
+                logging.error(f"Let see to have the community {selected_community_id}")
+
+                if is_local_env:
+                    api_client_base_url = Config.DEV_COMMUNITY_API_URL if Config.DEV_COMMUNITY_API_URL else "http://api_client_community:8000"
+                else:
+                    if not data.events_url:
+                        raise HTTPException(status_code=400, detail="events_url must be provided for non-local environments.")
+                    api_client_base_url = data.events_url
+
+                logging.error(f"{api_client_base_url}/v2/communities/{selected_community_id}")
+                r = requests.get(f"{api_client_base_url}/v2/communities/{selected_community_id}")
+                data_r = r.json()
+                print(data)
+                Community.add(
+                    name = data_r['name'],
+                    platform=CommunityPlatform.DISCORD,
+                    platform_on_remote=data_r['platform'],
+                    external_id=data_r['external_id'],
+                    monitored=False,
+                    configured=True,
+                    logo=data_r['icon'],
+                    default_description=data_r['description'],
+                    tags="public" if data_r['public'] else "private",
+                    config={
+                        "community_configurator": community_id
+                    }
+                )
 
     updated = Community.update(
         filters=(Community.id == community_id),

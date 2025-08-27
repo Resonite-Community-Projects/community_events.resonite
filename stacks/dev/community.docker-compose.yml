@@ -1,6 +1,6 @@
 services:
 
-  database:
+  database_community:
     image: postgres:16
     profiles:
       - database
@@ -23,8 +23,10 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+    networks:
+      - shared_backend_network
 
-  migrations:
+  migrations_community:
     build: ../..
     command: >
       /bin/bash -c "
@@ -53,22 +55,24 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     depends_on:
-      database:
+      database_community:
         condition: service_healthy
     profiles:
       - manager
       - client
+    networks:
+      - shared_backend_network
 
-  signals_manager:
+  signals_manager_community:
     build: ../..
     restart: always
     command: poetry run signals_manager
     profiles:
       - manager
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     secrets:
       - database_url
@@ -87,20 +91,24 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
+    networks:
+      - shared_backend_network
 
-  api_client:
+  api_client_community:
     build: ../..
     restart: always
     profiles:
       - client
     command: poetry run api_client
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     ports:
       - '8000:8000'
+    networks:
+      - shared_backend_network
     secrets:
       - database_url
       - discord_secret
@@ -121,29 +129,35 @@ services:
     labels:
       - traefik.enable=true
 
+      # CORS middleware
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+
       # Modern API route
-      - traefik.http.routers.dev_api_v1_client.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.dev_api_v1_client.entrypoints=web
+      - traefik.http.routers.api_client_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client_community.entrypoints=web
 
       # Private events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_private.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_private.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_private_community.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private_community.entrypoints=web
 
-      # Private events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_private2.rule=Host(`3rd.adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_private2.entrypoints=web
-
-      # Public events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_public.entrypoints=web
+      # Private events legacy API v1 route 2
+      - traefik.http.routers.api_v1_client_legacy_private2_community.rule=Host(`3rd.adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private2_community.entrypoints=web
 
       # Public events legacy API v1 route
-      - traefik.http.routers.dev_api_v1_client_legacy_public2.rule=Host(`3rd.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_public2.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_public_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public_community.entrypoints=web
 
-      # Public events legacy API V2 route
-      - traefik.http.routers.dev_api_v2_client_legacy_public.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.dev_api_v2_client_legacy_public.entrypoints=web
+      # Public events legacy API v1 route 2
+      - traefik.http.routers.api_v1_client_legacy_public2_community.rule=Host(`3rd.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public2_community.entrypoints=web
+
+      # Public events legacy API v2 route
+      - traefik.http.routers.api_v2_client_legacy_public_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v2`)
+      - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=web
+      - traefik.http.routers.api_v2_client_legacy_public_community.middlewares=cors
 
   web_client:
     build: ../..
@@ -158,6 +172,8 @@ services:
         condition: service_healthy
     ports:
       - '8001:8001'
+    networks:
+      - shared_backend_network
     secrets:
       - database_url
       - discord_secret
@@ -177,27 +193,29 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dev_web_client.rule=Host(`dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_client.entrypoints=web
+      - traefik.http.routers.web_client_community.rule=Host(`dev.resonite-communities.com`)
+      - traefik.http.routers.web_client_community.entrypoints=web
 
       # Public events legacy API route
-      - traefik.http.routers.dev_web_client_legacy_public.rule=Host(`3rd.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_client_legacy_public.entrypoints=web
+      - traefik.http.routers.web_client_legacy_public_community.rule=Host(`3rd.dev.resonite-communities.com`)
+      - traefik.http.routers.web_client_legacy_public_community.entrypoints=web
 
-  mkdocs:
+  mkdocs_community:
     build:
       context: ../..
       dockerfile: Dockerfile.mkdocs
     ports:
       - "8002:8000"
+    networks:
+      - shared_backend_network
     profiles:
       - doc
     stdin_open: true
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dev_docs.rule=Host(`docs.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_docs.entrypoints=web
+      - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
+      - traefik.http.routers.docs.entrypoints=web
 
 secrets:
   postgres_password:
@@ -222,6 +240,5 @@ volumes:
     driver: local
 
 networks:
-  default:
-    name: dev_community_network
+  shared_backend_network:
     external: true

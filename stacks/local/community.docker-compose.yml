@@ -1,5 +1,5 @@
 services:
-  database:
+  database_community:
     image: postgres:16
     profiles:
       - database
@@ -18,8 +18,10 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+    networks:
+      - shared_backend_network
 
-  migrations:
+  migrations_community:
     build: ../..
     env_file:
       - ../../env.d/community.env
@@ -33,17 +35,18 @@ services:
       fi
       "
     volumes:
-      #- "./config.toml:/app/config.toml"
       - "../../resonite_communities:/app/resonite_communities"
       - "../../migrations:/app/migrations"
     depends_on:
-      database:
+      database_community:
         condition: service_healthy
     profiles:
       - manager
       - client
+    networks:
+      - shared_backend_network
 
-  signals_manager:
+  signals_manager_community:
     build: ../..
     env_file:
       - ../../env.d/community.env
@@ -52,15 +55,16 @@ services:
     profiles:
       - manager
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     volumes:
-      #- "./config.toml:/app/config.toml"
       - "../../resonite_communities:/app/resonite_communities"
+    networks:
+      - shared_backend_network
 
-  api_client:
+  api_client_community:
     build: ../..
     env_file:
       - ../../env.d/community.env
@@ -69,15 +73,16 @@ services:
       - client
     command: poetry run api_client --reload
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     volumes:
-      #- "./config.toml:/app/config.toml"
       - "../../resonite_communities:/app/resonite_communities"
     ports:
       - '8000:8000'
+    networks:
+      - shared_backend_network
     labels:
       - traefik.enable=true
 
@@ -86,33 +91,32 @@ services:
       - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
       - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
 
-
       # Modern API route
-      - traefik.http.routers.api_client.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client.entrypoints=web
+      - traefik.http.routers.api_client_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.api_client_community.entrypoints=web
 
-      # Private events legacy API route
-      - traefik.http.routers.api_client_legacy_private.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_private.entrypoints=web
+      # Private events legacy API v1 route
+      - traefik.http.routers.api_v1_client_legacy_private_community.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private_community.entrypoints=web
 
-      # Private events legacy API route 2
-      - traefik.http.routers.api_client_legacy_private2.rule=Host(`3rd.private.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_private2.entrypoints=web
+      # Private events legacy API v1 route 2
+      - traefik.http.routers.api_v1_client_legacy_private2_community.rule=Host(`3rd.private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_private2_community.entrypoints=web
 
-      # Public events legacy API route
-      - traefik.http.routers.api_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_public.entrypoints=web
+      # Public events legacy API v1 route
+      - traefik.http.routers.api_v1_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public_community.entrypoints=web
 
-      # Public events legacy API route 2
-      - traefik.http.routers.api_client_legacy_public2.rule=Host(`3rd.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_client_legacy_public2.entrypoints=web
+      # Public events legacy API v1 route 2
+      - traefik.http.routers.api_v1_client_legacy_public2_community.rule=Host(`3rd.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.api_v1_client_legacy_public2_community.entrypoints=web
 
-      # Public events legacy API V2 route
-      - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
-      - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=web
-      - traefik.http.routers.prod_api_v2_client_legacy_public.middlewares=cors
+      # Public events legacy API v2 route
+      - traefik.http.routers.api_v2_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
+      - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=web
+      - traefik.http.routers.api_v2_client_legacy_public_community.middlewares=cors
 
-  web_client:
+  web_client_community:
     build: ../..
     env_file:
       - ../../env.d/community.env
@@ -121,15 +125,16 @@ services:
       - client
     command: poetry run web_client --reload
     depends_on:
-      migrations:
+      migrations_community:
         condition: service_completed_successfully
-      database:
+      database_community:
         condition: service_healthy
     volumes:
-      #- "../../config.toml:/app/config.toml"
       - "../../resonite_communities:/app/resonite_communities"
     ports:
       - '8001:8001'
+    networks:
+      - shared_backend_network
     labels:
       - traefik.enable=true
 
@@ -137,28 +142,29 @@ services:
       - traefik.http.routers.web_client_community.entrypoints=web
 
       # Public events legacy API route
-      - traefik.http.routers.dev_web_client_legacy_public_community.rule=Host(`3rd.resonite-communities.local`)
-      - traefik.http.routers.dev_web_client_legacy_public_community.entrypoints=web
+      - traefik.http.routers.web_client_legacy_public_community.rule=Host(`3rd.resonite-communities.local`)
+      - traefik.http.routers.web_client_legacy_public_community.entrypoints=web
 
-  mkdocs:
+  mkdocs_community:
     build:
       context: ../..
       dockerfile: Dockerfile.mkdocs
     ports:
       - "8002:8000"
+    networks:
+      - shared_backend_network
     profiles:
       - doc
     stdin_open: true
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.docs_community.rule=Host(`docs.resonite-communities.local`)
-      - traefik.http.routers.docs_community.entrypoints=web
+      - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.local`)
+      - traefik.http.routers.docs.entrypoints=web
 
     volumes:
       - "../../docs:/docs"
 
 networks:
-  default:
-    name: local_community_network
+  shared_backend_network:
     external: true

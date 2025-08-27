@@ -40,7 +40,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         database_communities = {
             c.external_id: c
-            for c in Community.find(platform=CommunityPlatform.DISCORD)
+            for c in Community.find(platform=CommunityPlatform.DISCORD, platform_on_remote=None)
         }
 
         self.communities = []
@@ -66,7 +66,8 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 Community.update(
                     filters=(
                         (Community.external_id == community.external_id) &
-                        (Community.platform == CommunityPlatform.DISCORD)
+                        (Community.platform == CommunityPlatform.DISCORD) &
+                        (Community.platform_on_remote == None)
                     ),
                     monitored=community.monitored,
                     configured=community.configured,
@@ -331,11 +332,14 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 )
 
     def collect(self):
-        self.logger.info('Update events collector')
+        self.logger.info(f'Starting collecting signals')
         self.update_communities()
         for community in self.communities:
             if not community.monitored:
                 continue
+
+            self.logger.info(f'Collecting signals for {community.name}')
+
             events = community.config['bot'].scheduled_events
 
             self.upsert_events(events, community)
@@ -344,7 +348,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
             self.detect_and_handle_duplicates(community)
 
-        self.logger.info('Update events collector DONE')
+        self.logger.info(f'Finished collecting signals')
 
     @commands.Cog.listener()
     async def on_ready(self):
