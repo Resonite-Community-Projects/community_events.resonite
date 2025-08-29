@@ -129,6 +129,11 @@ services:
     labels:
       - traefik.enable=true
 
+      # CORS middleware
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+
       # Modern API route
       - traefik.http.routers.api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
       - traefik.http.routers.api_client_official.entrypoints=web
@@ -140,6 +145,8 @@ services:
       # Public events legacy API V2 route
       - traefik.http.routers.api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
       - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=web
+      - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=cors
+
 
   web_client_official:
     build: ../..
