@@ -335,7 +335,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
                             ${remote_communities
                                 .filter(c => c.configured === true && c.public === true)
                                 .map(c => {
-                                    const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id); // TODO: Update this code to match on external_id + platform instead
+                                    const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id && lc.configured === true); // TODO: Update this code to match on external_id + platform instead
                                     return `
                                         <label class="box cursor-pointer" style="display: block; ${alreadyLocal ? 'background-color: #f5f5f5; color: #999;' : ''}">
                                             <div class="columns is-vcentered">
