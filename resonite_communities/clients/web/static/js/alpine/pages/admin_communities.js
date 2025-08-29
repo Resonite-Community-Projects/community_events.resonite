@@ -312,6 +312,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
             }
             console.log(local_communities)
             try {
+                const eventsURLValue = eventsURLValue.replace(/\/+$/, '');
                 const remote_response = await fetch(`${eventsURLValue}/v2/communities`);
                 if (!remote_response.ok) {
                     throw new Error(`Failed to fetch community data: ${remote_response.statusText}`);
