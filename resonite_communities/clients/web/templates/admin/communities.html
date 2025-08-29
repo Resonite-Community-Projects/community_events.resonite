@@ -41,12 +41,78 @@
     .remote-community-indicator {
         background-color: hsl(204, 86%, 90%);
         color: #333;
-        padding: 0.25rem 0.5rem;
-        margin-top: 0.5rem;
+        padding: 0.5rem 1.5rem;
         border-radius: 4px;
         text-align: center;
         display: block;
-        width: 100%;
+        width: 180px;
+        font-size: 0.875rem;
+        font-weight: bold;
+    }
+
+    .local-community-indicator {
+        background-color: hsl(0, 0%, 92%);
+        color: hsl(0, 0%, 50%);
+        padding: 0.5rem 1.5rem;
+        border-radius: 4px;
+        text-align: center;
+        display: block;
+        width: 180px;
+        font-size: 0.875rem;
+        font-weight: bold;
+    }
+
+    .privacy-indicator {
+        padding: 0.5rem 1.5rem;
+        border-radius: 4px;
+        text-align: center;
+        display: block;
+        width: 180px;
+        font-size: 0.875rem;
+        font-weight: bold;
+    }
+
+    .privacy-indicator.private {
+        background-color: hsl(271, 86%, 90%);
+        color: #553c9a;
+    }
+
+    .privacy-indicator.public {
+        background-color: hsl(141, 86%, 90%);
+        color: #22543d;
+    }
+
+    .community-indicators {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .indicator-slot {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 32px;
+    }
+
+    .card-content {
+        padding: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+    }
+
+    .card-content .columns {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 </style>
 {% endblock %}
@@ -83,9 +149,44 @@
                         <div class="card-content has-text-centered">
                             <div class="columns is-flex-direction-column">
                                 <p class="title is-5" x-text="community.name"></p>
-                                <template x-if="community.platform_on_remote">
-                                    <p class="subtitle is-7 remote-community-indicator">Remote Community</p>
-                                </template>
+                                <div class="community-indicators">
+                                    <div class="indicator-slot">
+                                        <template x-if="community.platform_on_remote">
+                                            <div class="remote-community-indicator">
+                                                <span class="icon">
+                                                    <i class="fas fa-server" title="Remote Community"></i>
+                                                </span>
+                                                Remote
+                                            </div>
+                                        </template>
+                                        <template x-if="!community.platform_on_remote">
+                                            <div class="local-community-indicator">
+                                                <span class="icon">
+                                                    <i class="fas fa-home" title="Local Community"></i>
+                                                </span>
+                                                Local
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="indicator-slot">
+                                        <template x-if="community.tags && community.tags.includes('private')">
+                                            <div class="privacy-indicator private">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-secret"></i>
+                                                </span>
+                                                Private
+                                            </div>
+                                        </template>
+                                        <template x-if="community.tags && community.tags.includes('public') && !community.tags.includes('private')">
+                                            <div class="privacy-indicator public">
+                                                <span class="icon">
+                                                    <i class="fas fa-globe"></i>
+                                                </span>
+                                                Public
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
@@ -128,9 +229,44 @@
                         <div class="card-content has-text-centered">
                             <div class="columns is-flex-direction-column">
                                 <p class="title is-5" x-text="community.name"></p>
-                                <template x-if="community.platform_on_remote">
-                                    <p class="subtitle is-7 remote-community-indicator">Remote Community</p>
-                                </template>
+                                <div class="community-indicators">
+                                    <div class="indicator-slot">
+                                        <template x-if="community.platform_on_remote">
+                                            <div class="remote-community-indicator">
+                                                <span class="icon">
+                                                    <i class="fas fa-server" title="Remote Community"></i>
+                                                </span>
+                                                Remote
+                                            </div>
+                                        </template>
+                                        <template x-if="!community.platform_on_remote">
+                                            <div class="local-community-indicator">
+                                                <span class="icon">
+                                                    <i class="fas fa-home" title="Local Community"></i>
+                                                </span>
+                                                Local
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="indicator-slot">
+                                        <template x-if="community.tags && community.tags.includes('private')">
+                                            <div class="privacy-indicator private">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-secret"></i>
+                                                </span>
+                                                Private
+                                            </div>
+                                        </template>
+                                        <template x-if="community.tags && community.tags.includes('public') && !community.tags.includes('private')">
+                                            <div class="privacy-indicator public">
+                                                <span class="icon">
+                                                    <i class="fas fa-globe"></i>
+                                                </span>
+                                                Public
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
