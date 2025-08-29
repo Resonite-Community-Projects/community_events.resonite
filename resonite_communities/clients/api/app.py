@@ -530,7 +530,7 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
     import logging
     from resonite_communities.utils.tools import is_local_env
 
-    if data.platform == 'JSON Community Event':
+    if data.platform == 'JSON Community Event' and data.selected_community_external_ids:
         for selected_community_id, selected_community_to_add in data.selected_community_external_ids.items():
             logging.error(f"{selected_community_id}: {selected_community_to_add}")
             if selected_community_to_add:
