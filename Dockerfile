@@ -8,6 +8,8 @@ COPY poetry.lock poetry.lock
 
 COPY pyproject.toml pyproject.toml
 
+COPY scripts /scripts
+
 COPY resonite_communities resonite_communities
 
 RUN poetry install
