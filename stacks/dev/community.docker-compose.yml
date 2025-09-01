@@ -224,10 +224,9 @@ services:
 
   cert_generator_official:
     image: alpine:latest
-    command: ["/scripts/generate_certs.sh"]
+    command: ["/scripts/stack/generate_certs.sh"]
     volumes:
       - dev_eventsresonite_certs_shared:/certs_shared
-      - ./scripts/stack/:/scripts:ro
 
 secrets:
   postgres_password:
