@@ -105,6 +105,7 @@ services:
         condition: service_completed_successfully
       database_community:
         condition: service_healthy
+      cert_generator_official:
     ports:
       - '8000:8000'
     networks:
@@ -219,6 +220,13 @@ services:
       - traefik.enable=true
       - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
       - traefik.http.routers.docs.entrypoints=web
+
+  cert_generator_official:
+    image: alpine:latest
+    command: ["/scripts/generate_certs.sh"]
+    volumes:
+      - dev_eventsresonite_certs_shared:/certs_shared
+      - ./scripts/stack/:/scripts:ro
 
 secrets:
   postgres_password:
