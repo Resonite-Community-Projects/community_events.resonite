@@ -109,6 +109,8 @@ services:
       - '8000:8000'
     networks:
       - shared_backend_network
+    volumes:
+      - certs_shared:/certs_shared:ro
     secrets:
       - database_url
       - discord_secret
@@ -116,6 +118,7 @@ services:
       - secret_key
       - sentry_dsn
     environment:
+      - REQUESTS_CA_BUNDLE=/certs_shared/official.crt
       - DATABASE_URL_FILE=/run/secrets/database_url
       - DISCORD_SECRET_FILE=/run/secrets/discord_secret
       - SECRET_FILE=/run/secrets/secret
@@ -238,6 +241,8 @@ secrets:
 volumes:
   postgres_data:
     driver: local
+  certs_shared:
+    external: true
 
 networks:
   shared_backend_network:
