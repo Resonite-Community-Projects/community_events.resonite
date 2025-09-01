@@ -538,6 +538,7 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
             logging.error(f"{selected_community_id}: {selected_community_to_add}")
             if selected_community_to_add:
                 logging.error(f"Let see to have the community {selected_community_id}")
+                logging.error(f"Checking on {data.events_url}/v2/communities/{selected_community_id}")
 
                 r = requests.get(f"{data.events_url}/v2/communities/{selected_community_id}")
                 try:
