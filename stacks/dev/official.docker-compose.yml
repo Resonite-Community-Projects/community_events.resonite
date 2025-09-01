@@ -137,16 +137,19 @@ services:
       # Modern API route
       - traefik.http.routers.api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
       - traefik.http.routers.api_client_official.entrypoints=web
+      - traefik.http.routers.api_client_official.entrypoints=websecure
       - traefik.http.routers.api_client_official.middlewares=cors
 
       # Public events legacy API v1 route
       - traefik.http.routers.api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.api_v1_client_legacy_public_official.entrypoints=web
+      - traefik.http.routers.api_v1_client_legacy_public_official.entrypoints=websecure
       - traefik.http.routers.api_v1_client_legacy_public_official.middlewares=cors
 
       # Public events legacy API V2 route
       - traefik.http.routers.api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
       - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=web
+      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=websecure
       - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=cors
 
 
