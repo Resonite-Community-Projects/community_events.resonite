@@ -17,7 +17,6 @@ Use for infrastructure-level settings that are unlikely to change, such as datab
 | `DATABASE_URL` | `str` | The Postgresql database url |
 | `CACHE_URL` | `str` | The Redis database url |
 | `SENTRY_DSN` | `str` | The DSN configuration for send error logs to Sentry |
-| `DEV_COMMUNITY_API_URL` | `str` | **(Development Only)** The URL for connecting to another instance of the same software (e.g., another community API) in a development environment. |
 
 ### Setting up `PUBLIC_DOMAIN` and `PRIVATE_DOMAINT`
 
@@ -33,26 +32,6 @@ Depending on your Operating System this would either by `/etc/hosts` for linux o
 You can change the second-level domain but there is a check on the top-level domain `.local` in the code, even if this is just to show an tip message.
 
 This check is done in the function `check_is_local_env` in the class utils and is used with the variable `is_local_env` in the rest of the code.
-
-### Setting up `DEV_COMMUNITY_API_URL`
-
-This variable is **only used in development environments** (when `is_local_env` is `True`). It allows your local instance to connect to another instance of the community API, which might be running locally via Docker or on a specific development domain.
-
-If `DEV_COMMUNITY_API_URL` is not set in a local environment, the application will default to `http://api_client_community:8000`.
-
-To configure it, add the variable to your relevant `.env` file in the `env.d/` directory:
-
-*   For the `community` stack: `env.d/community.env`
-*   For the `official` stack: `env.d/official.env`
-
-Example:
-```
-DEV_COMMUNITY_API_URL="http://resonite-communities.local:8000"
-```
-Or, if connecting directly to a Docker service:
-```
-DEV_COMMUNITY_API_URL="http://api_client_community:8000"
-```
 
 ### Setting up `DATABASE_URL`
 

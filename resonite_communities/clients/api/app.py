@@ -318,7 +318,10 @@ def get_communities_v2():
 
 @router_v2.get("/communities/{community_id}")
 def get_communities_v2(community_id: str):
-    community = Community().find(id=community_id)[0]
+    try:
+        community = Community().find(id=community_id)[0]
+    except IndexError:
+        return {}
 
     return {
         "id": community.id,
@@ -536,31 +539,27 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
             if selected_community_to_add:
                 logging.error(f"Let see to have the community {selected_community_id}")
 
-                if is_local_env:
-                    api_client_base_url = Config.DEV_COMMUNITY_API_URL if Config.DEV_COMMUNITY_API_URL else "http://api_client_community:8000"
-                else:
-                    if not data.events_url:
-                        raise HTTPException(status_code=400, detail="events_url must be provided for non-local environments.")
-                    api_client_base_url = data.events_url
-
-                logging.error(f"{api_client_base_url}/v2/communities/{selected_community_id}")
-                r = requests.get(f"{api_client_base_url}/v2/communities/{selected_community_id}")
-                data_r = r.json()
-                print(data)
-                Community.add(
-                    name = data_r['name'],
-                    platform=CommunityPlatform.DISCORD,
-                    platform_on_remote=data_r['platform'],
-                    external_id=data_r['external_id'],
-                    monitored=False,
-                    configured=True,
-                    logo=data_r['icon'],
-                    default_description=data_r['description'],
-                    tags="public" if data_r['public'] else "private",
-                    config={
-                        "community_configurator": community_id
-                    }
-                )
+                r = requests.get(f"{data.events_url}/v2/communities/{selected_community_id}")
+                try:
+                    data_r = r.json()
+                    Community.upsert(
+                        _filter_field=['external_id', 'platform'],
+                        _filter_value=[data_r['external_id'], CommunityPlatform.DISCORD],
+                        name = data_r['name'],
+                        platform=CommunityPlatform.DISCORD,
+                        platform_on_remote=data_r['platform'],
+                        external_id=data_r['external_id'],
+                        monitored=False,
+                        configured=True,
+                        logo=data_r['icon'],
+                        default_description=data_r['description'],
+                        tags="public" if data_r['public'] else "private",
+                        config={
+                            "community_configurator": community_id
+                        }
+                    )
+                except Exception as e:
+                    logging.error(f"Cant unpack json {e}")
 
     updated = Community.update(
         filters=(Community.id == community_id),

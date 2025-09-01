@@ -35,13 +35,6 @@ class CommunityEventsCollector(EventsCollector):
             #self.logger.info(f"Processing events for {community.name} from {community.config}")
             community_configurator = Community.find(id=community.config.community_configurator)[0]
 
-            from resonite_communities.utils.tools import is_local_env
-
-            if is_local_env:
-                events_url = self.config.DEV_COMMUNITY_API_URL if self.config.DEV_COMMUNITY_API_URL else "http://api_client_community:8000"
-            else:
-                events_url = community_configurator.config.events_url
-
             try:
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
             except Exception as error:
