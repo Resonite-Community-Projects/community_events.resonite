@@ -106,6 +106,7 @@ services:
       database_community:
         condition: service_healthy
       cert_generator_official:
+        condition: service_completed_successfully
     ports:
       - '8000:8000'
     networks:
