@@ -4,6 +4,11 @@ set -e
 CERT_DIR="/certs_shared"
 mkdir -p "$CERT_DIR"
 
+apt-get update -qq
+DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+    openssl ca-certificates
+rm -rf /var/lib/apt/lists/*
+
 # Generate config
 cat > "$CERT_DIR/cert_san.cnf" <<'EOF'
 [req]

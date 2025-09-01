@@ -223,7 +223,7 @@ services:
       - traefik.http.routers.docs.entrypoints=web
 
   cert_generator_official:
-    image: alpine:latest
+    build: ../..
     command: ["/scripts/stack/generate_certs.sh"]
     volumes:
       - dev_eventsresonite_certs_shared:/certs_shared
