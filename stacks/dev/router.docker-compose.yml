@@ -14,7 +14,7 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - certs_shared:/certs_shared:ro
+      - dev_eventsresonite_certs_shared:/certs_shared:ro
     networks:
       shared_backend_network:
         aliases:
@@ -26,5 +26,5 @@ networks:
     name: shared_backend_network
 
 volumes:
-  certs_shared:
+  dev_eventsresonite_certs_shared:
     external: true

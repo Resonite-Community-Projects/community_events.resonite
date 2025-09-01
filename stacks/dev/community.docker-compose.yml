@@ -110,7 +110,7 @@ services:
     networks:
       - shared_backend_network
     volumes:
-      - certs_shared:/certs_shared:ro
+      - dev_eventsresonite_certs_shared:/certs_shared:ro
     secrets:
       - database_url
       - discord_secret
@@ -241,7 +241,7 @@ secrets:
 volumes:
   postgres_data:
     driver: local
-  certs_shared:
+  dev_eventsresonite_certs_shared:
     external: true
 
 networks:
