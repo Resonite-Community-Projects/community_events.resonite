@@ -114,8 +114,6 @@ services:
         condition: service_completed_successfully
       database_official:
         condition: service_healthy
-    ports:
-      - '8100:8000'
     secrets:
       - database_url
       - discord_secret
@@ -168,8 +166,6 @@ services:
         condition: service_completed_successfully
       database_official:
         condition: service_healthy
-    ports:
-      - '8101:8001'
     secrets:
       - database_url
       - discord_secret
