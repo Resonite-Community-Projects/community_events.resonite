@@ -5,7 +5,7 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.web.address=:80"
+      - "--entryPoints.local_web.address=:80"
       - "--accesslog=true"
     ports:
       - "80:80"

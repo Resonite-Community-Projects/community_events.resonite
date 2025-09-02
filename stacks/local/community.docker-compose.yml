@@ -87,34 +87,39 @@ services:
       - traefik.enable=true
 
       # CORS middleware
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+      - traefik.http.middlewares.local_cors_community.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.local_cors_community.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.local_cors_community.headers.customresponseheaders.Access-Control-Allow-Headers=*
 
       # Modern API route
-      - traefik.http.routers.api_client_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client_community.entrypoints=web
+      - traefik.http.routers.local_api_client_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/api`)
+      - traefik.http.routers.local_api_client_community.entrypoints=local_web
+      - traefik.http.routers.local_api_client_community.middlewares=local_cors_community
 
       # Private events legacy API v1 route
-      - traefik.http.routers.api_v1_client_legacy_private_community.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_private_community.entrypoints=web
+      - traefik.http.routers.local_api_v1_client_legacy_private_community.rule=Host(`private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.local_api_v1_client_legacy_private_community.entrypoints=local_web
+      - traefik.http.routers.local_api_v1_client_legacy_private_community.middlewares=local_cors_community
 
       # Private events legacy API v1 route 2
-      - traefik.http.routers.api_v1_client_legacy_private2_community.rule=Host(`3rd.private.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_private2_community.entrypoints=web
+      - traefik.http.routers.local_api_v1_client_legacy_private2_community.rule=Host(`3rd.private.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.local_api_v1_client_legacy_private2_community.entrypoints=local_web
+      - traefik.http.routers.local_api_v1_client_legacy_private2_community.middlewares=local_cors_community
 
       # Public events legacy API v1 route
-      - traefik.http.routers.api_v1_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public_community.entrypoints=web
+      - traefik.http.routers.local_api_v1_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.local_api_v1_client_legacy_public_community.entrypoints=local_web
+      - traefik.http.routers.local_api_v1_client_legacy_public_community.middlewares=local_cors_community
 
       # Public events legacy API v1 route 2
-      - traefik.http.routers.api_v1_client_legacy_public2_community.rule=Host(`3rd.resonite-communities.local`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public2_community.entrypoints=web
+      - traefik.http.routers.local_api_v1_client_legacy_public2_community.rule=Host(`3rd.resonite-communities.local`) && PathPrefix(`/v1`)
+      - traefik.http.routers.local_api_v1_client_legacy_public2_community.entrypoints=local_web
+      - traefik.http.routers.local_api_v1_client_legacy_public2_community.middlewares=local_cors_community
 
       # Public events legacy API v2 route
-      - traefik.http.routers.api_v2_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
-      - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=web
-      - traefik.http.routers.api_v2_client_legacy_public_community.middlewares=cors
+      - traefik.http.routers.local_api_v2_client_legacy_public_community.rule=Host(`resonite-communities.local`) && PathPrefix(`/v2`)
+      - traefik.http.routers.local_api_v2_client_legacy_public_community.entrypoints=local_web
+      - traefik.http.routers.local_api_v2_client_legacy_public_community.middlewares=local_cors_community
 
   web_client_community:
     build: ../..
@@ -138,12 +143,12 @@ services:
     labels:
       - traefik.enable=true
 
-      - traefik.http.routers.web_client_community.rule=Host(`resonite-communities.local`)
-      - traefik.http.routers.web_client_community.entrypoints=web
+      - traefik.http.routers.local_web_client_community.rule=Host(`resonite-communities.local`)
+      - traefik.http.routers.local_web_client_community.entrypoints=local_web
 
       # Public events legacy API route
-      - traefik.http.routers.web_client_legacy_public_community.rule=Host(`3rd.resonite-communities.local`)
-      - traefik.http.routers.web_client_legacy_public_community.entrypoints=web
+      - traefik.http.routers.local_web_client_legacy_public_community.rule=Host(`3rd.resonite-communities.local`)
+      - traefik.http.routers.local_web_client_legacy_public_community.entrypoints=local_web
 
   mkdocs_community:
     build:
@@ -160,7 +165,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.local`)
-      - traefik.http.routers.docs.entrypoints=web
+      - traefik.http.routers.docs.entrypoints=local_web
 
     volumes:
       - "../../docs:/docs"

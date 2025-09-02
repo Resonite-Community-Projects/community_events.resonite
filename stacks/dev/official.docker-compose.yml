@@ -6,7 +6,7 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.web.address=:80"
+      - "--entryPoints.dev_web_official.address=:80"
       - "--accesslog=true"
     ports:
       - "82:80"
@@ -136,24 +136,24 @@ services:
       - traefik.http.services.dev_api_client_official.loadbalancer.server.port=8000
 
       # CORS middleware
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Methods=*
-      - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Headers=*
+      - traefik.http.middlewares.dev_cors_official.headers.customresponseheaders.Access-Control-Allow-Origin=*
+      - traefik.http.middlewares.dev_cors_official.headers.customresponseheaders.Access-Control-Allow-Methods=*
+      - traefik.http.middlewares.dev_cors_official.headers.customresponseheaders.Access-Control-Allow-Headers=*
 
       # Modern API route
-      - traefik.http.routers.api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client_official.entrypoints=web
-      - traefik.http.routers.api_client_official.middlewares=cors
+      - traefik.http.routers.dev_api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
+      - traefik.http.routers.dev_api_client_official.entrypoints=dev_web_official
+      - traefik.http.routers.dev_api_client_official.middlewares=dev_cors_official
 
       # Public events legacy API v1 route
-      - traefik.http.routers.api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public_official.entrypoints=web
-      - traefik.http.routers.api_v1_client_legacy_public_official.middlewares=cors
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.entrypoints=dev_web_official
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.middlewares=dev_cors_official
 
       # Public events legacy API V2 route
       - traefik.http.routers.api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=web
-      - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=cors
+      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=dev_web_official
+      - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=dev_cors_official
 
 
   web_client_official:
@@ -186,10 +186,10 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
-      - traefik.http.services.dev_web_client_official.loadbalancer.server.port=8001
+      - traefik.http.services.dev_web_official_client_official.loadbalancer.server.port=8001
 
-      - traefik.http.routers.dev_web_client_official.rule=Host(`official.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_client_official.entrypoints=web
+      - traefik.http.routers.dev_web_official_client_official.rule=Host(`official.dev.resonite-communities.com`)
+      - traefik.http.routers.dev_web_official_client_official.entrypoints=dev_web_official
 
 secrets:
   postgres_password:
