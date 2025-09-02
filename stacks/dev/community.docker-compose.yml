@@ -175,8 +175,6 @@ services:
         condition: service_completed_successfully
       database_community:
         condition: service_healthy
-    ports:
-      - '8001:8001'
     secrets:
       - database_url
       - discord_secret
@@ -196,7 +194,7 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
-      - traefik.http.services.dev_web_client_community.loadbalancer.server.port=8000
+      - traefik.http.services.dev_web_client_community.loadbalancer.server.port=8001
 
       - traefik.http.routers.web_client_community.rule=Host(`dev.resonite-communities.com`)
       - traefik.http.routers.web_client_community.entrypoints=web
