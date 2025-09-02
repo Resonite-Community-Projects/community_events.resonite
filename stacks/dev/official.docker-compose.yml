@@ -114,8 +114,6 @@ services:
         condition: service_completed_successfully
       database_official:
         condition: service_healthy
-    ports:
-      - '8100:8000'
     secrets:
       - database_url
       - discord_secret
@@ -135,6 +133,7 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
+      - traefik.http.services.dev_api_client_official.loadbalancer.server.port=8000
 
       # CORS middleware
       - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
@@ -168,8 +167,6 @@ services:
         condition: service_completed_successfully
       database_official:
         condition: service_healthy
-    ports:
-      - '8101:8001'
     secrets:
       - database_url
       - discord_secret
@@ -189,6 +186,8 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
+      - traefik.http.services.dev_web_client_official.loadbalancer.server.port=8001
+
       - traefik.http.routers.dev_web_client_official.rule=Host(`official.dev.resonite-communities.com`)
       - traefik.http.routers.dev_web_client_official.entrypoints=web
 

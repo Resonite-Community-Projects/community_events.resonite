@@ -113,8 +113,6 @@ services:
         condition: service_completed_successfully
       database_community:
         condition: service_healthy
-    ports:
-      - '8000:8000'
     secrets:
       - database_url
       - discord_secret
@@ -134,6 +132,7 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
+      - traefik.http.services.dev_api_client_community.loadbalancer.server.port=8000
 
       # CORS middleware
       - traefik.http.middlewares.cors.headers.customresponseheaders.Access-Control-Allow-Origin=*
@@ -197,6 +196,8 @@ services:
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
     labels:
       - traefik.enable=true
+      - traefik.http.services.dev_web_client_community.loadbalancer.server.port=8000
+
       - traefik.http.routers.web_client_community.rule=Host(`dev.resonite-communities.com`)
       - traefik.http.routers.web_client_community.entrypoints=web
 
@@ -208,16 +209,16 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile.mkdocs
-    ports:
-      - "8002:8000"
     profiles:
       - doc
     stdin_open: true
     tty: true
     labels:
       - traefik.enable=true
-      - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
-      - traefik.http.routers.docs.entrypoints=web
+      - traefik.http.services.dev_docs.loadbalancer.server.port=8000
+
+      - traefik.http.routers.dev_docs.rule=Host(`docs.dev.resonite-communities.com`)
+      - traefik.http.routers.dev_docs.entrypoints=web
 
 secrets:
   postgres_password:
