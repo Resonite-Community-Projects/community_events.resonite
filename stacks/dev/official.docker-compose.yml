@@ -9,7 +9,7 @@ services:
       - "--entryPoints.web.address=:80"
       - "--accesslog=true"
     ports:
-      - "81:80"
+      - "82:80"
       - "8082:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
