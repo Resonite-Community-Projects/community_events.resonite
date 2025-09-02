@@ -115,8 +115,6 @@ services:
         condition: service_healthy
     ports:
       - '8000:8000'
-    volumes:
-      - dev_eventsresonite_certs_shared:/certs_shared:ro
     secrets:
       - database_url
       - discord_secret
