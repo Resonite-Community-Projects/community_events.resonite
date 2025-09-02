@@ -1,5 +1,19 @@
 services:
 
+  traefik_community:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   database_community:
     image: postgres:16
     profiles:
@@ -23,8 +37,6 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    networks:
-      - shared_backend_network
 
   migrations_community:
     build: ../..
@@ -59,9 +71,7 @@ services:
         condition: service_healthy
     profiles:
       - manager
-      - client
-    networks:
-      - shared_backend_network
+      - api_client
 
   signals_manager_community:
     build: ../..
@@ -91,8 +101,6 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
-    networks:
-      - shared_backend_network
 
   api_client_community:
     build: ../..
@@ -109,8 +117,6 @@ services:
         condition: service_completed_successfully
     ports:
       - '8000:8000'
-    networks:
-      - shared_backend_network
     volumes:
       - dev_eventsresonite_certs_shared:/certs_shared:ro
     secrets:
@@ -177,8 +183,6 @@ services:
         condition: service_healthy
     ports:
       - '8001:8001'
-    networks:
-      - shared_backend_network
     secrets:
       - database_url
       - discord_secret
@@ -211,8 +215,6 @@ services:
       dockerfile: Dockerfile.mkdocs
     ports:
       - "8002:8000"
-    networks:
-      - shared_backend_network
     profiles:
       - doc
     stdin_open: true
@@ -221,12 +223,6 @@ services:
       - traefik.enable=true
       - traefik.http.routers.docs.rule=Host(`docs.dev.resonite-communities.com`)
       - traefik.http.routers.docs.entrypoints=web
-
-  cert_generator_official:
-    build: ../..
-    command: ["/scripts/stack/generate_certs.sh"]
-    volumes:
-      - dev_eventsresonite_certs_shared:/certs_shared
 
 secrets:
   postgres_password:
@@ -249,9 +245,3 @@ secrets:
 volumes:
   postgres_data:
     driver: local
-  dev_eventsresonite_certs_shared:
-    external: true
-
-networks:
-  shared_backend_network:
-    external: true

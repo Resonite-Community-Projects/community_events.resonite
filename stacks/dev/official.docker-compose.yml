@@ -1,5 +1,19 @@
 services:
 
+  traefik_official:
+    image: traefik:v3.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--accesslog=true"
+    ports:
+      - "81:80"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   database_official:
     image: postgres:16
     profiles:
@@ -23,8 +37,6 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    networks:
-      - shared_backend_network
 
   migrations_official:
     build: ../..
@@ -60,8 +72,7 @@ services:
     profiles:
       - manager
       - client
-    networks:
-      - shared_backend_network
+
 
   signals_manager_official:
     build: ../..
@@ -91,8 +102,6 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
-    networks:
-      - shared_backend_network
 
   api_client_official:
     build: ../..
@@ -107,8 +116,6 @@ services:
         condition: service_healthy
     ports:
       - '8100:8000'
-    networks:
-      - shared_backend_network
     secrets:
       - database_url
       - discord_secret
@@ -136,17 +143,17 @@ services:
 
       # Modern API route
       - traefik.http.routers.api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client_official.entrypoints=web,websecure
+      - traefik.http.routers.api_client_official.entrypoints=web
       - traefik.http.routers.api_client_official.middlewares=cors
 
       # Public events legacy API v1 route
       - traefik.http.routers.api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public_official.entrypoints=web,websecure
+      - traefik.http.routers.api_v1_client_legacy_public_official.entrypoints=web
       - traefik.http.routers.api_v1_client_legacy_public_official.middlewares=cors
 
       # Public events legacy API V2 route
       - traefik.http.routers.api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=web,websecure
+      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=web
       - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=cors
 
 
@@ -163,8 +170,6 @@ services:
         condition: service_healthy
     ports:
       - '8101:8001'
-    networks:
-      - shared_backend_network
     secrets:
       - database_url
       - discord_secret
@@ -208,7 +213,3 @@ secrets:
 volumes:
   postgres_data:
     driver: local
-
-networks:
-  shared_backend_network:
-    external: true
