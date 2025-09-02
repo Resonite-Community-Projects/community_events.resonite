@@ -176,6 +176,8 @@ services:
         condition: service_completed_successfully
       database_community:
         condition: service_healthy
+    ports:
+      - '8001:8001'
     secrets:
       - database_url
       - discord_secret
@@ -206,6 +208,8 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile.mkdocs
+    ports:
+      - "8002:8000"
     profiles:
       - doc
     stdin_open: true
