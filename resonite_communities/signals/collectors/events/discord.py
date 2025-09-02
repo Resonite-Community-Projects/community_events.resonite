@@ -40,7 +40,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         database_communities = {
             c.external_id: c
-            for c in Community.find(platform=CommunityPlatform.DISCORD, platform_on_remote=None)
+            for c in Community.find(platform=CommunityPlatform.DISCORD)
         }
 
         self.communities = []
@@ -53,6 +53,8 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     ad_bot_configured = True
 
             if community:
+                if community.platform_on_remote:
+                    continue
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
                 if self.ad_bot and 'private' not in community.tags.split(','):
                     continue
