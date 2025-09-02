@@ -49,6 +49,8 @@ class CommunityEventsCollector(EventsCollector):
                 continue
 
             for event in response.json():
+                if not event['community_name'] == community.name:
+                    continue
                 self.logger.error(event)
                 self.model.upsert(
                     _filter_field='external_id',
