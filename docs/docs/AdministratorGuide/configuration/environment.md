@@ -1,10 +1,8 @@
 ---
-title: Infrastructure
+title: Environment
 prev: AdministratorGuide/configuration/configuration.md
-next: AdministratorGuide/configuration/database.md
+next: AdministratorGuide/configuration/application.md
 ---
-
-## Infrastructure configuration
 
 Use for infrastructure-level settings that are unlikely to change, such as database credentials and secret keys.
 

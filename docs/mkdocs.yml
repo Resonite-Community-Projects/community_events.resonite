@@ -75,9 +75,9 @@ nav:
       - AdministratorGuide/deployment/running.md
     - Configuration:
       - AdministratorGuide/configuration/configuration.md
-      - AdministratorGuide/configuration/infrastructure.md
-      - AdministratorGuide/configuration/database.md
-      - AdministratorGuide/configuration/signals.md
+      - AdministratorGuide/configuration/environment.md
+      - AdministratorGuide/configuration/application.md
+      - AdministratorGuide/configuration/communities.md
       - AdministratorGuide/configuration/users.md
       - AdministratorGuide/configuration/events.md
   - Support:

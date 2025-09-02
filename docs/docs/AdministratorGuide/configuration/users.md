@@ -1,6 +1,6 @@
 ---
 title: Users
-prev: AdministratorGuide/configuration/signals.md
+prev: AdministratorGuide/configuration/communities.md
 next: AdministratorGuide/configuration/events.md
 ---
 

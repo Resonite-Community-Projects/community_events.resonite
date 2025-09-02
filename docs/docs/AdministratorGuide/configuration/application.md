@@ -1,20 +1,22 @@
 ---
-title: Database
-prev: AdministratorGuide/configuration/infrastructure.md
-next: AdministratorGuide/configuration/signals.md
+title: Application
+prev: AdministratorGuide/configuration/environment.md
+next: AdministratorGuide/configuration/communities.md
 ---
-
-## Database configuration
 
 Use for application-level settings that you might want to change without restarting the server, such as community settings and refresh intervals. These can be managed through the admin interface.
 
-### Resonite
+!!! Danger
+
+    Some of the keys required to have the server to be restarted to be taken into account for now. Each field will have this information directly on the configuration page.
+
+## Resonite
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
 | `Facet URL` | `str` | he Resonite public folder url where the facet is store |
 
-### Discord
+## Discord
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
@@ -22,7 +24,7 @@ Use for application-level settings that you might want to change without restart
 | `Ad Discord Bot Token` | str` | The Discord bot for private event (See why it's deprecated) |
 
 
-### Twitch
+## Twitch
 
 | Key | Type | Description |
 | :--- | :--- | :--- |
