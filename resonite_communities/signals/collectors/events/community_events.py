@@ -57,7 +57,7 @@ class CommunityEventsCollector(EventsCollector):
                     _filter_value=event['id'],
                     name=event['name'],
                     description=event['description'],
-                    session_image=None,
+                    session_image=event['session_image'],
                     location=event['location_str'],
                     location_web_session_url=event['location_web_session_url'],
                     location_session_url=event['location_session_url'],
