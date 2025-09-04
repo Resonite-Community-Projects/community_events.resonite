@@ -12,7 +12,7 @@ Once the Discord bot has been added, make sure to create an event using [Discord
 
 At this time, we do not receive automatic notifications when a community attempts to join the system or requests automatic configuration. To ensure a smooth process and allow us to track all requests efficiently, please submit your community for review using the following method:
 
-*   **Direct Email**: If the above options are not suitable, you may send a message to [brodokk](mailto:brodokk@resonite-communities.com).
+*   **Direct Email**: [brodokk](mailto:brodokk@resonite-communities.com) (`brodokk@resonite-communities.com`).
 
 We will then verify that your community complies with the [Resonite Guidelines](https://resonite.com/policies/Guidelines.html). If everything is in order, we will update our configuration accordingly, and your events will appear in our system.
 
