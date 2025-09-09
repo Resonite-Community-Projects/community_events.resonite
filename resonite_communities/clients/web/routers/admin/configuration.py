@@ -76,6 +76,8 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
         "request": request,
     })
 
+# TODO: This is duplicated endpoint with client api routers in app endpoint
+
 @router.post("/admin/update/configuration")
 async def update_configuration(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
     if not user_auth or not user_auth.is_superuser:
