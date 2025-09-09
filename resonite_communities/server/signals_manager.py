@@ -37,35 +37,35 @@ logger = get_logger('community_events')
 if not watchfiles:
     logger.warning("watchfiles not found. --reload option will not be available.")
 
-# Clients initialization
-twitch_client = None
-discord_client = None
-if Config.Twitch:
-    twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
-discord_client = disnake.Client()
-
-intents = disnake.Intents.all()
-bot = disnake.ext.commands.InteractionBot(intents=intents)
-ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
-
-# Scheduler initialization
-scheduler = AsyncIOScheduler(daemon=True)
-
-# Register clients
-Services.discord.bot = bot
-Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
-Services.discord.client = discord_client
-Services.twitch = twitch_client
-
-if Config.SENTRY_DSN:
-
-    sentry_sdk.init(
-        dsn=Config.SENTRY_DSN,
-        send_default_pii=True,
-        traces_sample_rate=1.0,
-    )
-
 async def main():
+    # Clients initialization
+    twitch_client = None
+    discord_client = None
+    if Config.Twitch:
+        twitch_client = TwitchClient(client_id=Config.Twitch.client_id, secret=Config.Twitch.secret)
+
+    discord_client = disnake.Client()
+    intents = disnake.Intents.all()
+    bot = disnake.ext.commands.InteractionBot(intents=intents)
+    ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
+
+    # Scheduler initialization
+    scheduler = AsyncIOScheduler(daemon=True)
+
+    # Register clients
+    Services.discord.bot = bot
+    Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
+    Services.discord.client = discord_client
+    Services.twitch = twitch_client
+
+    if Config.SENTRY_DSN:
+
+        sentry_sdk.init(
+            dsn=Config.SENTRY_DSN,
+            send_default_pii=True,
+            traces_sample_rate=1.0,
+        )
+
 
     # Load collectors
     logger.info('Loading collectors...')
