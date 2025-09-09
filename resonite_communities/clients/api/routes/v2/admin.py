@@ -33,12 +33,24 @@ class DiscordImportRequest(BaseModel):
     id: str
     visibility: str
 
-@router_v2.post("/admin/events/update_status")
-def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-
+def require_moderator_access(user_auth: UserAuthModel = Depends(get_user_auth)) -> UserAuthModel:
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        msg = f"Not authenticated."
-        raise HTTPException(status_code=403, detail=msg)
+        raise HTTPException(
+            status_code=403,
+            detail="Moderator or administrator access required",
+        )
+    return user_auth
+
+def require_administrator_access(user_auth: UserAuthModel = Depends(get_user_auth)) -> UserAuthModel:
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="Administrator access required",
+        )
+    return user_auth
+
+@router_v2.post("/admin/events/update_status")
+def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     result = Event.update(
         filters=(Event.id == data.id),
@@ -52,11 +64,7 @@ def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel
 
 
 @router_v2.post("/admin/users/update_status")
-def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-
-    if not user_auth or not user_auth.is_superuser:
-        msg = f"Not authenticated."
-        raise HTTPException(status_code=403, detail=msg)
+def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_administrator_access)):
 
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
@@ -96,10 +104,7 @@ def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel =
 
 
 @router_v2.get("/admin/communities/{community_id}")
-def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
-
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     communities = Community().find(id__eq=community_id)
     if not communities:
@@ -129,10 +134,9 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
 def get_admin_communities_list(
     request: Request,
     type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
-    user_auth: UserAuthModel = Depends(get_user_auth)
+    user_auth: UserAuthModel = Depends(require_moderator_access)
 ):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+
 
     communities = []
     if type == 'event':
@@ -163,9 +167,7 @@ def get_admin_communities_list(
     return communities_formatted
 
 @router_v2.post("/admin/communities/")
-def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     new_community = Community().add(
         name=data.name,
@@ -187,9 +189,7 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
 
 
 @router_v2.patch("/admin/communities/{community_id}")
-def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
 
     import logging
@@ -243,10 +243,9 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
 
     return {"id": community_id, "message": "Community updated successfully"}
 
+
 @router_v2.delete("/admin/communities/{community_id}")
-def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def delete_community(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     deleted = Community.delete(id__eq=community_id)
 
@@ -256,18 +255,14 @@ def delete_community(community_id: str, user_auth: UserAuthModel = Depends(get_u
     return {"id": community_id, "message": "Community deleted successfully"}
 
 @router_v2.get("/admin/setup/communities/discord/")
-def discord_communities(user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def discord_communities_setup(user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     discord_communities = Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
 
     return discord_communities
 
 @router_v2.post("/admin/setup/communities/discord/import/{community_id}")
-def discord_communities(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(get_user_auth)):
-    if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
-        raise HTTPException(status_code=403, detail="Not authenticated.")
+def discord_community_setup_import(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
     updated = Community.update(
         filters=(Community.id == community_id),
