@@ -28,7 +28,8 @@ Config = ConfigManager(get_session).config()
 #     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 #     yield
 
-app = FastAPI(lifespan=lifespan)
+#app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
