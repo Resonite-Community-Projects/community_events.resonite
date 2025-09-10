@@ -67,25 +67,26 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         version = query_params.get('clversion', [None])[0]
 
         user_agent = request.headers.get('User-Agent')
-        is_bot = any(keyword.lower() in user_agent.lower() for keyword in bot_keywords)
-        is_resonite = "resonite" in user_agent.lower()
-        is_neos = "neos" in user_agent.lower()
-        is_browser = any(keyword.lower() in user_agent.lower() for keyword in browser_keywords)
-        is_tool = any(keyword.lower() in user_agent.lower() for keyword in tool_keywords)
-        is_mobile = any(keyword.lower() in user_agent.lower() for keyword in mobile_keywords)
         client = None
-        if is_bot:
-            client = ClientType.BOT
-        elif is_neos:
-            client = ClientType.NEOS
-        elif is_resonite:
-            client = ClientType.RESONITE
-        elif is_tool:
-            client = ClientType.TOOL
-        elif is_mobile:
-            client = ClientType.BROWSER_MOBILE
-        elif is_browser:
-            client = ClientType.BROWSER_DESKTOP
+        if user_agent:
+            is_bot = any(keyword.lower() in user_agent.lower() for keyword in bot_keywords)
+            is_resonite = "resonite" in user_agent.lower()
+            is_neos = "neos" in user_agent.lower()
+            is_browser = any(keyword.lower() in user_agent.lower() for keyword in browser_keywords)
+            is_tool = any(keyword.lower() in user_agent.lower() for keyword in tool_keywords)
+            is_mobile = any(keyword.lower() in user_agent.lower() for keyword in mobile_keywords)
+            if is_bot:
+                client = ClientType.BOT
+            elif is_neos:
+                client = ClientType.NEOS
+            elif is_resonite:
+                client = ClientType.RESONITE
+            elif is_tool:
+                client = ClientType.TOOL
+            elif is_mobile:
+                client = ClientType.BROWSER_MOBILE
+            elif is_browser:
+                client = ClientType.BROWSER_DESKTOP
 
         metrics = Metrics(
             endpoint=request.url.path,
