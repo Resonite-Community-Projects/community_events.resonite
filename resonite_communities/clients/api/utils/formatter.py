@@ -132,16 +132,13 @@ def get_filtered_events(
     # Only get Events that are ACTIVE or READY
     status_filter = Event.status.in_((EventStatus.ACTIVE, EventStatus.READY))
 
-    if version == "v1":
-        # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
-        # If end_time is available, it will be used; otherwise, fallback to start_time.
-        time_filter = case(
-            (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
-            else_=Event.start_time  # Otherwise, fallback to start_time
-        ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
-        custom_filter=and_(communities_filter, domain_filter, platform_filter, status_filter, time_filter)
-    else:
-        custom_filter=and_(communities_filter, domain_filter, platform_filter, status_filter)
+    # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
+    # If end_time is available, it will be used; otherwise, fallback to start_time.
+    time_filter = case(
+        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
+        else_=Event.start_time  # Otherwise, fallback to start_time
+    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+    custom_filter=and_(communities_filter, domain_filter, platform_filter, status_filter, time_filter)
 
     # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
     # SQL commend, optimization to order elements by date
