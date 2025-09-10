@@ -22,11 +22,11 @@ from redis import asyncio as aioredis
 
 Config = ConfigManager(get_session).config()
 
-@asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    redis = aioredis.from_url(Config.CACHE_URL)
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-    yield
+# @asynccontextmanager
+# async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+#     redis = aioredis.from_url(Config.CACHE_URL)
+#     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+#     yield
 
 app = FastAPI(lifespan=lifespan)
 
