@@ -1,9 +1,11 @@
 from copy import deepcopy
+import atexit
 
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
+from resonite_communities.utils.db import async_session_maker
 
 class Signal:
     scheduler_type = None
@@ -19,7 +21,6 @@ class Signal:
         self.communities = []
 
         self._validate_scheduler_type()
-
         self._validate_platform()
 
         self.logger.info(f'Initialised {self.name} collector')
@@ -45,17 +46,17 @@ class Signal:
     def update_communities(self):
         raise ValueError("Not implemented")
 
-    def add(self, **data):
-        return self.model.add(**data)
+    async def add(self, **data):
+        return await self.model.add(**data)
 
-    def get(self, **filters):
-        return self.model.get(**filters)
+    async def find(self, **filters):
+        return await self.model.find(**filters)
 
-    def update(self, filters, **data):
-        return self.model.update(filters=filters, **data)
+    async def update(self, filters, **data):
+        return await self.model.update(filters=filters, **data)
 
-    def upsert(self, _filter_field, _filter_value, **data):
-        return self.model.upsert(_filter_field, _filter_value, **data)
+    async def upsert(self, _filter_field, _filter_value, **data):
+        return await self.model.upsert(_filter_field, _filter_value, **data)
 
-    def delete(self, **filter):
-        return self.model.delete(**filter)
+    async def delete(self, **filter):
+        return await self.model.delete(**filter)

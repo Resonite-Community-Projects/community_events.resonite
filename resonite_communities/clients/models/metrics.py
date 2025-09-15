@@ -25,4 +25,4 @@ class Metrics(BaseModel):
     version = Column(String, index=True)
     client = Column(SQLAlchemyEnum(ClientType), index=True)
     user_agent = Column(String, index=True)
-    timestamp = Column(DateTime)
+    timestamp = Column(DateTime(timezone=True))

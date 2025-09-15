@@ -13,9 +13,8 @@ from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-config_manager = ConfigManager(get_session)
+config_manager = ConfigManager()
 
 router = APIRouter()
 
@@ -68,21 +67,21 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
         private_filter = not_(Event.tags.ilike('%private%'))
         event_visibility_filter = and_(time_filter, private_filter, platform_filter, status_filter)
 
-    events = Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
-    streams = Stream().find(
+    events = await Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
+    streams = await Stream().find(
         __order_by=['start_time'],
         end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
     )
-    streamers = Community().find(platform__in=[CommunityPlatform.TWITCH])
+    streamers = await Community().find(platform__in=[CommunityPlatform.TWITCH])
 
-    communities = Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=events_platforms)
-    user_communities = Community().find(id__in=user_auth.discord_account.user_communities) if user_auth else []
+    communities = await Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=events_platforms)
+    user_communities = await Community().find(id__in=user_auth.discord_account.user_communities) if user_auth else []
 
     return templates.TemplateResponse(
         request = request,
         name = 'index.html',
         context = {
-            "app_config": config_manager.db_config(),
+            "app_config": await config_manager.app_config(),
             'events': events,
             'communities' : communities,
             'streams' : streams,

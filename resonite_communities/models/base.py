@@ -3,19 +3,17 @@ from datetime import datetime, timezone
 
 from typing import Optional, Any
 
-from sqlalchemy import select, create_engine, inspect, desc, asc, ClauseElement
+from sqlalchemy import select, inspect, desc, asc, ClauseElement
 from sqlalchemy.dialects.postgresql import insert as dialects_insert
 from sqlalchemy.orm import RelationshipProperty, joinedload
-from sqlmodel import Session, SQLModel
+from sqlmodel import SQLModel
 
 
 from resonite_communities.utils.logger import get_logger
 
-from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import get_current_async_session
 
-Config = ConfigManager().config()
-
-engine = create_engine(Config.DATABASE_URL, echo=False)
+logger = get_logger('BaseModel')
 
 
 class BaseModel(SQLModel):
@@ -115,24 +113,30 @@ class BaseModel(SQLModel):
         return fields_to_update
 
     @classmethod
-    def add(cls, **data: Any):
+    async def add(cls, **data: Any):
         """
 
         Examples:
-            signal.add(**{'id': 44, 'name': 'aa'})
-            signal.add(id=43, name="toto")
+            await signal.add(**{'id': 44, 'name': 'aa'})
+            await signal.add(id=43, name="toto")
         """
-        data['created_at'] = datetime.utcnow()
+        data['created_at'] = datetime.now(timezone.utc)
         cls._validate_filter(data)
-        with Session(engine) as session:
+
+        session = await get_current_async_session()
+        try:
             signal_instance = cls(**data)
             session.add(signal_instance)
-            session.commit()
-            session.refresh(signal_instance)
-        return signal_instance
+            await session.commit()
+            await session.refresh(signal_instance)
+            return signal_instance
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Error in add operation: {e}")
+            raise
 
     @classmethod
-    def find(cls, **filters: Any):
+    async def find(cls, **filters: Any):
         """
         Generic find method for querying the database with flexible filters.
         Filters can be:
@@ -142,13 +146,15 @@ class BaseModel(SQLModel):
         - Custom filter: {"__custom_filter": <sqlalchemy.sql.expression>}
 
         Examples
-            signal.find(name='Fluffy event')  # Simple match
-            signal.find(start_time__gtr_eq=datetime.now())  # Operator based match
-            signal.find(__order_by = "start_time")  # Special directive match
-            signal.find(__custom_filter = case(...)  # Custom filter match
+            await signal.find(name='Fluffy event')  # Simple match
+            await signal.find(start_time__gtr_eq=datetime.now())  # Operator based match
+            await signal.find(__order_by = "start_time")  # Special directive match
+            await signal.find(__custom_filter = case(...)  # Custom filter match
         """
         cls._validate_filter(filters)
-        with Session(engine) as session:
+
+        session = await get_current_async_session()
+        try:
             instances = []
             query = select(cls)
 
@@ -161,13 +167,17 @@ class BaseModel(SQLModel):
             query = cls._apply_operator_filter(query, filters)
             query = cls._apply_special_directive(query, filters)
 
-            rows = session.exec(query).unique().all()
+            result = await session.execute(query)
+            rows = result.unique().all()
             for row in rows:
                 instances.append(row[0])
             return instances
+        except Exception as e:
+            logger.error(f"Error in find operation: {e}")
+            raise
 
     @classmethod
-    def update(
+    async def update(
         cls,
         filters: ClauseElement,
         **fields_to_update: Any
@@ -175,40 +185,50 @@ class BaseModel(SQLModel):
         """ Generic update method for updating database records with a custom filter.
 
         Parameters:
-            custom_filter (ClauseElement): A SQLAlchemy filter expression to select the rows to update.
+            filters (ClauseElement): A SQLAlchemy filter expression to select the rows to update.
             fields_to_update (Any): Fields to update, provided as keyword arguments. Example: name="John".
 
         Examples:
             # Update with a custom filter
-            MyModel.update(
-                custom_filter=MyModel.age > 30,
+            await MyModel.update(
+                MyModel.age > 30,
                 name="John Doe",
                 status="active"
             )
         """
-        # TODO: this would be interesting to let the user use the _apply_*_filter with like a Filter object instead
-
-        fields_to_update['updated_at'] = datetime.utcnow()
+        fields_to_update['updated_at'] = datetime.now(timezone.utc)
         cls._validate_filter(fields_to_update)
-        with Session(engine) as session:
+
+        session = await get_current_async_session()
+        try:
             instances = []
-
             query = select(cls).where(filters)
+            result = await session.execute(query)
+            rows = result.all()
 
-            rows = session.exec(query).all()
+            # Update all instances in batch, then single commit
             for row in rows:
                 instance = row[0]
                 for key, value in fields_to_update.items():
-                    #print(f"Setting {key} = {value} (type: {type(value)})")
                     setattr(instance, key, value)
-                session.commit()
-                session.refresh(instance)
-                session.expunge(instance)
                 instances.append(instance)
+
+            # Single commit for all updates
+            if instances:
+                await session.commit()
+                # Refresh all instances
+                for instance in instances:
+                    await session.refresh(instance)
+                    session.expunge(instance)
+
             return instances
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Error in update operation: {e}")
+            raise
 
     @classmethod
-    def upsert(
+    async def upsert(
         cls,
         _filter_field: str | list[str],
         _filter_value: Any | list[Any],
@@ -230,35 +250,50 @@ class BaseModel(SQLModel):
         update_data = cls.set_update_fields(update_data)
 
         stmt = dialects_insert(cls).values(**insert_data)
-
         stmt = stmt.on_conflict_do_update(
             index_elements=_filter_field,
             set_=update_data
         ).returning(cls)
 
-        with Session(engine) as session:
-            result = session.execute(stmt)
-            session.commit()
+        session = await get_current_async_session()
+        try:
+            result = await session.execute(stmt)
+            await session.commit()
             row = result.first()
             if row is None:
-                return
+                return None
             instance = row[0]
-            session.refresh(instance)
+            await session.refresh(instance)
             return instance
-
-
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Error in upsert operation: {e}")
+            raise
 
     @classmethod
-    def delete(cls, **filters: Optional[dict[str, Any]]):
+    async def delete(cls, **filters: Optional[dict[str, Any]]):
         cls._validate_filter(filters)
-        with Session(engine) as session:
+
+        session = await get_current_async_session()
+        try:
             query = select(cls)
             query = cls._apply_simple_filter(query, filters)
             query = cls._apply_operator_filter(query, filters)
             query = cls._apply_special_directive(query, filters)
-            rows = session.exec(query).all()
+
+            result = await session.execute(query)
+            rows = result.all()
             deleted = len(rows)
+
+            # Delete all instances in batch, then single commit
             for row in rows:
-                session.delete(row[0])
-                session.commit()
+                await session.delete(row[0])
+
+            if deleted > 0:
+                await session.commit()
+
             return deleted
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Error in delete operation: {e}")
+            raise

@@ -9,6 +9,8 @@ from resonite_communities.models.types import EasyDictType
 from resonite_communities.models.base import BaseModel
 from resonite_communities.signals import CEEnum
 
+from sqlalchemy import Column, DateTime
+
 class CommunityPlatform(CEEnum):
     DISCORD = 'DISCORD'
     TWITCH = 'TWITCH'
@@ -21,8 +23,8 @@ streams_platforms = [CommunityPlatform.TWITCH]
 class Community(BaseModel, table=True):
     __table_args__ = (UniqueConstraint("external_id", "platform"),)
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field()
-    updated_at: datetime | None = Field()
+    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True)))
+    updated_at: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     external_id: str = Field()
     platform: CommunityPlatform = Field()
     platform_on_remote: CommunityPlatform | None = Field()

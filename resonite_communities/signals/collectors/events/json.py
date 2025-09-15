@@ -14,10 +14,10 @@ class JSONEventsCollector(EventsCollector):
     def __init__(self, config, services, scheduler):
         super().__init__(config, services, scheduler)
 
-    def update_communities(self):
+    async def update_communities(self):
         self.communities = []
-        for community in Community.find(platform__in=[CommunityPlatform.JSON]):
-            Community.update(
+        for community in await Community.find(platform__in=[CommunityPlatform.JSON]):
+            await Community.update(
                 filters=(
                     (Community.external_id == community.external_id) &
                     (Community.platform == CommunityPlatform.JSON)
@@ -26,9 +26,9 @@ class JSONEventsCollector(EventsCollector):
             )
             self.communities.append(community)
 
-    def collect(self):
+    async def collect(self):
         self.logger.info('Update events collector from external source')
-        self.update_communities()
+        await self.update_communities()
         for community in self.communities:
             self.logger.info(f"Processing events for {community.name} from {community.config.events_url}")
 
@@ -46,7 +46,7 @@ class JSONEventsCollector(EventsCollector):
                 continue
 
             for event in response.json():
-                self.model.upsert(
+                await self.model.upsert(
                     _filter_field='external_id',
                     _filter_value=event['event_id'],
                     name=event['name'],
@@ -57,7 +57,7 @@ class JSONEventsCollector(EventsCollector):
                     location_session_url=event['session_url'],
                     start_time=parse(event['start_time']),
                     end_time=parse(event['end_time']),
-                    community_id=Community.find(external_id=community.external_id)[0].id,
+                    community_id=(await Community.find(external_id=community.external_id))[0].id,
                     tags=community.tags,
                     external_id=event['event_id'],
                     scheduler_type=self.scheduler_type.name,

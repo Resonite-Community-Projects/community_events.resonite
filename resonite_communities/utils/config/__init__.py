@@ -3,19 +3,22 @@ from datetime import datetime
 from easydict import EasyDict as edict
 import os
 import json
-from sqlmodel import Session, select
+from sqlmodel import select
 from typing import Any, Dict, List
 from .models import AppConfig, MonitoredDomain, TwitchConfig
 from resonite_communities.utils.logger import get_logger
 
-
 class ConfigManager:
-    def __init__(self, db_session=None):
-        self.db_session = db_session
+    def __init__(self):
         self.infrastructure_config = self._load_infrastructure_config()
-        self.db_config = self._load_db_config
+        self.app_config = self._load_db_config
         self.config = self._build_legacy_config
         self.logger = get_logger(__name__)
+
+    async def _get_session(self):
+        # Import inside the method to avoid circular imports
+        from resonite_communities.utils.db import get_current_async_session
+        return await get_current_async_session()
 
     def _load_infrastructure_config(self):
         optional_vars = [
@@ -59,129 +62,138 @@ class ConfigManager:
         if config['PRIVATE_DOMAIN']:
             config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',')
 
-        return config
+        return edict(config)
 
-    def _load_db_config(self):
+    async def _load_db_config(self):
         config = self.infrastructure_config.copy()
-
-        if not self.db_session:
-            return edict(config)
+        session = await self._get_session()
 
         stmt = select(AppConfig)
-        for session in self.db_session():
-            app_config = session.execute(stmt).scalars().first()
+        result = await session.execute(stmt)
+        app_config = result.scalars().first()
 
-            config.update({
-                'INITIATED': app_config.initiated if app_config else False,
-                'DISCORD_BOT_TOKEN': app_config.discord_bot_token if app_config else '',
-                'AD_DISCORD_BOT_TOKEN': app_config.ad_discord_bot_token if app_config else '',
-                'REFRESH_INTERVAL': app_config.refresh_interval if app_config else '',
-                'CLOUDVAR_RESONITE_USER': app_config.cloudvar_resonite_user if app_config else '',
-                'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass if app_config else '',
-                'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name if app_config else '',
-                'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name if app_config else '',
-                'NORMAL_USER_LOGIN': app_config.normal_user_login if app_config else False,
-                'FACET_URL': app_config.facet_url if app_config else '',
-                'TITLE_TEXT': app_config.title_text if app_config else '',
-                'HERO_COLOR': app_config.hero_color if app_config else '',
-                'INFO_TEXT': app_config.info_text if app_config else '',
-                'FOOTER_TEXT': app_config.footer_text if app_config else '',
-            })
+        config.update({
+            'INITIATED': app_config.initiated if app_config else False,
+            'DISCORD_BOT_TOKEN': app_config.discord_bot_token if app_config else '',
+            'AD_DISCORD_BOT_TOKEN': app_config.ad_discord_bot_token if app_config else '',
+            'REFRESH_INTERVAL': app_config.refresh_interval if app_config else '',
+            'CLOUDVAR_RESONITE_USER': app_config.cloudvar_resonite_user if app_config else '',
+            'CLOUDVAR_RESONITE_PASS': app_config.cloudvar_resonite_pass if app_config else '',
+            'CLOUDVAR_BASE_NAME': app_config.cloudvar_base_name if app_config else '',
+            'CLOUDVAR_GENERAL_NAME': app_config.cloudvar_general_name if app_config else '',
+            'NORMAL_USER_LOGIN': app_config.normal_user_login if app_config else False,
+            'FACET_URL': app_config.facet_url if app_config else '',
+            'TITLE_TEXT': app_config.title_text if app_config else '',
+            'HERO_COLOR': app_config.hero_color if app_config else '',
+            'INFO_TEXT': app_config.info_text if app_config else '',
+            'FOOTER_TEXT': app_config.footer_text if app_config else '',
+        })
 
-            stmt = select(MonitoredDomain)
-            domains = session.execute(stmt).scalars().all()
-            config['MONITORED_DOMAINS'] = [
-                {'url': domain.url, 'status': domain.status}
-                for domain in domains
-            ]
+        stmt = select(MonitoredDomain)
+        result = await session.execute(stmt)
+        domains = result.scalars().all()
+        config['MONITORED_DOMAINS'] = [
+            {'url': domain.url, 'status': domain.status}
+            for domain in domains
+        ]
 
-            stmt = select(TwitchConfig)
-            twitch_config = session.execute(stmt).scalars().first()
-            config['Twitch'] = {
-                'client_id': twitch_config.client_id if twitch_config else '',
-                'secret': twitch_config.secret if twitch_config else '',
-                'game_id': twitch_config.game_id if twitch_config else '',
-                'account_name': twitch_config.account_name if twitch_config else ''
-            }
+        stmt = select(TwitchConfig)
+        result = await session.execute(stmt)
+        twitch_config = result.scalars().first()
+        config['Twitch'] = {
+            'client_id': twitch_config.client_id if twitch_config else '',
+            'secret': twitch_config.secret if twitch_config else '',
+            'game_id': twitch_config.game_id if twitch_config else '',
+            'account_name': twitch_config.account_name if twitch_config else ''
+        }
 
         return edict(config)
 
-    def _build_legacy_config(self):
+    async def _build_legacy_config(self):
         config = self.infrastructure_config.copy()
 
-        config.update(self.db_config())
+        db_config = await self._load_db_config()
+        config.update(db_config)
 
         Config = edict(config)
         Config.clients = edict()
 
         return Config
 
-    def load(self, model):
-        for session in self.db_session():
-            stmt = select(model)
-            return session.execute(stmt).scalars().all()
+    async def load(self, model):
+        session = await self._get_session()
+        stmt = select(model)
+        result = await session.execute(stmt)
+        return result.scalars().all()
 
-    def update_app_config(self, **kwargs):
-        for session in self.db_session():
-            stmt = select(AppConfig)
-            app_config = session.execute(stmt).scalars().first()
+    async def update_app_config(self, **kwargs):
+        session = await self._get_session()
+        stmt = select(AppConfig)
+        result = await session.execute(stmt)
+        app_config = result.scalars().first()
 
-            if app_config:
-                for key, value in kwargs.items():
-                    if hasattr(app_config, key):
-                        if key == "refresh_interval" and value == "":
+        if app_config:
+            for key, value in kwargs.items():
+                if hasattr(app_config, key):
+                    if key == "refresh_interval":
+                        if value == "":
                             value = 0
-                        setattr(app_config, key, value)
-            else:
-                app_config = AppConfig(**kwargs)
-                session.add(app_config)
+                        else:
+                            value = int(value)
+                    setattr(app_config, key, value)
+        else:
+            app_config = AppConfig(**kwargs)
+            session.add(app_config)
 
-            session.commit()
-            session.refresh(app_config)
+        await session.commit()
+        await session.refresh(app_config)
 
-    def update_monitored_domain(self, domain_id: int, **kwargs):
-        for session in self.db_session():
-            stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id)
-            monitored_domain = session.execute(stmt).scalars().first()
+    async def update_monitored_domain(self, domain_id: int, **kwargs):
+        session = await self._get_session()
+        stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id)
+        result = await session.execute(stmt)
+        monitored_domain = result.scalars().first()
 
-            if monitored_domain:
-                for key, value in kwargs.items():
-                    if hasattr(monitored_domain, key):
-                        setattr(monitored_domain, key, value)
-                session.add(monitored_domain)
-                session.commit()
-                session.refresh(monitored_domain)
+        if monitored_domain:
+            for key, value in kwargs.items():
+                if hasattr(monitored_domain, key):
+                    setattr(monitored_domain, key, value)
+            session.add(monitored_domain)
+            await session.commit()
+            await session.refresh(monitored_domain)
 
-    def add_monitored_domain(self, url: str, status: str):
-        for session in self.db_session():
-            new_domain = MonitoredDomain(url=url, status=status)
-            session.add(new_domain)
-            session.commit()
-            session.refresh(new_domain)
+    async def add_monitored_domain(self, url: str, status: str):
+        session = await self._get_session()
+        new_domain = MonitoredDomain(url=url, status=status)
+        session.add(new_domain)
+        await session.commit()
+        await session.refresh(new_domain)
 
-    def delete_monitored_domain(self, domain_id: int):
-        for session in self.db_session():
-            stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id)
-            domain_to_delete = session.execute(stmt).scalars().first()
+    async def delete_monitored_domain(self, domain_id: int):
+        session = await self._get_session()
+        stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id)
+        result = await session.execute(stmt)
+        domain_to_delete = result.scalars().first()
 
-            if domain_to_delete:
-                session.delete(domain_to_delete)
-                session.commit()
+        if domain_to_delete:
+            await session.delete(domain_to_delete)
+            await session.commit()
 
-    def update_twitch_config(self, **kwargs):
-        for session in self.db_session():
-            stmt = select(TwitchConfig)
-            twitch_config = session.execute(stmt).scalars().first()
+    async def update_twitch_config(self, **kwargs):
+        session = await self._get_session()
+        stmt = select(TwitchConfig)
+        result = await session.execute(stmt)
+        twitch_config = result.scalars().first()
 
-            if twitch_config:
-                for key, value in kwargs.items():
-                    if hasattr(twitch_config, key):
-                        setattr(twitch_config, key, value)
-                session.add(twitch_config)
-                session.commit()
-                session.refresh(twitch_config)
-            else:
-                twitch_config = TwitchConfig(**kwargs)
-                session.add(twitch_config)
-                session.commit()
-                session.refresh(twitch_config)
+        if twitch_config:
+            for key, value in kwargs.items():
+                if hasattr(twitch_config, key):
+                    setattr(twitch_config, key, value)
+            session.add(twitch_config)
+            await session.commit()
+            await session.refresh(twitch_config)
+        else:
+            twitch_config = TwitchConfig(**kwargs)
+            session.add(twitch_config)
+            await session.commit()
+            await session.refresh(twitch_config)

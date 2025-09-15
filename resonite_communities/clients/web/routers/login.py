@@ -6,7 +6,7 @@ from resonite_communities.clients.web.auth import oauth_clients
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config()
+config_manager = ConfigManager()
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ async def login(provider: str):
         return JSONResponse({"error": f"Unsupported provider: {provider}"}, status_code=400)
 
     state_data: dict[str, str] = {}
-    state_token = generate_state_token(state_data, Config.SECRET)
+    state_token = generate_state_token(state_data, config_manager.infrastructure_config.SECRET)
 
     authorization_url = await oauth_client["client"].get_authorization_url(
         redirect_uri=oauth_client["redirect_uri"],

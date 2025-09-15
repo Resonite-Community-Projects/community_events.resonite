@@ -19,12 +19,11 @@ from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-Config = ConfigManager(get_session).config()
+config_manager = ConfigManager()
 
 app = FastAPI()
-app.secret = Config.SECRET
+app.secret = config_manager.infrastructure_config.SECRET
 
 app.mount(
     "/static",
@@ -32,6 +31,17 @@ app.mount(
     name="static"
 )
 
+from resonite_communities.utils.db import get_async_session, async_request_session
+from starlette.middleware.base import BaseHTTPMiddleware
+
+
+class DatabaseSessionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        async with async_request_session():
+            response = await call_next(request)
+        return response
+
+app.add_middleware(DatabaseSessionMiddleware)
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 app.include_router(logout.router)
@@ -47,8 +57,8 @@ app.include_router(
     fastapi_users.get_oauth_router(
         discord_oauth,
         auth_backend,
-        Config.SECRET,
-        redirect_url=Config.DISCORD_REDIRECT_URL
+        config_manager.infrastructure_config.SECRET,
+        redirect_url=config_manager.infrastructure_config.DISCORD_REDIRECT_URL
     ),
     prefix="/auth/discord",
     tags=["auth"],

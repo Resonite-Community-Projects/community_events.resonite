@@ -14,10 +14,10 @@ class CommunityEventsCollector(EventsCollector):
     def __init__(self, config, services, scheduler):
         super().__init__(config, services, scheduler)
 
-    def update_communities(self):
+    async def update_communities(self):
         self.communities = []
-        for community in Community.find(platform__in=[CommunityPlatform.DISCORD], platform_on_remote__in=[CommunityPlatform.DISCORD]):
-            Community.update(
+        for community in await Community.find(platform__in=[CommunityPlatform.DISCORD], platform_on_remote__in=[CommunityPlatform.DISCORD]):
+            await Community.update(
                 filters=(
                     (Community.external_id == community.external_id) &
                     (Community.platform == CommunityPlatform.DISCORD) &
@@ -27,13 +27,13 @@ class CommunityEventsCollector(EventsCollector):
             )
             self.communities.append(community)
 
-    def collect(self):
+    async def collect(self):
         self.logger.info(f'Starting collecting signals')
-        self.update_communities()
+        await self.update_communities()
         for community in self.communities:
             self.logger.info(f'Collecting signals for {community.name}')
             #self.logger.info(f"Processing events for {community.name} from {community.config}")
-            community_configurator = Community.find(id=community.config.community_configurator)[0]
+            community_configurator = (await Community.find(id=community.config.community_configurator))[0]
 
             try:
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
@@ -51,8 +51,7 @@ class CommunityEventsCollector(EventsCollector):
             for event in response.json():
                 if not event['community_name'] == community.name:
                     continue
-                self.logger.error(event)
-                self.model.upsert(
+                await self.model.upsert(
                     _filter_field='external_id',
                     _filter_value=event['id'],
                     name=event['name'],

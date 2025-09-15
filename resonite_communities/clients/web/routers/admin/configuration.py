@@ -15,11 +15,11 @@ from resonite_communities.models.signal import Event
 from resonite_communities.auth.db import User
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 from resonite_communities.utils.logger import get_logger
+from resonite_communities.utils.db import get_current_async_session
 
-Config = ConfigManager(get_session).config()
-config_manager = ConfigManager(get_session)
+
+config_manager = ConfigManager()
 
 router = APIRouter()
 
@@ -32,32 +32,29 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
 
-    engine = create_engine(Config.DATABASE_URL, echo=False)
-
     from sqlalchemy.orm import joinedload
     from resonite_communities.auth.db import OAuthAccount
     from resonite_communities.utils.config.models import AppConfig, MonitoredDomain, TwitchConfig
+    async def load(object):
+        session = await get_current_async_session()
+        instances = []
+        query = select(object)
 
-    def load(object):
-        with Session(engine) as session:
-            instances = []
-            query = select(object)
+        result = await session.execute(query)
+        rows = result.unique().all()
+        for row in rows:
+            instances.append(row[0])
+        return instances
 
-            rows = session.exec(query).unique().all()
-            for row in rows:
-                instances.append(row[0])
-            return instances
-
-    app_config = config_manager.db_config()
-    monitored_config_objects = load(MonitoredDomain)
+    monitored_config_objects = await load(MonitoredDomain)
     monitored_config = [
         {"id": domain.id, "url": domain.url, "status": domain.status}
         for domain in monitored_config_objects
     ]
-    twitch_config = load(TwitchConfig)
+    twitch_config = await load(TwitchConfig)
 
     try:
-        api_url = Config.PUBLIC_DOMAIN[0]
+        api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
     except (KeyError, IndexError):
         api_url = None
 
@@ -69,8 +66,8 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
     return templates.TemplateResponse("admin/configuration.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
-        "api_url": Config.PUBLIC_DOMAIN,
-        "app_config": app_config,
+        "api_url": config_manager.infrastructure_config.PUBLIC_DOMAIN,
+        "app_config": await config_manager.app_config(),
         "monitored_config": monitored_config,
         "twitch_config": twitch_config,
         "request": request,
@@ -84,7 +81,6 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
         return RedirectResponse(url="/")
 
     form_data = await request.form()
-    config_manager = ConfigManager(get_session)
 
     # Process AppConfig
     app_config_data = {}
@@ -94,27 +90,28 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
         if key.startswith("app_config_"):
             app_config_data[key.replace("app_config_", "")] = value
     if app_config_data:
-        config_manager.update_app_config(**app_config_data)
+        await config_manager.update_app_config(**app_config_data)
 
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
 
-    engine = create_engine(Config.DATABASE_URL, echo=False)
+    engine = create_engine(config_manager.infrastructure_config.DATABASE_URL, echo=False)
 
-    def load(object):
-        with Session(engine) as session:
-            instances = []
-            query = select(object)
+    async def load(object):
+        session = await get_current_async_session()
+        instances = []
+        query = select(object)
 
-            rows = session.exec(query).unique().all()
-            for row in rows:
-                instances.append(row[0])
-            return instances
+        result = await session.execute(query)
+        rows = result.unique().all()
+        for row in rows:
+            instances.append(row[0])
+        return instances
 
 
     # Process Monitored Domains (additions, updates, deletions)
     from resonite_communities.utils.config.models import MonitoredDomain
-    existing_monitored_domains = load(MonitoredDomain)
+    existing_monitored_domains = await load(MonitoredDomain)
     existing_domain_ids = {domain.id for domain in existing_monitored_domains}
 
     submitted_monitored_domains = {}
@@ -135,18 +132,18 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
     for domain_id_str, data in submitted_monitored_domains.items():
         if domain_id_str.startswith("new-"):
             # New domain
-            config_manager.add_monitored_domain(url=data.get('url'), status=data.get('status'))
+            await config_manager.add_monitored_domain(url=data.get('url'), status=data.get('status'))
         else:
             # Existing domain
             domain_id = int(domain_id_str)
             if domain_id in existing_domain_ids:
-                config_manager.update_monitored_domain(domain_id, **data)
+                await config_manager.update_monitored_domain(domain_id, **data)
 
     # Process deletions
     submitted_ids = {int(d_id) for d_id in submitted_monitored_domains.keys() if not d_id.startswith("new-")}
     for existing_id in existing_domain_ids:
         if existing_id not in submitted_ids:
-            config_manager.delete_monitored_domain(existing_id)
+            await config_manager.delete_monitored_domain(existing_id)
 
     # Process TwitchConfig
     twitch_config_data = {}
@@ -154,6 +151,6 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
         if key.startswith("twitch_config_"):
             twitch_config_data[key.replace("twitch_config_", "")] = value
     if twitch_config_data:
-        config_manager.update_twitch_config(**twitch_config_data)
+        await config_manager.update_twitch_config(**twitch_config_data)
 
     return JSONResponse(content={"message": "Configuration updated successfully"})

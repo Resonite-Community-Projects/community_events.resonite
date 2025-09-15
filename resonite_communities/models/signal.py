@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship
 from resonite_communities.models.base import BaseModel
 from resonite_communities.models.community import Community
 from resonite_communities.signals import CEEnum
+from sqlalchemy import Column, DateTime
 
 
 class EventStatus(CEEnum):
@@ -18,10 +19,10 @@ class EventStatus(CEEnum):
 
 class Event(BaseModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field()
-    updated_at: datetime | None = Field()
-    created_at_external: datetime | None = Field()
-    updated_at_external: datetime | None = Field()
+    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True)))
+    updated_at: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
+    created_at_external: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
+    updated_at_external: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     external_id: str = Field()
     name: str = Field()
     description: str | None = Field()
@@ -29,8 +30,8 @@ class Event(BaseModel, table=True):
     location: str | None = Field()
     location_web_session_url: str | None = Field()
     location_session_url: str | None = Field()
-    start_time: datetime = Field()
-    end_time: datetime | None = Field()
+    start_time: datetime = Field(sa_column=Column(DateTime(timezone=True)))
+    end_time: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     community_id: UUID = Field(foreign_key='community.id')
     community: Community | None = Relationship(back_populates="events")
     tags: str | None = Field()
@@ -49,11 +50,11 @@ class Event(BaseModel, table=True):
 
 class Stream(BaseModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    created_at: datetime = Field()
-    updated_at: datetime | None = Field()
+    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True)))
+    updated_at: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     name: str = Field()
-    start_time: datetime = Field()
-    end_time: datetime = Field()
+    start_time: datetime = Field(sa_column=Column(DateTime(timezone=True)))
+    end_time: datetime = Field(sa_column=Column(DateTime(timezone=True)))
     community_id: UUID = Field(foreign_key='community.id')
     community: Community | None = Relationship(back_populates="streams")
     external_id: str = Field(unique=True)

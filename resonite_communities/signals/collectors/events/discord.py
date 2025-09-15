@@ -5,7 +5,7 @@ from disnake.ext import commands
 from sqlalchemy import select, func
 from sqlmodel import Session
 
-from resonite_communities.models.base import engine
+from resonite_communities.utils.db import engine
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.signals import SignalSchedulerType
@@ -29,7 +29,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         self.guilds = {}
 
-    def update_communities(self):
+    async def update_communities(self):
 
         # FIXME: Simplify this test when removing AD_DISCORD_BOT_TOKEN
         # aka keep only self.services.discord.bot
@@ -40,7 +40,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         database_communities = {
             c.external_id: c
-            for c in Community.find(platform=CommunityPlatform.DISCORD)
+            for c in await Community.find(platform=CommunityPlatform.DISCORD)
         }
 
         self.communities = []
@@ -48,24 +48,21 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             external_id = str(guild_bot.id)
             community = database_communities.get(external_id)
 
-            ad_bot_configured = False
-            if self.ad_bot and not Community.ad_bot_configured:
-                    ad_bot_configured = True
-
             if community:
                 if community.platform_on_remote:
                     continue
+                ad_bot_configured = False
+                if self.ad_bot and not community.ad_bot_configured:
+                        ad_bot_configured = True
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
                 if self.ad_bot and 'private' not in community.tags.split(','):
                     continue
                 elif not self.ad_bot and 'private' in community.tags.split(','):
                     continue
 
-                community.monitored = True
                 community.ad_bot_configured = ad_bot_configured
-                community.config["bot"] = guild_bot
 
-                Community.update(
+                await Community.update(
                     filters=(
                         (Community.external_id == community.external_id) &
                         (Community.platform == CommunityPlatform.DISCORD) &
@@ -78,15 +75,15 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     default_description=guild_bot.description if guild_bot.description else None,
 
                 )
-
+                community.config["bot"] = guild_bot
                 self.communities.append(community)
             else:
-                community = Community.add(
+                community = await Community.add(
                     platform=CommunityPlatform.DISCORD,
                     external_id=external_id,
                     monitored=False,
                     configured=False,
-                    ad_bot_configured=ad_bot_configured,
+                    ad_bot_configured=False,
                     name=guild_bot.name,
                     logo=guild_bot.icon.url if guild_bot.icon else "",
                     default_description=guild_bot.description or None,
@@ -113,7 +110,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         ):
             return True
 
-    def detect_and_handle_duplicates(self, community: Any) -> None:
+    async def detect_and_handle_duplicates(self, community: Any) -> None:
             """ Detect and handle duplicate events for a given community.
 
             This function identifies duplicate events in the database based on their
@@ -183,8 +180,11 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 )
             )
 
-            with Session(engine) as session:
-                duplicate_events = session.exec(duplicates_query).mappings().all()
+            from resonite_communities.utils.db import get_current_async_session
+
+            session = await get_current_async_session()
+            result = await session.execute(duplicates_query)
+            duplicate_events = result.mappings().all()
 
             if not len(duplicate_events):
                 return
@@ -202,7 +202,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     first_duplicate_event = duplicate_event['id']
 
                 if last_unique_event_identifier != unique_event_identifier:
-                    self.model.update(
+                    await self.model.update(
                         filters=(
                             (Event.id != first_duplicate_event) &
                             (Event.name == duplicate_event['name']) &
@@ -214,7 +214,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                     )
 
                 if duplicate_event['session_image']:
-                    self.model.update(
+                    await self.model.update(
                         filters=(
                             (Event.name == duplicate_event['name']) &
                             (Event.start_time == duplicate_event['start_time']) &
@@ -226,7 +226,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
                 last_unique_event_identifier = unique_event_identifier
 
-    def upsert_events(self, events: list[Any], community: Any) -> None:
+    async def upsert_events(self, events: list[Any], community: Any) -> None:
         """ Process and upsert a list of events for a specific community into the database.
 
         Categorizes events as 'public' or 'private' based on community configuration,
@@ -289,9 +289,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 self.logger.error(f"Please add 'public' or 'private' tag to this community")
                 break
 
-            self.model.upsert(
+            await self.model.upsert(
                 _filter_field='external_id',
-                _filter_value=event.id,
+                _filter_value=str(event.id),
                 name=event.name,
                 description=event.description,
                 session_image=event.image.url if event.image else None,
@@ -300,14 +300,14 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 location_session_url=self.get_location_session_url(event.description),
                 start_time=event.scheduled_start_time,
                 end_time=event.scheduled_end_time,
-                community_id=Community.find(external_id=community.external_id)[0].id,
+                community_id= (await Community.find(external_id=community.external_id))[0].id,
                 tags=",".join(tags),
-                external_id=event.id,
+                external_id=str(event.id),
                 scheduler_type=self.scheduler_type.name,
                 created_at_external=event.created_at,
             )
 
-    def detect_and_handle_passed_events(self, events: list[Any], community: Any) -> None:
+    async def detect_and_handle_passed_events(self, events: list[Any], community: Any) -> None:
         """ Detect events that are no longer active in the Discord and mark them as completed.
 
         If an event exists in the database but is not present in Discord events list,
@@ -319,41 +319,42 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         """
         events_id = {event.id:event for event in events}
 
-        for local_event in self.model.find(
+        for local_event in await self.model.find(
                 scheduler_type=self.scheduler_type.name,
-                community_id=Community.find(external_id=community.external_id)[0].id,
+                community_id=(await Community.find(external_id=community.external_id))[0].id,
                 status__in=(EventStatus.ACTIVE, EventStatus.READY),
         ):
 
             # If an event in the database no longer exists in Discord
             # and passes the cancellation check, mark it as COMPLETED
             if int(local_event.external_id) not in events_id and self.is_cancel(local_event):
-                self.model.update(
+                await self.model.update(
                     filters=(self.model.external_id == local_event.external_id),
                     status=EventStatus.COMPLETED
                 )
 
-    def collect(self):
+    async def collect(self):
         self.logger.info(f'Starting collecting signals')
-        self.update_communities()
+        await self.update_communities()
         for community in self.communities:
-            if not community.monitored:
+            if not community.configured:
+                self.logger.warning(f'Community {community.name} not configured, skipping')
                 continue
 
             self.logger.info(f'Collecting signals for {community.name}')
 
             events = community.config['bot'].scheduled_events
 
-            self.upsert_events(events, community)
+            await self.upsert_events(events, community)
 
-            self.detect_and_handle_passed_events(events, community)
+            await self.detect_and_handle_passed_events(events, community)
 
-            self.detect_and_handle_duplicates(community)
+            await self.detect_and_handle_duplicates(community)
 
         self.logger.info(f'Finished collecting signals')
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.logger.info(f'Discord collector bot {self.name} ready')
-        self.update_communities()
-        self.init_scheduler()
+        await self.update_communities()
+        await self.init_scheduler()

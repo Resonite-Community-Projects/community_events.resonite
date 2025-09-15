@@ -7,9 +7,8 @@ from flask.logging import default_handler
 from resonite_communities.utils.text_api import ekey, separator
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-config_manager = ConfigManager(get_session)
+config_manager = ConfigManager()
 
 from resonite_communities.utils.logger import get_logger
 
@@ -87,7 +86,7 @@ class TwitchClient:
         return broadcaster_info
 
     def get_schedule(self, broadcaster):
-        Config = config_manager.db_config()
+        Config = config_manager.infrastructure_config
         events = []
         if not self.ready:
             return events
@@ -119,7 +118,7 @@ Services.discord = edict()
 
 def check_is_local_env():
     """Check if we are in the development environment based on the local domain."""
-    Config = config_manager.db_config()
+    Config = config_manager.infrastructure_config
     public_domains = Config.PUBLIC_DOMAIN
     if not isinstance(public_domains, list):
         public_domains = [public_domains]

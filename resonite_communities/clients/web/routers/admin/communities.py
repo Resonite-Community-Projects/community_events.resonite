@@ -9,9 +9,8 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.models.community import Community, CommunityPlatform, events_platforms, streams_platforms
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-config_manager = ConfigManager(get_session)
+config_manager = ConfigManager()
 
 router = APIRouter()
 
@@ -22,15 +21,14 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
-    events_communities = Community().find(platform__in=events_platforms, configured__eq=True)
-    streams_communities = Community().find(platform__in=streams_platforms, configured__eq=True)
+    events_communities = await Community().find(platform__in=events_platforms, configured__eq=True)
+    streams_communities = await Community().find(platform__in=streams_platforms, configured__eq=True)
 
     return templates.TemplateResponse("admin/communities.html", {
         "userlogo" : logo_base64,
-        "app_config": config_manager.db_config(),
+        "app_config": await config_manager.app_config(),
         "user" : deepcopy(user_auth),
         "events_communities": events_communities,
         "streams_communities": streams_communities,
         "request": request,
     })
-

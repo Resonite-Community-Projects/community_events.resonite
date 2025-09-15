@@ -13,9 +13,8 @@ from resonite_communities.models.signal import Event
 from resonite_communities.auth.db import User
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-config_manager = ConfigManager(get_session)
+config_manager = ConfigManager()
 
 router = APIRouter()
 
@@ -25,28 +24,25 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     if not user_auth or not user_auth.is_superuser:
         return RedirectResponse(url="/")
 
-    from sqlalchemy import select, create_engine
-    from sqlmodel import Session
-
-    config = config_manager.db_config()
-
-    engine = create_engine(config.DATABASE_URL, echo=False)
+    from sqlalchemy import select
 
     from sqlalchemy.orm import joinedload
     from resonite_communities.auth.db import OAuthAccount
+    from resonite_communities.utils.db import get_current_async_session
 
-    with Session(engine) as session:
-        instances = []
-        query = select(User).options(joinedload(User.oauth_accounts).joinedload(OAuthAccount.discord_account))
-        print(query)
+    session = await get_current_async_session()
+    instances = []
+    query = select(User).options(joinedload(User.oauth_accounts).joinedload(OAuthAccount.discord_account))
+    print(query)
 
-        rows = session.exec(query).unique().all()
-        for row in rows:
-            instances.append(row[0])
-        users = instances
+    result = await session.execute(query)
+    rows = result.unique().all()
+    for row in rows:
+        instances.append(row[0])
+    users = instances
 
     try:
-        api_url = config.PUBLIC_DOMAIN[0]
+        api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
     except KeyError:
         api_url = None
 
@@ -61,8 +57,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     return templates.TemplateResponse("admin/users.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
-        "app_config": config,
+        "app_config": await config_manager.app_config(),
         "users": users,
         "request": request,
     })
-

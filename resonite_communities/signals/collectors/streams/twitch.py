@@ -12,10 +12,17 @@ class TwitchStreamsCollector(StreamsCollector):
     platform = CommunityPlatform.TWITCH
     broadcasters = []
 
-    def update_communities(self):
+    def __init__(self, config, services, scheduler):
+        super().__init__(config, services, scheduler)
+        if not self.services.twitch.ready:
+            self.logger.warning('Not ready, no twitch community update')
+
+    async def update_communities(self):
         self.communities = []
         self.broadcasters = []
-        for streamer in Community.find(platform__in=[CommunityPlatform.TWITCH]):
+        if not self.services.twitch.ready:
+            return
+        for streamer in await Community.find(platform__in=[CommunityPlatform.TWITCH]):
             broadcaster = dict()
             broadcaster['config'] = streamer
             try:
@@ -23,7 +30,7 @@ class TwitchStreamsCollector(StreamsCollector):
             except ValueError as exc:
                 self.logger.error(exc)
                 continue
-            Community.upsert(
+            await Community.upsert(
                 _filter_field=['external_id', 'platform'],
                 _filter_value=[streamer.external_id, CommunityPlatform.TWITCH],
                 name=streamer.name,
@@ -37,20 +44,22 @@ class TwitchStreamsCollector(StreamsCollector):
                 self.broadcasters.append(broadcaster)
             self.communities.append(streamer)
 
-    def collect(self):
+    async def collect(self):
+        if not self.services.twitch.ready:
+            return
         self.logger.info('Update streams collector')
-        self.update_communities()
+        await self.update_communities()
 
         for broadcaster in self.broadcasters:
             broadcaster_streams = self.services.twitch.get_schedule(broadcaster['twitch'])
             for broadcaster_stream in broadcaster_streams:
-                self.model.upsert(
+                await self.model.upsert(
                     _filter_field='external_id',
                     _filter_value=broadcaster_stream['id'],
                     name=broadcaster_stream['title'],
                     start_time=parse(broadcaster_stream['start_time']),
                     end_time=parse(broadcaster_stream['end_time']),
-                    community_id=Community.find(external_id=broadcaster['config'].external_id)[0].id,
+                    community_id=(await Community.find(external_id=broadcaster['config'].external_id))[0].id,
                     tags=",".join(broadcaster.get('config', {}).tags),
                     external_id=broadcaster_stream['id'],
                     scheduler_type=self.scheduler_type.name,
