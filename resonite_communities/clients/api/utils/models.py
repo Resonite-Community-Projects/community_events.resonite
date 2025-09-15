@@ -12,3 +12,4 @@ class CommunityRequest(BaseModel):
     private_channel_id: str | None = None
     events_url: str | None = None
     selected_community_external_ids: dict | None = None
+    resetDescription: dict | None = None

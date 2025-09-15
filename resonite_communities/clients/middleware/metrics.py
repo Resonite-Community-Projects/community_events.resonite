@@ -9,7 +9,7 @@ import geoip2.database
 from apachelogs import LogParser
 
 from resonite_communities.clients.models.metrics import Metrics
-from resonite_communities.auth.db import get_async_session
+from resonite_communities.utils.db import get_current_async_session
 from resonite_communities.clients.models.metrics import ClientType
 
 parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"")
@@ -99,11 +99,9 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             timestamp=datetime.utcnow(),
         )
 
-        get_async_session_context = contextlib.asynccontextmanager(get_async_session)
-
-        async with get_async_session_context() as session:
-            session.add(metrics)
-            await session.commit()
+        session = await get_current_async_session()
+        session.add(metrics)
+        await session.commit()
 
         return response
 

@@ -2,12 +2,13 @@ import argparse
 import uvicorn
 import multiprocessing
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from resonite_communities.clients import StandaloneApplication
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
+from resonite_communities.utils.db import async_request_session
 
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
@@ -20,17 +21,15 @@ from fastapi_cache.backends.redis import RedisBackend
 
 from redis import asyncio as aioredis
 
-Config = ConfigManager(get_session).config()
+class DatabaseSessionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        async with async_request_session():
+            response = await call_next(request)
+        return response
 
-# @asynccontextmanager
-# async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-#     redis = aioredis.from_url(Config.CACHE_URL)
-#     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-#     yield
-
-#app = FastAPI(lifespan=lifespan)
 app = FastAPI()
 
+app.add_middleware(DatabaseSessionMiddleware)
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 
 import resonite_communities.clients.api.routes.v1
@@ -59,7 +58,7 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
         raise HTTPException(status_code=403, detail="Not authenticated or not a superuser.")
 
     form_data = await request.form()
-    config_manager = ConfigManager(get_session)
+    config_manager = ConfigManager()
 
     # Process AppConfig
     app_config_data = {}

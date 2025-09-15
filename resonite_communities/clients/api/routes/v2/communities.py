@@ -2,8 +2,8 @@ from resonite_communities.clients.api.routes.routers import router_v2
 from resonite_communities.models.community import Community, events_platforms
 
 @router_v2.get("/communities")
-def get_communities():
-    communities = Community().find(platform__in=events_platforms)
+async def get_communities():
+    communities = await Community().find(platform__in=events_platforms)
 
     communities_formated = []
     for community in communities:
@@ -21,9 +21,9 @@ def get_communities():
     return communities_formated
 
 @router_v2.get("/communities/{community_id}")
-def get_community(community_id: str):
+async def get_community(community_id: str):
     try:
-        community = Community().find(id=community_id)[0]
+        community = (await Community().find(id=community_id))[0]
     except IndexError:
         return {}
 

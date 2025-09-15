@@ -10,16 +10,16 @@ from resonite_communities.clients.api.routes.routers import router_v1
 
 
 @router_v1.get("/events")
-def get_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
+async def get_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     format_type = set_default_format(version="v1", format_type=format_type)
     return generate_events_response(
         version="v1",
         format_type=set_default_format(version="v1", format_type=format_type),
-        events=get_filtered_events(request.url.hostname, "v1", communities),
+        events=await get_filtered_events(request.url.hostname, "v1", communities),
     )
 
 
 @router_v1.get("/aggregated_events")
-def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
+async def get_aggregated_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
     """Deprecated"""
-    return get_events_v1(request=request, format_type=format_type, communities=communities)
+    return await get_events_v1(request=request, format_type=format_type, communities=communities)

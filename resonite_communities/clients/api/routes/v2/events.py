@@ -3,9 +3,9 @@ from resonite_communities.clients.api.utils.formatter import FormatType, set_def
 from resonite_communities.clients.api.routes.routers import router_v2
 
 @router_v2.get("/events")
-def get_events_v2(request: Request, format_type: FormatType = None, communities: str = ""):
+async def get_events_v2(request: Request, format_type: FormatType = None, communities: str = ""):
     return generate_events_response(
         version="v2",
         format_type=set_default_format(version="v2", format_type=format_type),
-        events=get_filtered_events(request.url.hostname, "v2", communities)
+        events=await get_filtered_events(request.url.hostname, "v2", communities)
     )

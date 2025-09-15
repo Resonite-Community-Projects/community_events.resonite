@@ -16,14 +16,12 @@ from resonite_communities.utils.tools import is_local_env
 from resonite_communities.utils.logger import get_logger
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
-Config = ConfigManager().config()
-config_manager = ConfigManager(get_session)
+config_manager = ConfigManager()
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
-    reset_password_token_secret = Config.SECRET
-    verification_token_secret = Config.SECRET
+    reset_password_token_secret = config_manager.infrastructure_config.SECRET
+    verification_token_secret = config_manager.infrastructure_config.SECRET
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,13 +89,14 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
         from resonite_communities.models.community import Community, CommunityPlatform
 
-        communities = {community.external_id:community.id for community in Community().find()}
+        communities = {community.external_id:community.id for community in await Community.find()}
+        configured_guilds = await Community.find(platform__in=[CommunityPlatform.DISCORD], configured__eq=True)
 
         private_events_access_communities = {'guilds': [], 'retry_after': 0}
         for guild in guilds:
             if guild['name'] in private_events_access_communities['guilds']:
                 continue
-            for configured_guild in Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=True):
+            for configured_guild in configured_guilds:
                 if str(configured_guild.external_id) == str(guild['id']):
                     private_role_id = configured_guild.config.get('private_role_id')
                     if private_role_id:
@@ -118,44 +117,41 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         from resonite_communities.auth.db import (
             DiscordAccount,
             OAuthAccount,
-            get_async_session,
         )
-        import contextlib
+        from resonite_communities.utils.db import get_current_async_session
 
-        get_async_session_context = contextlib.asynccontextmanager(get_async_session)
+        session = await get_current_async_session()
 
-        async with get_async_session_context() as session:
+        oauth_account_db = await session.get(OAuthAccount, oauth_account.id)
+        discord_account_db = await session.get(DiscordAccount, oauth_account_db.discord_account_id)
 
-            oauth_account_db = await session.get(OAuthAccount, oauth_account.id)
-            discord_account_db = await session.get(DiscordAccount, oauth_account_db.discord_account_id)
-
-            if oauth_account_db.discord_account_id and discord_account_db:
-                    discord_account_db.name = user_data["username"]
-                    discord_account_db.avatar_url = user_data["avatar_url"]
-                    discord_account_db.user_communities = private_events_access_communities["guilds"]
-                    discord_account_db.discord_update_retry_after = private_events_access_communities["retry_after"]
-                    session.add(discord_account_db)
-                    await session.commit()
-            else:
-                discord_account = DiscordAccount(
-                    name=user_data["username"],
-                    avatar_url=user_data["avatar_url"],
-                    user_communities=private_events_access_communities['guilds'],
-                    discord_update_retry_after = private_events_access_communities["retry_after"],
-                )
-                session.add(discord_account)
-
+        if oauth_account_db.discord_account_id and discord_account_db:
+                discord_account_db.name = user_data["username"]
+                discord_account_db.avatar_url = user_data["avatar_url"]
+                discord_account_db.user_communities = private_events_access_communities["guilds"]
+                discord_account_db.discord_update_retry_after = private_events_access_communities["retry_after"]
+                session.add(discord_account_db)
                 await session.commit()
+        else:
+            discord_account = DiscordAccount(
+                name=user_data["username"],
+                avatar_url=user_data["avatar_url"],
+                user_communities=private_events_access_communities['guilds'],
+                discord_update_retry_after = private_events_access_communities["retry_after"],
+            )
+            session.add(discord_account)
 
-                oauth_account_db.discord_account_id = discord_account.id
+            await session.commit()
 
-                await session.commit()
+            oauth_account_db.discord_account_id = discord_account.id
 
-        config_db = config_manager.db_config()
+            await session.commit()
+
+        config_db = await config_manager.app_config()
 
         if not config_db.INITIATED:
             user.is_superuser = True
-            config_manager.update_app_config(initiated=True)
+            await config_manager.update_app_config(initiated=True)
 
         if config_db.INITIATED and not config_db.NORMAL_USER_LOGIN and not (user.is_superuser or user.is_moderator):
             raise HTTPException(

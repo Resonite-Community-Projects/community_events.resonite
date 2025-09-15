@@ -7,12 +7,10 @@ from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.models.community import Community
 
 from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
 
 from resonite_communities.utils.tools import is_local_env
 
-
-Config = ConfigManager(get_session).config()
+config_manager = ConfigManager()
 
 from enum import Enum
 
@@ -90,7 +88,7 @@ def set_default_format(
 
     return format_type
 
-def get_filtered_events(
+async def get_filtered_events(
     host: str,
     version: str,
     communities: str,
@@ -102,15 +100,15 @@ def get_filtered_events(
         communities = [community for community in communities.split(",")]
         communities_filter = Event.community.has(Community.name.in_(communities))
 
-    if isinstance(Config.PUBLIC_DOMAIN, str):
-        public_domains = [Config.PUBLIC_DOMAIN]
+    if isinstance(config_manager.infrastructure_config.PUBLIC_DOMAIN, str):
+        public_domains = [config_manager.infrastructure_config.PUBLIC_DOMAIN]
     else:
-        public_domains = Config.PUBLIC_DOMAIN
+        public_domains = config_manager.infrastructure_config.PUBLIC_DOMAIN
 
-    if isinstance(Config.PRIVATE_DOMAIN, str):
-        private_domains = [Config.PRIVATE_DOMAIN]
+    if isinstance(config_manager.infrastructure_config.PRIVATE_DOMAIN, str):
+        private_domains = [config_manager.infrastructure_config.PRIVATE_DOMAIN]
     else:
-        private_domains = Config.PRIVATE_DOMAIN
+        private_domains = config_manager.infrastructure_config.PRIVATE_DOMAIN
 
     if host in public_domains:
         domain_filter = not_(Event.tags.ilike("%private%"))
@@ -142,7 +140,7 @@ def get_filtered_events(
 
     # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
     # SQL commend, optimization to order elements by date
-    signals.extend(Event.find(__custom_filter=custom_filter, __order_by=["start_time"]))
+    signals.extend(await Event.find(__custom_filter=custom_filter, __order_by=["start_time"]))
 
     versioned_events = []
     for signal in signals:

@@ -10,10 +10,7 @@ from resonite_communities.models.community import CommunityPlatform, Community, 
 from resonite_communities.utils.tools import is_local_env
 from resonite_communities.clients.api.utils.models import CommunityRequest
 from pydantic import BaseModel
-
-from resonite_communities.utils.config import ConfigManager
-from resonite_communities.auth.db import get_session
-Config = ConfigManager(get_session).config()
+from resonite_communities.utils.db import get_current_async_session
 
 
 from fastapi import Query
@@ -50,9 +47,9 @@ def require_administrator_access(user_auth: UserAuthModel = Depends(get_user_aut
     return user_auth
 
 @router_v2.post("/admin/events/update_status")
-def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    result = Event.update(
+    result = await Event.update(
         filters=(Event.id == data.id),
         status=data.status
     )
@@ -64,12 +61,10 @@ def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel
 
 
 @router_v2.post("/admin/users/update_status")
-def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_administrator_access)):
+async def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_administrator_access)):
 
     from sqlalchemy import select, create_engine
     from sqlmodel import Session
-
-    engine = create_engine(Config.DATABASE_URL, echo=False)
 
     fields_to_update = {
         "is_superuser": data.is_superuser,
@@ -77,23 +72,21 @@ def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel =
         "updated_at": datetime.utcnow(),
     }
 
-    with Session(engine) as session:
-        instances = []
+    session = await get_current_async_session()
+    instances = []
 
-        query = select(User).where(User.id == data.id)
+    query = select(User).where(User.id == data.id)
 
-        rows = session.exec(query).unique().all()
-        for row in rows:
-            instance = row[0]
-            for key, value in fields_to_update.items():
-                print(f"Setting {key} = {value} (type: {type(value)})")
-                setattr(instance, key, value)
-            session.commit()
-            session.refresh(instance)
-            session.expunge(instance)
-            instances.append(instance)
-
-    print(instances)
+    result = await session.execute(query)
+    rows = result.unique().all()
+    for row in rows:
+        instance = row[0]
+        for key, value in fields_to_update.items():
+            setattr(instance, key, value)
+        await session.commit()
+        await session.refresh(instance)
+        session.expunge(instance)
+        instances.append(instance)
 
     result = True
 
@@ -104,9 +97,9 @@ def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel =
 
 
 @router_v2.get("/admin/communities/{community_id}")
-def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    communities = Community().find(id__eq=community_id)
+    communities = await Community().find(id__eq=community_id)
     if not communities:
         raise HTTPException(status_code=404, detail="Community not found.")
     if len(communities) > 1:
@@ -131,7 +124,7 @@ def get_community_details(community_id: str, user_auth: UserAuthModel = Depends(
 
 
 @router_v2.get("/admin/communities/", response_model=list[dict])
-def get_admin_communities_list(
+async def get_admin_communities_list(
     request: Request,
     type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
     user_auth: UserAuthModel = Depends(require_moderator_access)
@@ -140,9 +133,9 @@ def get_admin_communities_list(
 
     communities = []
     if type == 'event':
-        communities = Community().find(platform__in=events_platforms, configured__eq=True)
+        communities = await Community().find(platform__in=events_platforms, configured__eq=True)
     elif type == 'stream':
-        communities = Community().find(platform__in=streams_platforms, configured__eq=True)
+        communities = await Community().find(platform__in=streams_platforms, configured__eq=True)
     else:
         raise HTTPException(status_code=400, detail="Invalid community type")
 
@@ -167,9 +160,9 @@ def get_admin_communities_list(
     return communities_formatted
 
 @router_v2.post("/admin/communities/")
-def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    new_community = Community().add(
+    new_community = await Community().add(
         name=data.name,
         external_id=data.external_id,
         platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
@@ -189,22 +182,22 @@ def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(
 
 
 @router_v2.patch("/admin/communities/{community_id}")
-def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def update_community(community_id: str, data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
 
     import logging
 
     if data.platform == 'JSON Community Event' and data.selected_community_external_ids:
         for selected_community_id, selected_community_to_add in data.selected_community_external_ids.items():
-            logging.error(f"{selected_community_id}: {selected_community_to_add}")
+            logging.info(f"{selected_community_id}: {selected_community_to_add}")
             if selected_community_to_add:
-                logging.error(f"Let see to have the community {selected_community_id}")
-                logging.error(f"Checking on {data.events_url}/v2/communities/{selected_community_id}")
+                logging.info(f"Let see to have the community {selected_community_id}")
+                logging.info(f"Checking on {data.events_url}/v2/communities/{selected_community_id}")
 
                 r = requests.get(f"{data.events_url}/v2/communities/{selected_community_id}")
                 try:
                     data_r = r.json()
-                    Community.upsert(
+                    await Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[data_r['external_id'], CommunityPlatform.DISCORD],
                         name = data_r['name'],
@@ -223,7 +216,7 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
                 except Exception as e:
                     logging.error(f"Cant unpack json {e}")
 
-    updated = Community.update(
+    updated = await Community.update(
         filters=(Community.id == community_id),
         name=data.name,
         external_id=data.external_id,
@@ -245,9 +238,9 @@ def update_community(community_id: str, data: CommunityRequest, user_auth: UserA
 
 
 @router_v2.delete("/admin/communities/{community_id}")
-def delete_community(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def delete_community(community_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    deleted = Community.delete(id__eq=community_id)
+    deleted = await Community.delete(id__eq=community_id)
 
     if not deleted:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -255,16 +248,16 @@ def delete_community(community_id: str, user_auth: UserAuthModel = Depends(requi
     return {"id": community_id, "message": "Community deleted successfully"}
 
 @router_v2.get("/admin/setup/communities/discord/")
-def discord_communities_setup(user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def discord_communities_setup(user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    discord_communities = Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
+    discord_communities = await Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
 
     return discord_communities
 
 @router_v2.post("/admin/setup/communities/discord/import/{community_id}")
-def discord_community_setup_import(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+async def discord_community_setup_import(community_id: str, data: DiscordImportRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
 
-    updated = Community.update(
+    updated = await Community.update(
         filters=(Community.id == community_id),
         configured=True,
         tags="private" if data.visibility == "PRIVATE" else "public"
@@ -274,5 +267,3 @@ def discord_community_setup_import(community_id: str, data: DiscordImportRequest
         raise HTTPException(status_code=404, detail="Community not found")
 
     return {"id": community_id, "message": "Community updated successfully"}
-
-
