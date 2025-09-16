@@ -3,6 +3,7 @@ from datetime import datetime
 from easydict import EasyDict as edict
 import os
 import json
+import multiprocessing
 from sqlmodel import select
 from typing import Any, Dict, List
 from .models import AppConfig, MonitoredDomain, TwitchConfig
@@ -20,9 +21,30 @@ class ConfigManager:
         from resonite_communities.utils.db import get_current_async_session
         return await get_current_async_session()
 
+    def _calculate_auto_scaling_defaults(self):
+        cpu_count = multiprocessing.cpu_count()
+        expected_workers = (cpu_count * 2) + 1
+
+        return {
+            'DB_POOL_SIZE': max(4, min(expected_workers * 3, 50)),
+            'DB_MAX_OVERFLOW': max(2, min(expected_workers * 2, 20)),
+            'DB_POOL_TIMEOUT': 30,
+            'DB_POOL_RECYCLE': 1800,
+            'DB_POOL_PRE_PING': True,
+            'WEB_WORKERS': expected_workers,
+            'API_WORKERS': expected_workers,
+        }
+
     def _load_infrastructure_config(self):
         optional_vars = [
             'PRIVATE_DOMAIN',
+            'DB_POOL_SIZE',
+            'DB_MAX_OVERFLOW',
+            'DB_POOL_TIMEOUT',
+            'DB_POOL_RECYCLE',
+            'DB_POOL_PRE_PING',
+            'WEB_WORKERS',
+            'API_WORKERS',
         ]
         required_vars = [
             'PUBLIC_DOMAIN',
@@ -57,6 +79,11 @@ class ConfigManager:
         if missing_vars:
             raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
+        auto_scaling_defaults = self._calculate_auto_scaling_defaults()
+
+        for key, default_value in auto_scaling_defaults.items():
+            if config.get(key) is None:
+                config[key] = default_value
 
         config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
         if config['PRIVATE_DOMAIN']:

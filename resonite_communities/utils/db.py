@@ -7,23 +7,21 @@ config_manager = ConfigManager()
 engine = create_async_engine(
     config_manager.infrastructure_config.DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://'),
     echo=False,
-    pool_size=20,
-    max_overflow=30,
-    pool_timeout=30,
-    pool_recycle=1800,
-    pool_pre_ping=True,
+    pool_size=config_manager.infrastructure_config.DB_POOL_SIZE,
+    max_overflow=config_manager.infrastructure_config.DB_MAX_OVERFLOW,
+    pool_timeout=config_manager.infrastructure_config.DB_POOL_TIMEOUT,
+    pool_recycle=config_manager.infrastructure_config.DB_POOL_RECYCLE,
+    pool_pre_ping=config_manager.infrastructure_config.DB_POOL_PRE_PING,
 )
 
 async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from resonite_communities.utils.logger import get_logger
 
 
 from contextvars import ContextVar
 from contextlib import asynccontextmanager
-
-
-from resonite_communities.utils.db import async_session_maker
 
 
 _async_session_context: ContextVar[AsyncSession] = ContextVar('async_session')
@@ -59,7 +57,10 @@ async def async_request_session():
         try:
             yield session
         finally:
-            pass
+            try:
+                _async_session_context.set(None)
+            except:
+                pass
 
 async def get_session_dependency():
     """FastAPI dependency function that yields database sessions"""

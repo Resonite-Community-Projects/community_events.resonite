@@ -1,5 +1,5 @@
 from typing import Any
-from datetime import datetime
+from datetime import datetime, timezone
 
 from disnake.ext import commands
 from sqlalchemy import select, func
@@ -105,8 +105,8 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         """
         local_event_end_time = getattr(local_event, 'end_time')
         if (
-                (local_event_end_time and local_event.end_time < datetime.utcnow()) or
-                (not local_event_end_time and local_event.start_time < datetime.utcnow())
+                (local_event_end_time and local_event.end_time < datetime.now(timezone.utc)) or
+                (not local_event_end_time and local_event.start_time < datetime.now(timezone.utc))
         ):
             return True
 

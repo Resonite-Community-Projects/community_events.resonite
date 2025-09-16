@@ -10,6 +10,8 @@ from resonite_communities.clients import StandaloneApplication
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.utils.db import async_request_session
 
+config_manager = ConfigManager()
+
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
@@ -29,8 +31,8 @@ class DatabaseSessionMiddleware(BaseHTTPMiddleware):
 
 app = FastAPI()
 
-app.add_middleware(DatabaseSessionMiddleware)
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
+app.add_middleware(DatabaseSessionMiddleware)
 
 import resonite_communities.clients.api.routes.v1
 import resonite_communities.clients.api.routes.v2
@@ -145,7 +147,7 @@ def run():
     else:
         options = {
             "bind": args.address,
-            "workers": (multiprocessing.cpu_count() * 2) + 1,
+            "workers": config_manager.infrastructure_config.API_WORKERS,
             "worker_class": "uvicorn.workers.UvicornWorker",
         }
         StandaloneApplication(app, options).run()

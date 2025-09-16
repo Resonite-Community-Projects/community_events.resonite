@@ -5,7 +5,6 @@ from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
-from resonite_communities.utils.db import async_session_maker
 
 class Signal:
     scheduler_type = None

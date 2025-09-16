@@ -41,8 +41,9 @@ class DatabaseSessionMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
         return response
 
-app.add_middleware(DatabaseSessionMiddleware)
+
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
+app.add_middleware(DatabaseSessionMiddleware)
 
 app.include_router(logout.router)
 app.include_router(login.router)
@@ -105,7 +106,7 @@ def run():
     else:
         options = {
             "bind": args.address,
-            "workers": (multiprocessing.cpu_count() * 2) + 1,
+            "workers": config_manager.infrastructure_config.WEB_WORKERS,
             "worker_class": "uvicorn.workers.UvicornWorker",
         }
         StandaloneApplication(app, options).run()
