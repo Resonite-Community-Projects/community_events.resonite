@@ -97,7 +97,7 @@ class TwitchClient:
         if response.status_code == 200:
             schedule_data = response.json()
             for event in schedule_data['data']['segments']:
-                if (event['category'] and event['category']['id'] == self.config.Twitch.game_id) or schedule_data['data']['broadcaster_name'] == Config.Twitch.account_name:
+                if (event['category'] and event['category']['id'] == self.config.Twitch.game_id) or schedule_data['data']['broadcaster_name'] == self.config.Twitch.account_name:
                     events.append(event)
         else:
             if response.status_code != 404:
