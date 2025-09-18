@@ -42,7 +42,12 @@ async def main():
     twitch_client = None
     discord_client = None
     if config.Twitch:
-        twitch_client = TwitchClient(client_id=config.Twitch.client_id, secret=config.Twitch.secret)
+        twitch_client = TwitchClient(
+            client_id=config.Twitch.client_id,
+            secret=config.Twitch.secret,
+            game_id=config.Twitch.game_id,
+            account_name=config.Twitch.account_name,
+        )
 
     discord_client = disnake.Client()
     intents = disnake.Intents.all()

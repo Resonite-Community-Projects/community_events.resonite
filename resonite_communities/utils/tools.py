@@ -16,9 +16,11 @@ logger = get_logger('community_events')
 
 class TwitchClient:
 
-    def __init__(self, client_id, secret):
+    def __init__(self, client_id, secret, game_id, account_name):
         self.client_id = client_id
         self.secret = secret
+        self.game_id = game_id
+        self.account_name = account_name
         self.logger = get_logger(self.__class__.__name__)
 
         self.ready = False
@@ -97,7 +99,7 @@ class TwitchClient:
         if response.status_code == 200:
             schedule_data = response.json()
             for event in schedule_data['data']['segments']:
-                if (event['category'] and event['category']['id'] == self.config.Twitch.game_id) or schedule_data['data']['broadcaster_name'] == self.config.Twitch.account_name:
+                if (event['category'] and event['category']['id'] == self.game_id) or schedule_data['data']['broadcaster_name'] == self.account_name:
                     events.append(event)
         else:
             if response.status_code != 404:
