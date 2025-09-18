@@ -86,7 +86,6 @@ class TwitchClient:
         return broadcaster_info
 
     def get_schedule(self, broadcaster):
-        Config = config_manager.infrastructure_config
         events = []
         if not self.ready:
             return events
@@ -98,7 +97,7 @@ class TwitchClient:
         if response.status_code == 200:
             schedule_data = response.json()
             for event in schedule_data['data']['segments']:
-                if (event['category'] and event['category']['id'] == Config.Twitch.game_id) or schedule_data['data']['broadcaster_name'] == Config.Twitch.account_name:
+                if (event['category'] and event['category']['id'] == self.config.Twitch.game_id) or schedule_data['data']['broadcaster_name'] == Config.Twitch.account_name:
                     events.append(event)
         else:
             if response.status_code != 404:
