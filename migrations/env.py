@@ -9,18 +9,18 @@ from alembic import context
 from resonite_communities.models.base import BaseModel as AppModel
 from resonite_communities.auth.db import BaseModel as FastAPIUserModel
 
-from resonite_communities.auth.db import *
+from resonite_communities.utils.db import *
 from resonite_communities.models.community import *
 from resonite_communities.models.signal import *
 from resonite_communities.clients.models.metrics import *
 
 from resonite_communities.utils.config import ConfigManager
 
-Config = ConfigManager().config()
+config_manager = ConfigManager()
 
 from resonite_communities.utils.config.models import *
 
-DATABASE_URL = Config.DATABASE_URL
+DATABASE_URL = config_manager.infrastructure_config.DATABASE_URL
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

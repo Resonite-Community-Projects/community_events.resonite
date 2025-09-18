@@ -6,81 +6,99 @@ next: AdministratorGuide/configuration/application.md
 
 Use for infrastructure-level settings that are unlikely to change, such as database credentials and secret keys.
 
+## Required Variables
+
+These variables must be set for the application to function properly.
+
 | Variable | Type | Description |
 | :--- | :--- | :--- |
+| `PUBLIC_DOMAIN` | `str` | The domain used by the HTTP API to show only the public events |
+| `DATABASE_URL` | `str` | The PostgreSQL database URL |
+| `CACHE_URL` | `str` | The Redis database URL |
 | `SECRET_KEY` | `str` | A secret key used to handle the authentication system |
-| `SECRET` | `str` | The secret key use to handle the authentication system |
-| `PUBLIC_DOMAIN` | `str` | The domain used by the HTTP API do show only the public events |
+| `SECRET` | `str` | The secret key used to handle the authentication system |
+| `DISCORD_CLIENT_ID` | `int` | The ID of the Discord client |
+| `DISCORD_SECRET` | `str` | The secret of the Discord client |
+| `DISCORD_REDIRECT_URL` | `str` | The callback URL for Discord API authentication |
+| `SENTRY_DSN` | `str` | The DSN configuration for sending error logs to Sentry |
+
+## Optional Variables
+
+Some of these variables have default values and can be customized as needed.
+
+### Domain Configuration
+
+| Variable | Type | Description |
+| :--- | :--- | :--- |
 | `PRIVATE_DOMAIN` | `str` | The domain used by the HTTP API to show only the private events |
-| `DATABASE_URL` | `str` | The Postgresql database url |
-| `CACHE_URL` | `str` | The Redis database url |
-| `SENTRY_DSN` | `str` | The DSN configuration for send error logs to Sentry |
 
-### Setting up `PUBLIC_DOMAIN` and `PRIVATE_DOMAINT`
+### Database Connection Pool
 
-To be able to use the HTTP API locally you need to configure your hosts file on your file system with the following domain:
+| Variable | Type | Description |
+| :--- | :--- | :--- |
+| `DB_POOL_SIZE` | `int` | Database connection pool size (default: 6) |
+| `DB_MAX_OVERFLOW` | `int` | Maximum overflow connections for database pool (default: 8) |
+| `DB_POOL_TIMEOUT` | `int` | Database connection timeout in seconds (default: 30) |
+| `DB_POOL_RECYCLE` | `int` | Database connection recycle time in seconds (default: 1800) |
+| `DB_POOL_PRE_PING` | `bool` | Whether to pre-ping database connections (default: true) |
 
-Depending on your Operating System this would either by `/etc/hosts` for linux or `C:\Windows\System32\drivers\etc\hosts` for Windows. Be careful that modifing this file require you to be administrator of you computer.
+### Application Workers
+
+| Variable | Type | Description |
+| :--- | :--- | :--- |
+| `WEB_WORKERS` | `int` | Number of web application workers (default: 3) |
+| `API_WORKERS` | `int` | Number of API application workers (default: 3) |
+
+!!! note
+
+    Keep in mind that the signal manager is counted as 1 worker and is not configurable yet.
+
+## Configuration Guides
+
+### Domain Setup
+
+To use the HTTP API locally, configure your hosts file with the following domains:
+
+- **Linux/Mac:** `/etc/hosts`
+- **Windows:** `C:\Windows\System32\drivers\etc\hosts`
 
 ```hosts title="hosts"
 127.0.0.1 resonite-communities.local
 127.0.0.1 private.resonite-communities.local
 ```
 
-You can change the second-level domain but there is a check on the top-level domain `.local` in the code, even if this is just to show an tip message.
+!!! note
+    The code checks for the `.local` top-level domain to detect local environments.
 
-This check is done in the function `check_is_local_env` in the class utils and is used with the variable `is_local_env` in the rest of the code.
+### Database Configuration
 
-### Setting up `DATABASE_URL`
-
-In the case you want to do local developement switching between the docker containers and without for the manager and the clients you will need to configure the following for running the `poetry run` command directly:
-
+**For direct Poetry runs:**
 ```toml
 DATABASE_URL = "postgresql://resonitecommunities:changeme@127.0.0.1:5432/resonitecommunities"
 ```
 
-Or this configuration if you want to use the `poetry run` command via the docker compose:
-
+**For Docker Compose runs:**
 ```toml
 DATABASE_URL = "postgresql://resonitecommunities:changeme@database:5432/resonitecommunities"
 ```
 
-### Setting up `CACHE_URL`
+### Performance Tuning
 
-In the case you want to do local developement switching between the docker containers and without for the signal manager you will need to configure the following for running the `poetry run` command directly:
+The default values for database connection pool and application workers are based on tests on the community instance.
 
-```toml
-CACHE_URL = "redis://127.0.0.1"
-```
+They are based on the default settings of PostgreSQL which have a limit of 100 connections.
 
-Or this configuration if you want to use the `poetry run` command via the docker compose:
+### Discord Bot Setup
 
-```toml
-CACHE_URL = "redis://cache"
-```
+When creating the Discord bot application, configure these settings:
 
-### Discord
+**Installation Section:**
 
-| Variable | Type | Description |
-| :--- | :--- | :--- |
-| `DISCORD_CLIENT_ID` | `int` | the id of the Discord client |
-| `DISCORD_SECRET` | `str` | the secret of the Discord client |
-| `DISCORD_REDIRECT_URL` | `str` | the callback url for Discord API to call when finishing the authentification process on their end. |
+- Installation context: Guild Install only
+- Scope: bot (`applications_commands` not needed)
 
-#### Discord bot configuration
+**Bot Section - Required Intents:**
 
-When creating the bot on Discord Application interface you need to set some parameters to work.
-
-##### Installation section
-
-Installation context set to **only** `Guild Install`
-
-Set the scope to `bot`, we don't need the `applications_commands`
-
-##### Bot section
-
-Enable the following intents:
-
-- `Presence`
-- `Server Members`
-- `Message Content`
+- Presence
+- Server Members
+- Message Content

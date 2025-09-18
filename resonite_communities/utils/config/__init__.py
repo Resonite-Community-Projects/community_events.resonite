@@ -21,19 +21,6 @@ class ConfigManager:
         from resonite_communities.utils.db import get_current_async_session
         return await get_current_async_session()
 
-    def _calculate_auto_scaling_defaults(self):
-        cpu_count = multiprocessing.cpu_count()
-        expected_workers = (cpu_count * 2) + 1
-
-        return {
-            'DB_POOL_SIZE': max(4, min(expected_workers * 3, 50)),
-            'DB_MAX_OVERFLOW': max(2, min(expected_workers * 2, 20)),
-            'DB_POOL_TIMEOUT': 30,
-            'DB_POOL_RECYCLE': 1800,
-            'DB_POOL_PRE_PING': True,
-            'WEB_WORKERS': expected_workers,
-            'API_WORKERS': expected_workers,
-        }
 
     def _load_infrastructure_config(self):
         optional_vars = [
@@ -57,11 +44,22 @@ class ConfigManager:
             'DISCORD_REDIRECT_URL',
             'SENTRY_DSN',
         ]
+
+        defaults = {
+            'DB_POOL_SIZE': 6,
+            'DB_MAX_OVERFLOW': 8,
+            'DB_POOL_TIMEOUT': 30,
+            'DB_POOL_RECYCLE': 1800,
+            'DB_POOL_PRE_PING': True,
+            'WEB_WORKERS': 3,
+            'API_WORKERS': 3,
+        }
+
         config = {}
         missing_vars = []
-        vars = required_vars + optional_vars
+        all_vars = required_vars + optional_vars
 
-        for var in vars:
+        for var in all_vars:
             value = None
             file_path = os.getenv(f"{var}_FILE")
 
@@ -73,16 +71,14 @@ class ConfigManager:
 
             if var not in optional_vars and value is None:
                 missing_vars.append(var)
-            else:
+            elif value is not None:
                 config[var] = value
 
         if missing_vars:
             raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-        auto_scaling_defaults = self._calculate_auto_scaling_defaults()
-
-        for key, default_value in auto_scaling_defaults.items():
-            if config.get(key) is None:
+        for key, default_value in defaults.items():
+            if key not in config:
                 config[key] = default_value
 
         config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
