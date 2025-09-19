@@ -27,6 +27,7 @@ class JSONEventsCollector(EventsCollector):
             self.communities.append(community)
 
     async def collect(self):
+        await super().collect()
         self.logger.info('Update events collector from external source')
         await self.update_communities()
         for community in self.communities:

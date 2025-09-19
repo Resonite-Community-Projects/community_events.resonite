@@ -30,7 +30,11 @@ _async_session_context: ContextVar[AsyncSession] = ContextVar('async_session')
 async def get_current_async_session() -> AsyncSession:
     """Get the current async context session, or create a new one if needed"""
     try:
-        return _async_session_context.get()
+        session = _async_session_context.get()
+        if session is None:
+            session = async_session_maker()
+            _async_session_context.set(session)
+        return session
     except LookupError:
         session = async_session_maker()
         _async_session_context.set(session)

@@ -1,9 +1,6 @@
 from resonite_communities.signals.signal import Signal
 class Collector(Signal):
 
-    async def collect(self):
-        self.logger.info('Update collector')
-
     async def init_scheduler(self):
         # You **must** call this method in your collector __init__ method
         self.logger.info(f'{self.name} scheduler initialization')

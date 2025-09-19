@@ -334,6 +334,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 )
 
     async def collect(self):
+        await super().collect()
         self.logger.info(f'Starting collecting signals')
         await self.update_communities()
         for community in self.communities:

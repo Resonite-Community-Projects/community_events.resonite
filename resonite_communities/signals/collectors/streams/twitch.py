@@ -45,6 +45,7 @@ class TwitchStreamsCollector(StreamsCollector):
             self.communities.append(streamer)
 
     async def collect(self):
+        await super().collect()
         if not self.services.twitch.ready:
             return
         self.logger.info('Update streams collector')

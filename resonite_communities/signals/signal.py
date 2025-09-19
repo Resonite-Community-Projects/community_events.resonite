@@ -5,6 +5,7 @@ from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
+from resonite_communities.utils.db import _async_session_context
 
 class Signal:
     scheduler_type = None
@@ -41,6 +42,11 @@ class Signal:
                 f"\n\nThe collector {self.name} have a non declared platform: {self.platform}!"
                 f"\nValid platforms are: {CommunityPlatform.valid_values()}"
             )
+
+    async def collect(self):
+        _async_session_context.set(None)
+
+        self.logger.info(f'Starting {self.name} collection')
 
     def update_communities(self):
         raise ValueError("Not implemented")
