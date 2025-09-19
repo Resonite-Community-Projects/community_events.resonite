@@ -5,7 +5,7 @@ from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.signals import SignalSchedulerType
 from resonite_communities.utils.logger import get_logger
 from resonite_communities.models.base import BaseModel
-from resonite_communities.utils.db import _async_session_context
+from resonite_communities.utils.db import ensure_session_ready
 
 class Signal:
     scheduler_type = None
@@ -44,8 +44,8 @@ class Signal:
             )
 
     async def collect(self):
-        _async_session_context.set(None)
-
+        await ensure_session_ready()
+        
         self.logger.info(f'Starting {self.name} collection')
 
     def update_communities(self):

@@ -71,7 +71,6 @@ async def main():
             traces_sample_rate=1.0,
         )
 
-
     # Load collectors
     logger.info('Loading collectors...')
     #return

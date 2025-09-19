@@ -44,6 +44,16 @@ def set_async_session_context(session: AsyncSession):
     """Set the session for current async context"""
     _async_session_context.set(session)
 
+async def ensure_session_ready():
+    """Ensure the shared session is ready for new operations"""
+    session = await get_current_async_session()
+    if session.in_transaction():
+        try:
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+    return session
+
 @asynccontextmanager
 async def get_async_session():
     """Async context manager for database sessions"""
