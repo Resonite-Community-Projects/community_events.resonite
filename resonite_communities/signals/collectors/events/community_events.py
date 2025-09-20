@@ -34,7 +34,11 @@ class CommunityEventsCollector(EventsCollector):
         for community in self.communities:
             self.logger.info(f'Collecting signals for {community.name}')
             #self.logger.info(f"Processing events for {community.name} from {community.config}")
-            community_configurator = (await Community.find(id=community.config.community_configurator))[0]
+            try:
+                community_configurator = (await Community.find(id=community.config.community_configurator))[0]
+            except AttributeError as err:
+                self.logger.error(f"Failed to get community configurator for community {community.name}")
+                self.logger.error(str(err))
 
             try:
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
