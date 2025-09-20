@@ -1,5 +1,6 @@
 from dateutil.parser import parse
 import requests
+import traceback
 
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import EventStatus
@@ -32,46 +33,39 @@ class CommunityEventsCollector(EventsCollector):
         self.logger.info(f'Starting collecting signals')
         await self.update_communities()
         for community in self.communities:
-            self.logger.info(f'Collecting signals for {community.name}')
-            #self.logger.info(f"Processing events for {community.name} from {community.config}")
             try:
+                self.logger.info(f'Collecting signals for {community.name}')
+                #self.logger.info(f"Processing events for {community.name} from {community.config}")
                 community_configurator = (await Community.find(id=community.config.community_configurator))[0]
-            except AttributeError as err:
-                self.logger.error(f"Failed to get community configurator for community {community.name}")
-                self.logger.error(str(err))
 
-            try:
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
-            except Exception as error:
-                self.logger.error(f"Exception on request for {community.name}")
-                self.logger.error(error)
-                self.logger.error("Skipping")
-                continue
 
-            if response.status_code != 200:
-                self.logger.error(f"Error {response.status_code} from {community.name} server: {response.text}")
-                self.logger.error("Skipping")
-                continue
+                if response.status_code != 200:
+                    raise ValueError(f"{response.status_code} from server: {response.text}")
 
-            for event in response.json():
-                if not event['community_name'] == community.name:
-                    continue
-                await self.model.upsert(
-                    _filter_field='external_id',
-                    _filter_value=event['id'],
-                    name=event['name'],
-                    description=event['description'],
-                    session_image=event['session_image'],
-                    location=event['location_str'],
-                    location_web_session_url=event['location_web_session_url'],
-                    location_session_url=event['location_session_url'],
-                    start_time=parse(event['start_time']),
-                    end_time=parse(event['end_time']) if event['end_time'] else None,
-                    community_id=community.id,
-                    tags='resonite'+ (',' + community.tags if community.tags else ''),
-                    external_id=event['id'],
-                    scheduler_type=self.scheduler_type.name,
-                    status=event['status'],
-                    created_at_external=None,
-                )
+                for event in response.json():
+                    if not event['community_name'] == community.name:
+                        continue
+                    await self.model.upsert(
+                        _filter_field='external_id',
+                        _filter_value=event['id'],
+                        name=event['name'],
+                        description=event['description'],
+                        session_image=event['session_image'],
+                        location=event['location_str'],
+                        location_web_session_url=event['location_web_session_url'],
+                        location_session_url=event['location_session_url'],
+                        start_time=parse(event['start_time']),
+                        end_time=parse(event['end_time']) if event['end_time'] else None,
+                        community_id=community.id,
+                        tags='resonite'+ (',' + community.tags if community.tags else ''),
+                        external_id=event['id'],
+                        scheduler_type=self.scheduler_type.name,
+                        status=event['status'],
+                        created_at_external=None,
+                    )
+            except Exception as e:
+                self.logger.error(f"Error processing community {community.name}: {str(e)}")
+                self.logger.error(f"Traceback: {traceback.format_exc()}")
+                continue
         self.logger.info(f'Finished collecting signals')

@@ -1,5 +1,6 @@
 from dateutil.parser import parse
 import requests
+import traceback
 
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import EventStatus
@@ -31,38 +32,34 @@ class JSONEventsCollector(EventsCollector):
         self.logger.info('Update events collector from external source')
         await self.update_communities()
         for community in self.communities:
-            self.logger.info(f"Processing events for {community.name} from {community.config.events_url}")
-
             try:
+                self.logger.info(f"Processing events for {community.name} from {community.config.events_url}")
+
                 response = requests.get(community.config.events_url)
-            except Exception as error:
-                self.logger.error(f"Exception on request for {community.name}")
-                self.logger.error(error)
-                self.logger.error("Skipping")
+
+                if response.status_code != 200:
+                    raise ValueError(f"{response.status_code} from server: {response.text}")
+
+                for event in response.json():
+                    await self.model.upsert(
+                        _filter_field='external_id',
+                        _filter_value=event['event_id'],
+                        name=event['name'],
+                        description=event['description'],
+                        session_image=None,
+                        location=event['location'],
+                        location_web_session_url=self.get_location_web_session_url(event['description']),
+                        location_session_url=event['session_url'],
+                        start_time=parse(event['start_time']),
+                        end_time=parse(event['end_time']),
+                        community_id=(await Community.find(external_id=community.external_id))[0].id,
+                        tags=community.tags,
+                        external_id=event['event_id'],
+                        scheduler_type=self.scheduler_type.name,
+                        status=EventStatus.READY,
+                        created_at_external=None,
+                    )
+            except Exception as e:
+                self.logger.error(f"Error processing community {community.name}: {str(e)}")
+                self.logger.error(f"Traceback: {traceback.format_exc()}")
                 continue
-
-            if response.status_code != 200:
-                self.logger.error(f"Error {response.status_code} from {community.name} server: {response.text}")
-                self.logger.error("Skipping")
-                continue
-
-            for event in response.json():
-                await self.model.upsert(
-                    _filter_field='external_id',
-                    _filter_value=event['event_id'],
-                    name=event['name'],
-                    description=event['description'],
-                    session_image=None,
-                    location=event['location'],
-                    location_web_session_url=self.get_location_web_session_url(event['description']),
-                    location_session_url=event['session_url'],
-                    start_time=parse(event['start_time']),
-                    end_time=parse(event['end_time']),
-                    community_id=(await Community.find(external_id=community.external_id))[0].id,
-                    tags=community.tags,
-                    external_id=event['event_id'],
-                    scheduler_type=self.scheduler_type.name,
-                    status=EventStatus.READY,
-                    created_at_external=None,
-                )
-

@@ -1,4 +1,5 @@
 from dateutil.parser import parse
+import traceback
 
 from resonite_communities.models.community import CommunityPlatform, Community
 from resonite_communities.models.signal import EventStatus
@@ -52,18 +53,22 @@ class TwitchStreamsCollector(StreamsCollector):
         await self.update_communities()
 
         for broadcaster in self.broadcasters:
-            broadcaster_streams = self.services.twitch.get_schedule(broadcaster['twitch'])
-            for broadcaster_stream in broadcaster_streams:
-                await self.model.upsert(
-                    _filter_field='external_id',
-                    _filter_value=broadcaster_stream['id'],
-                    name=broadcaster_stream['title'],
-                    start_time=parse(broadcaster_stream['start_time']),
-                    end_time=parse(broadcaster_stream['end_time']),
-                    community_id=(await Community.find(external_id=broadcaster['config'].external_id))[0].id,
-                    tags=",".join(broadcaster.get('config', {}).tags),
-                    external_id=broadcaster_stream['id'],
-                    scheduler_type=self.scheduler_type.name,
-                    status=EventStatus.READY,
-                )
-
+            try:
+                broadcaster_streams = self.services.twitch.get_schedule(broadcaster['twitch'])
+                for broadcaster_stream in broadcaster_streams:
+                    await self.model.upsert(
+                        _filter_field='external_id',
+                        _filter_value=broadcaster_stream['id'],
+                        name=broadcaster_stream['title'],
+                        start_time=parse(broadcaster_stream['start_time']),
+                        end_time=parse(broadcaster_stream['end_time']),
+                        community_id=(await Community.find(external_id=broadcaster['config'].external_id))[0].id,
+                        tags=",".join(broadcaster.get('config', {}).tags),
+                        external_id=broadcaster_stream['id'],
+                        scheduler_type=self.scheduler_type.name,
+                        status=EventStatus.READY,
+                    )
+            except Exception as e:
+                self.logger.error(f"Error processing community {broadcaster_stream['id']}: {str(e)}")
+                self.logger.error(f"Traceback: {traceback.format_exc()}")
+                continue
