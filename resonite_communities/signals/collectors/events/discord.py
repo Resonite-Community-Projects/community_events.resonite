@@ -46,6 +46,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
         self.communities = []
         for guild_bot in discord_bot.guilds:
+            self.logger.info(f"Updating database community {guild_bot.name} information from Discord.")
             external_id = str(guild_bot.id)
             community = database_communities.get(external_id)
 
