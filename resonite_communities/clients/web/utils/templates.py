@@ -12,6 +12,7 @@ env.filters["parse"] = filters.parse_desciption
 env.filters["tab_is_active"] = filters.filter_tab_is_active
 env.filters["tab_display"] = filters.filter_tab_display
 env.filters["tags"] = filters.filter_tag
+env.filters["flags"] = filters.filter_flag
 env.filters["format_seconds"] = filters.format_seconds
 
 templates = Jinja2Templates(env=env)

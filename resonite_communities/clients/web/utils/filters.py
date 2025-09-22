@@ -52,10 +52,21 @@ def filter_tag(tags):
     if not tags:
         return ""
     tags = tags.split(',')
-    tags = [tag for tag in tags if tag not in ["public", "resonite"]]
+    tags = [tag for tag in tags if tag not in ["public", "resonite"] and not tag.startswith('lang:')]
     for tag in tags:
         html_tags += f"<span class='tag is-info m-1'>{tag}</span>"
     return html_tags
+
+def filter_flag(flags):
+    html_flags = ""
+    if not flags:
+        return ""
+    flags = flags.split(',')
+    flags = [flag for flag in flags if flag.startswith('lang:')]
+    flags = flags if flags else ['lang:en']
+    for flag in flags:
+        html_flags += f"<span class='tag flag is-info m-1'>{flag.split(':')[1]}</span>"
+    return html_flags
 
 def format_seconds(value: int) -> str:
     hours = value // 3600
