@@ -2,13 +2,15 @@ import json
 from datetime import datetime
 from dacite.types import is_instance
 from fastapi import Depends, Response, HTTPException
-from sqlalchemy import and_, not_, case
+from sqlalchemy import and_, not_, case, or_
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.models.community import Community
 
 from resonite_communities.utils.config import ConfigManager
 
 from resonite_communities.utils.tools import is_local_env
+from resonite_communities.clients.utils.auth import UserAuthModel
+
 
 config_manager = ConfigManager()
 
@@ -92,6 +94,7 @@ async def get_filtered_events(
     host: str,
     version: str,
     communities: str,
+    user_auth: UserAuthModel = None,
 ):
     signals = []
 
@@ -110,16 +113,27 @@ async def get_filtered_events(
     else:
         private_domains = config_manager.infrastructure_config.PRIVATE_DOMAIN
 
-    if host in public_domains:
-        domain_filter = not_(Event.tags.ilike("%private%"))
-    elif host in private_domains:
-        domain_filter = True
-    else:
+    if host not in public_domains and host not in private_domains:
         msg = f"Unsupported domain: {host}."
         if is_local_env:
             msg += " You need to configure your hosts file for access to the locally to the HTTP API."
             msg += " See https://docs.resonite-communities.com/DeveloperGuide/server-configuration/"
         raise HTTPException(status_code=400, detail=msg)
+
+    if host in private_domains:
+        visibility_filter = True
+    if user_auth and user_auth.is_superuser:
+        visibility_filter = True
+    elif user_auth:
+        visibility_filter = or_(
+            not_(Event.tags.ilike('%private%')),  # All public events
+            and_(  # Private events that the user has access to
+                Event.tags.ilike('%private%'),
+                Event.community_id.in_(user_auth.discord_account.user_communities)
+            )
+        )
+    else:
+        visibility_filter = not_(Event.tags.ilike("%private%"))
 
     # Only get Resonite events
     platform_filter = and_(
@@ -136,7 +150,7 @@ async def get_filtered_events(
         (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
         else_=Event.start_time  # Otherwise, fallback to start_time
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
-    custom_filter=and_(communities_filter, domain_filter, platform_filter, status_filter, time_filter)
+    custom_filter=and_(communities_filter, visibility_filter, platform_filter, status_filter, time_filter)
 
     # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
     # SQL commend, optimization to order elements by date

@@ -1,6 +1,7 @@
 import re
 import traceback
 
+from datetime import datetime
 from resonite_communities.utils import logger
 
 re_cloudx_url_match_compiled = re.compile('(http|https):\/\/cloudx.azurewebsites.net[\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-]')
@@ -8,23 +9,36 @@ re_url_match_compiled = re.compile('((?:http|https):\/\/[\w_-]+(?:(?:\.[\w_-]+)+
 re_discord_timestamp_match_compiled = re.compile('<t:(.*?)>')
 
 def format_datetime(value, format="%d %b %I:%M %p"):
-    if value:
+    if not value:
+        return ""
+    if isinstance(value, datetime):
         return value.strftime(format)
-    return
+    elif isinstance(value, str):
+        try:
+            dt_object = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+            return dt_object.strftime(format)
+        except ValueError:
+            logger.error(f"Could not parse datetime string: {value}")
+            return value
+    return value
 
 def detect_resonite_url(event):
-    if event.location_session_url:
+    if event.get('location_web_session_url'):
         return "<a href='{}'>{}</a>".format(
-            event.location_session_url, event.location
+            event.get('location_web_session_url'), event.get('location_str')
         )
-    return event.location
+    elif event.get('location_session_url'):
+        return "<a href='{}'>{}</a>".format(
+            event.get('location_session_url'), event.get('location_str')
+        )
+    return event.get('location_str')
 
 def detect_resonite_community(event):
-    if event.community.url:
+    if event.get('community_url'):
         return "<a href='{}'>{}</a>".format(
-            event.community.url, event.community.name
+            event.get('community_url'), event.get('community_name')
         )
-    return event.community.name
+    return event.get('community_name')
 
 def parse_desciption(desc):
     try:

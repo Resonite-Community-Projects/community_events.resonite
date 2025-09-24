@@ -1,16 +1,14 @@
-import contextlib
-import base64
 from copy import deepcopy
 from datetime import datetime, timedelta
 
-from sqlalchemy import case, and_, not_, or_
 from fastapi import APIRouter, Request, Depends
 
-from resonite_communities.models.signal import Event, Stream, EventStatus
+from resonite_communities.models.signal import Stream
 from resonite_communities.models.community import CommunityPlatform, Community, events_platforms
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
+from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
 
@@ -32,42 +30,8 @@ async def about(request: Request, user_auth: UserAuthModel = Depends(get_user_au
 
 async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
 
-    # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
-    # If end_time is available, it will be used; otherwise, fallback to start_time.
-    time_filter = case(
-        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
-        else_=Event.start_time  # Otherwise, fallback to start_time
-    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+    events = await api_client.get("/v2/events", user_auth=user_auth)
 
-    # Only get Resonite events
-    platform_filter = and_(
-        Event.tags.ilike('%resonite%'),
-        not_(Event.tags.ilike('%vrchat%'))
-    )
-
-    # Only get Events that are ACTIVE or READY
-    status_filter = Event.status.in_((EventStatus.ACTIVE, EventStatus.READY))
-
-    if user_auth and user_auth.is_superuser:
-        # Superuser see all events
-        event_visibility_filter = and_(time_filter, platform_filter, status_filter)
-    elif user_auth:
-        # Authenticated users see public events and private events from communities they have access to
-        community_filter = or_(
-            Event.tags.ilike('%public%'), # All public events
-            and_( # Private events that the user has access to
-                Event.tags.ilike('%private%'),
-                Event.community_id.in_(user_auth.discord_account.user_communities)
-            )
-        )
-
-        event_visibility_filter = and_(time_filter, community_filter, platform_filter, status_filter)
-    else:
-        # Only public events for non authenticated users
-        private_filter = not_(Event.tags.ilike('%private%'))
-        event_visibility_filter = and_(time_filter, private_filter, platform_filter, status_filter)
-
-    events = await Event().find(__order_by=['start_time'], __custom_filter=event_visibility_filter)
     streams = await Stream().find(
         __order_by=['start_time'],
         end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
