@@ -286,7 +286,9 @@
                   <div class="card">
                     <div class="card-image">
                       <figure class="image is-3by3">
+                        {% if streamer.logo %}
                         <img src="{{ streamer.logo }}" alt="Placeholder image">
+                        {% endif %}
                       </figure>
                     </div>
                     <div class="card-content">
