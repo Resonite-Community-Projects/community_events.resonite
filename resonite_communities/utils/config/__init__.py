@@ -82,8 +82,7 @@ class ConfigManager:
                 config[key] = default_value
 
         config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
-        if config['PRIVATE_DOMAIN']:
-            config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',')
+        config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',') if config.get('PRIVATE_DOMAIN') else []
 
         return edict(config)
 
