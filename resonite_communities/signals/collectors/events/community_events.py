@@ -17,12 +17,15 @@ class CommunityEventsCollector(EventsCollector):
 
     async def update_communities(self):
         self.communities = []
-        for community in await Community.find(platform__in=[CommunityPlatform.DISCORD], platform_on_remote__in=[CommunityPlatform.DISCORD]):
+        for community in await Community.find(
+            platform__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON],
+            platform_on_remote__in=[CommunityPlatform.DISCORD, CommunityPlatform.JSON]
+        ):
             await Community.update(
                 filters=(
                     (Community.external_id == community.external_id) &
-                    (Community.platform == CommunityPlatform.DISCORD) &
-                    (Community.platform_on_remote == CommunityPlatform.DISCORD)
+                    (Community.platform == community.platform) &
+                    (Community.platform_on_remote == community.platform_on_remote)
                 ),
                 monitored=True,
             )

@@ -333,7 +333,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
                             <p class="help">Select from this list all communities you want to follow.</p>
                             <div class="community-list">
                             ${remote_communities
-                                .filter(c => c.configured === true && c.public === true && c.platform == 'DISCORD')
+                                .filter(c => c.configured === true && c.public === true && (c.platform == 'DISCORD' || c.platform == 'JSON'))
                                 .map(c => {
                                     const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id && lc.configured === true); // TODO: Update this code to match on external_id + platform instead
                                     return `
