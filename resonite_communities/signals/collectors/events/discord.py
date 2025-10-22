@@ -1,3 +1,4 @@
+import re
 from typing import Any
 from datetime import datetime, timezone
 import traceback
@@ -235,9 +236,21 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         and tags them with platform-specific tags like 'resonite' or 'vrchat' based on
         content analysis of event details.
 
+        Extracts metadata from event descriptions using a special format. Metadata lines
+        in the descriptions following the pattern '+key:value' are parsed and processed,
+        then removed from the final description. Supported metadata fields:
+
+        - '+language:code1,code2,...' - Adds language tags in the format 'lang:code'
+        - '+tags:custom_tag' - Adds custom tags directly to the event
+
         Args:
             events (list[Any]): List of Event objects to be processed and upserted.
             community (Any): Community object these events belong to.
+
+        Note:
+            Metadata extraction uses regex pattern '^\\+(.*?):(.*)\\n?' to match lines
+            starting with '+' followed by key:value pairs. Matched lines are removed
+            from the description after processing.
         """
         for event in events:
 
@@ -291,11 +304,22 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 self.logger.error(f"Please add 'public' or 'private' tag to this community")
                 break
 
+            # Extract metadata from description
+            pattern = r'^\+(.*?):(.*)\n?'
+            matches = dict(re.findall(pattern, event.description, re.MULTILINE))
+            if 'language' in matches:
+                langs = [f'lang:{tag.strip()}' for tag in matches['language'].split(",")]
+                for lang in langs:
+                    tags.add(lang)
+            if 'tags' in matches:
+                tags.add(matches['tags'].rstrip())
+            description = re.sub(pattern, '', event.description, flags=re.MULTILINE)
+
             await self.model.upsert(
                 _filter_field='external_id',
                 _filter_value=str(event.id),
                 name=event.name,
-                description=event.description,
+                description=description,
                 session_image=event.image.url if event.image else None,
                 location=event.entity_metadata.location if event.entity_metadata else None,
                 location_web_session_url=self.get_location_web_session_url(event.description),
