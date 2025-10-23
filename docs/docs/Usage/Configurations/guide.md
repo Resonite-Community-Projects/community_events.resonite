@@ -11,6 +11,10 @@ To have your events pulled from our systems please check the systems below.
 
 Since a source can contain events that take place in various locations, both virtually and physically, the keyword `Resonite` must be included in either the event's `title`, `description`, or `location`. This ensures your event is properly categorized and visible in the Resonite event calendar.
 
+### Formatting Requirement
+
+Before submitting your event, make sure to remove any new lines and certain special characters (`` ` ``) from your submission. This helps prevent formatting issues and ensures our event calendar functions smoothly when displaying your events.
+
 ### Event Metadata (Discord Only)
 
 For Discord events, you can add optional metadata to event descriptions to provide additional information. This metadata is automatically extracted and processed by the system, then removed from the displayed description.
@@ -73,7 +77,3 @@ And the event will be tagged with: `lang:en`, `lang:es`, and `beginner-friendly`
 - Metadata can be on any line but the complete line is treated as metadata information
 - Invalid metadata lines are ignored
 - Metadata processing is case-sensitive for keys (`+language:` not `+Language:`)
-
-### Formatting Requirement
-
-Before submitting your event, make sure to remove any new lines and certain special characters (`` ` ``) from your submission. This helps prevent formatting issues and ensures our event calendar functions smoothly when displaying your events.
