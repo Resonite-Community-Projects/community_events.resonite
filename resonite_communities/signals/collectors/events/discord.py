@@ -7,7 +7,7 @@ from disnake.ext import commands
 from sqlalchemy import select, func
 from sqlmodel import Session
 
-from resonite_communities.utils.db import engine
+from resonite_communities.utils.db import engine, async_request_session
 from resonite_communities.models.community import Community, CommunityPlatform
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.signals import SignalSchedulerType
@@ -361,32 +361,34 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
 
     async def collect(self):
         await super().collect()
-        self.logger.info(f'Starting collecting signals')
-        await self.update_communities()
-        for community in self.communities:
-            if not community.configured:
-                self.logger.warning(f'Community {community.name} not configured, skipping')
-                continue
+        async with async_request_session():
+            self.logger.info(f'Starting collecting signals')
+            await self.update_communities()
+            for community in self.communities:
+                if not community.configured:
+                    self.logger.warning(f'Community {community.name} not configured, skipping')
+                    continue
 
-            try:
-                self.logger.info(f'Collecting signals for {community.name}')
+                try:
+                    self.logger.info(f'Collecting signals for {community.name}')
 
-                events = community.config['bot'].scheduled_events
+                    events = community.config['bot'].scheduled_events
 
-                await self.upsert_events(events, community)
+                    await self.upsert_events(events, community)
 
-                await self.detect_and_handle_passed_events(events, community)
+                    await self.detect_and_handle_passed_events(events, community)
 
-                await self.detect_and_handle_duplicates(community)
-            except Exception as e:
-                self.logger.error(f"Error processing community {community.name}: {str(e)}")
-                self.logger.error(f"Traceback: {traceback.format_exc()}")
-                continue
+                    await self.detect_and_handle_duplicates(community)
+                except Exception as e:
+                    self.logger.error(f"Error processing community {community.name}: {str(e)}")
+                    self.logger.error(f"Traceback: {traceback.format_exc()}")
+                    continue
 
-        self.logger.info(f'Finished collecting signals')
+            self.logger.info(f'Finished collecting signals')
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.logger.info(f'Discord collector bot {self.name} ready')
-        await self.update_communities()
-        await self.init_scheduler()
+        async with async_request_session():
+            self.logger.info(f'Discord collector bot {self.name} ready')
+            await self.update_communities()
+            await self.init_scheduler()

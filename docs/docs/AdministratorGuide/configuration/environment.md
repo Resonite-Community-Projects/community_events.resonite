@@ -36,8 +36,8 @@ Some of these variables have default values and can be customized as needed.
 
 | Variable | Type | Description |
 | :--- | :--- | :--- |
-| `DB_POOL_SIZE` | `int` | Database connection pool size (default: 6) |
-| `DB_MAX_OVERFLOW` | `int` | Maximum overflow connections for database pool (default: 8) |
+| `DB_POOL_SIZE` | `int` | Database connection pool size (default: 5) |
+| `DB_MAX_OVERFLOW` | `int` | Maximum overflow connections for database pool (default: 5) |
 | `DB_POOL_TIMEOUT` | `int` | Database connection timeout in seconds (default: 30) |
 | `DB_POOL_RECYCLE` | `int` | Database connection recycle time in seconds (default: 1800) |
 | `DB_POOL_PRE_PING` | `bool` | Whether to pre-ping database connections (default: true) |

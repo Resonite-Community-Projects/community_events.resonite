@@ -46,8 +46,8 @@ class ConfigManager:
         ]
 
         defaults = {
-            'DB_POOL_SIZE': 6,
-            'DB_MAX_OVERFLOW': 8,
+            'DB_POOL_SIZE': 5,
+            'DB_MAX_OVERFLOW': 5,
             'DB_POOL_TIMEOUT': 30,
             'DB_POOL_RECYCLE': 1800,
             'DB_POOL_PRE_PING': True,
