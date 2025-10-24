@@ -30,8 +30,8 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
     past_week = today - timedelta(days=7)
 
     session = await get_current_async_session()
-    results = await session.execute(select(Metrics))
-    metrics = results.scalars().all()
+    #results = await session.execute(select(Metrics))
+    #metrics = results.scalars().all()
 
     metrics_domains_result = (
         await session.execute(
