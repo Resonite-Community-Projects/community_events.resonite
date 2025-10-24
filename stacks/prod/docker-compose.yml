@@ -67,6 +67,7 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
+      - API_CLIENT_URL=${API_CLIENT_URL}
     depends_on:
       database:
         condition: service_healthy
@@ -97,6 +98,7 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
+      - API_CLIENT_URL=${API_CLIENT_URL}
     depends_on:
       migrations:
         condition: service_completed_successfully
@@ -131,6 +133,7 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
+      - API_CLIENT_URL=${API_CLIENT_URL}
     labels:
       - traefik.enable=true
       - traefik.http.services.prod_api_client.loadbalancer.server.port=8000
@@ -206,6 +209,7 @@ services:
       - DISCORD_REDIRECT_URL=${DISCORD_REDIRECT_URL}
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
+      - API_CLIENT_URL=${API_CLIENT_URL}
     labels:
       - traefik.enable=true
       - traefik.http.services.prod_web_client.loadbalancer.server.port=8001

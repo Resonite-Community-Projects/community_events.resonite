@@ -1,0 +1,14 @@
+export PUBLIC_DOMAIN="resonite-communities.local, 3rd.resonite-communities.local"
+export PRIVATE_DOMAIN="private.resonite-communities.local, 3rd.private.resonite-communities.local"
+export API_CLIENT_URL="http://resonite.local"
+
+export SECRET_KEY="qalTQx2VVLyIzzInak02wf-x95dRApf0"
+export DATABASE_URL="postgresql://resonitecommunities_official:changeme@127.0.0.1:5435/resonitecommunities_official"
+export CACHE_URL="redis://127.0.0.1:6379"
+export SECRET='g4h5a4g5dr7h5zds47f5ds74fs56af4d'
+
+export DISCORD_CLIENT_ID="1405522713044324453"
+export DISCORD_SECRET="SBNUsjw5YpuUXiGlkhuplc1AFP8qqlvl"
+export DISCORD_REDIRECT_URL="http://resonite.local/auth/discord/callback"
+
+export SENTRY_DSN=""

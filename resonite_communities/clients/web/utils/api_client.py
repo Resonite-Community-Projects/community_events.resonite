@@ -11,15 +11,7 @@ logger = get_logger('WebAPIClient')
 class APIClient:
 
     def __init__(self):
-        try:
-            self.api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
-        except (KeyError, IndexError):
-            self.api_url = None
-
-        if self.api_url and self.api_url.endswith(".local"):
-            self.api_url = f"http://{self.api_url}"
-        else:
-            self.api_url = f"https://{self.api_url}"
+        self.api_url = config_manager.infrastructure_config.API_CLIENT_URL
 
     async def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None, user_auth: Optional[UserAuthModel] = None):
         headers = {}

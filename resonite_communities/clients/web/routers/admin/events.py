@@ -37,15 +37,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     events = await Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
     #events = Event().find(__order_by=['start_time'], __custom_filter=platform_filter)
 
-    try:
-        api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
-    except KeyError:
-        api_url = None
-
-    if api_url and api_url.endswith(".local"):
-        api_url = f"http://{api_url}"
-    else:
-        api_url = f"https://{api_url}"
+    api_url = config_manager.infrastructure_config.API_CLIENT_URL
 
     return templates.TemplateResponse("admin/events.html", {
         "userlogo" : logo_base64,

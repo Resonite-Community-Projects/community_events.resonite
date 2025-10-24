@@ -28,6 +28,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
@@ -45,6 +46,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" pull
 
       - name: Spin up containers
@@ -62,6 +64,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
 
   official:
@@ -86,6 +89,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" build
 
       - name: Update 3rd party docker images
@@ -103,6 +107,7 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" pull
 
       - name: Spin up containers
@@ -120,4 +125,5 @@ jobs:
           DISCORD_REDIRECT_URL: ${{ vars.DISCORD_REDIRECT_URL }}
           PRIVATE_DOMAIN: ${{ vars.PRIVATE_DOMAIN }}
           PUBLIC_DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
         run: docker compose -f stacks/dev/official.docker-compose.yml -p dev_official_eventsresonite --profile "*" up -d

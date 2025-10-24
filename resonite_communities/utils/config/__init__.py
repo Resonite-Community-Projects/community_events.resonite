@@ -43,6 +43,7 @@ class ConfigManager:
             'DISCORD_SECRET',
             'DISCORD_REDIRECT_URL',
             'SENTRY_DSN',
+            'API_CLIENT_URL',
         ]
 
         defaults = {

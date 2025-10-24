@@ -53,15 +53,7 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
     ]
     twitch_config = await load(TwitchConfig)
 
-    try:
-        api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
-    except (KeyError, IndexError):
-        api_url = None
-
-    if api_url and api_url.endswith(".local"):
-        api_url = f"http://{api_url}"
-    else:
-        api_url = f"https://{api_url}"
+    api_url = config_manager.infrastructure_config.API_CLIENT_URL
 
     return templates.TemplateResponse("admin/configuration.html", {
         "userlogo" : logo_base64,

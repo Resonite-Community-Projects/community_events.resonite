@@ -41,15 +41,7 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
         instances.append(row[0])
     users = instances
 
-    try:
-        api_url = config_manager.infrastructure_config.PUBLIC_DOMAIN[0]
-    except KeyError:
-        api_url = None
-
-    if api_url and api_url.endswith(".local"):
-        api_url = f"http://{api_url}"
-    else:
-        api_url = f"https://{api_url}"
+    api_url = config_manager.infrastructure_config.API_CLIENT_URL
 
     for user in users:
         print(user.oauth_accounts[0].discord_account.name)
