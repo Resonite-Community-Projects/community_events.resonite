@@ -71,7 +71,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                         (Community.platform == CommunityPlatform.DISCORD) &
                         (Community.platform_on_remote == None)
                     ),
-                    monitored=community.monitored,
+                    monitored=True,
                     configured=community.configured,
                     ad_bot_configured=ad_bot_configured,
                     logo=guild_bot.icon.url if guild_bot.icon else "",
