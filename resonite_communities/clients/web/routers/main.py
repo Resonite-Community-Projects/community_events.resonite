@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Request, Depends
 
 from resonite_communities.models.signal import Stream
-from resonite_communities.models.community import CommunityPlatform, Community, events_platforms
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
@@ -36,10 +35,14 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
         __order_by=['start_time'],
         end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
     )
-    streamers = await Community().find(platform__in=[CommunityPlatform.TWITCH])
-
-    communities = await Community().find(__custom_filter=Community.tags.ilike('%public%'), platform__in=events_platforms)
-    user_communities = await Community().find(id__in=user_auth.discord_account.user_communities) if user_auth else []
+    
+    # Fetch ALL communities with a single request
+    all_communities = await api_client.get("/v2/communities", {"include_all": True}, user_auth=user_auth)
+    
+    # Client-side filtering
+    streamers = [c for c in all_communities if c.get('platform') == 'TWITCH']
+    communities = [c for c in all_communities if c.get('public') and c.get('platform') != 'TWITCH']
+    user_communities = [c for c in all_communities if c['id'] in user_auth.discord_account.user_communities] if user_auth else []
 
     return templates.TemplateResponse(
         request = request,

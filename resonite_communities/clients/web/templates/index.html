@@ -171,8 +171,8 @@
                   <div class="card">
                     <div class="card-image">
                       <figure class="image is-3by3">
-                        {% if community.logo %}
-                        <img src="{{ community.logo }}" alt="Community logo">
+                        {% if community.icon %}
+                        <img src="{{ community.icon }}" alt="Community logo">
                         {% else %}
                         <img src="https://cdn.alicorn.network/resonite-communities.com/community_discord_placeholder.png" alt="Placeholder community logo">
                         {% endif %}
@@ -194,9 +194,9 @@
                         </div>
                       </div>
 
-                      {% if community.custom_description != None %}
+                      {% if community.description != None %}
                         <div class="content" style="height: 150px; overflow: hidden;">
-                          {{ community.custom_description | safe }}
+                          {{ community.description | safe }}
                         </div>
                       {% elif community.default_description != None %}
                         <div class="content" style="height: 150px; overflow: hidden;">
@@ -286,8 +286,8 @@
                   <div class="card">
                     <div class="card-image">
                       <figure class="image is-3by3">
-                        {% if streamer.logo %}
-                        <img src="{{ streamer.logo }}" alt="Placeholder image">
+                        {% if streamer.icon %}
+                        <img src="{{ streamer.icon }}" alt="Placeholder image">
                         {% endif %}
                       </figure>
                     </div>
