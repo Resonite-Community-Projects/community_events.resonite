@@ -1,9 +1,7 @@
 from copy import deepcopy
-from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request, Depends
 
-from resonite_communities.models.signal import Stream
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.web.routers.utils import logo_base64
@@ -30,15 +28,11 @@ async def about(request: Request, user_auth: UserAuthModel = Depends(get_user_au
 async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
 
     events = await api_client.get("/v2/events", user_auth=user_auth)
+    streams = await api_client.get("/v2/streams", user_auth=user_auth)
 
-    streams = await Stream().find(
-        __order_by=['start_time'],
-        end_time__gtr_eq=datetime.utcnow(), end_time__less=datetime.utcnow() + timedelta(days=8)
-    )
-    
     # Fetch ALL communities with a single request
     all_communities = await api_client.get("/v2/communities", {"include_all": True}, user_auth=user_auth)
-    
+
     # Client-side filtering
     streamers = [c for c in all_communities if c.get('platform') == 'TWITCH']
     communities = [c for c in all_communities if c.get('public') and c.get('platform') != 'TWITCH']
