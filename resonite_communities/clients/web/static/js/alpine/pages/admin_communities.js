@@ -27,7 +27,9 @@ document.addEventListener('alpine:init', () => {
             const type = this.activeTab === 'events' ? 'event' : 'stream';
 
             try {
-                const response = await fetch(`/v2/admin/communities/?type=${type}`);
+                const response = await fetch(`/v2/admin/communities/?type=${type}`, {
+                    credentials: 'include'
+                });
                 if (!response.ok) {
                     throw new Error(`Failed to fetch ${type} community list data: ${response.statusText}`);
                 }
@@ -52,6 +54,7 @@ document.addEventListener('alpine:init', () => {
                 try {
                     const response = await fetch(`/v2/admin/communities/${communityId || ''}`, {
                         method,
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -121,6 +124,7 @@ document.addEventListener('alpine:init', () => {
                         try {
                             const response = await fetch(`/v2/admin/setup/communities/discord/import/${body.selectedCommunityId || ''}`, {
                                 method: 'POST',
+                                credentials: 'include',
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
@@ -182,7 +186,9 @@ document.addEventListener('alpine:init', () => {
 async function getListDiscordCommunities() {
     let communitiesList = {};
     try {
-        const response = await fetch(`/v2/admin/setup/communities/discord/`);
+        const response = await fetch(`/v2/admin/setup/communities/discord/`, {
+            credentials: 'include'
+        });
         if (!response.ok) {
             throw new Error(`Failed to fetch Discord community list: ${response.statusText}`);
         }
@@ -244,7 +250,9 @@ async function getCommunityForm(communityId = null, communityType = null) {
     let communityData = {};
     if (communityId) {
         try {
-            const response = await fetch(`/v2/admin/communities/${communityId}`);
+            const response = await fetch(`/v2/admin/communities/${communityId}`, {
+                credentials: 'include'
+            });
             if (!response.ok) {
                 throw new Error(`Failed to fetch community data: ${response.statusText}`);
             }
@@ -302,7 +310,9 @@ async function getCommunityForm(communityId = null, communityType = null) {
             `
         } else if (platformValue === 'JSON_COMMUNITY_EVENT') {
             try {
-                const local_response = await fetch(`/v2/communities`);
+                const local_response = await fetch(`/v2/communities`, {
+                    credentials: 'include'
+                });
                 if (!local_response.ok) {
                     throw new Error(`Failed to fetch community data: ${local_response.statusText}`);
                 }
@@ -446,7 +456,9 @@ async function getCommunityForm(communityId = null, communityType = null) {
 async function getCommunityInfo(communityId = null, communityType = null) {
     let communityData = {};
     try {
-        const response = await fetch(`/v2/admin/communities/${communityId}`);
+        const response = await fetch(`/v2/admin/communities/${communityId}`, {
+            credentials: 'include'
+        });
 
         if (!response.ok) {
             throw new Error(`Failed to fetch community info: ${response.statusText}`);

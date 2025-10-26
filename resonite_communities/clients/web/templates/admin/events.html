@@ -1,6 +1,6 @@
 {% extends "admin/base.html" %}
 {% block alpine_components_head %}
-<script src="/static/js/alpine/pages/admin_events.js"></script>
+<script defer src="/static/js/alpine/pages/admin_events.js"></script>
 {% endblock %}
 {% block extended_head %}
 <script src="/static/js/notification.js"></script>
@@ -15,68 +15,66 @@
 
 {% block content %}
 
-<table class="table is-fullwidth">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th style="text-align: right;">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for event in events %}
-        <tr>
-            <td>
-                <div class="columns">
-                    <div class="column">
-                        <p class="is-size-5 has-text-left is-inline-block">{{ event.name }}</p>
-                        {% if event.session_image %}
-                        <span class="icon">
-                            <i class="mdi mdi-image-area"></i>
-                        </span>
-                        {% endif %}
-                    </div>
-                    <p class="column is-size-6 has-text-right">
-                        <span class="fixed-width has-text-right">
-                            {{ event.start_time.strftime('%Y-%m-%d %H:%M') if event.start_time else '' }}
-                        </span>
-                        <span> - </span>
-                        <span class="fixed-width has-text-left">
-                            {{ event.end_time.strftime('%Y-%m-%d %H:%M') if event.end_time else '' }}
-                        </span>
-                    </p>
-                </div>
-                <p class="is-size-7">{{ event.description }}</p>
-                <br>
-                <p class="is-size-6">{{ event.community.name }}</p>
-            </td>
-            <td style="text-align: right;">
-                <div>
-                    <div class="dropdown" x-data="{ ...eventStatusDropdown(), open: false }" @click.outside="open = false" :class="{ 'is-active': open }">
-                        <div class="dropdown-trigger">
-                            <button class="button" aria-haspopup="true" aria-controls="dropdown-menu" @click="open = ! open">
-                                <span x-ref="statusText">{{ event.status.value }}</span>
-                                <span class="icon is-small">
-                                    <i class="fas fa-angle-down" aria-hidden="true"></i>
-                                </span>
-                            </button>
+<div x-data="eventsPage()" x-init="loadEvents()">
+    <table class="table is-fullwidth">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <template x-for="event in events" :key="event.id">
+                <tr>
+                    <td>
+                        <div class="columns">
+                            <div class="column">
+                                <p class="is-size-5 has-text-left is-inline-block" x-text="event.name"></p>
+                                <template x-if="event.session_image">
+                                    <span class="icon">
+                                        <i class="mdi mdi-image-area"></i>
+                                    </span>
+                                </template>
+                            </div>
+                            <p class="column is-size-6 has-text-right">
+                                <span class="fixed-width has-text-right" x-text="event.start_time ? event.start_time.replace('T', ' ').replace('Z', '') : ''"></span>
+                                <span> - </span>
+                                <span class="fixed-width has-text-left" x-text="event.end_time ? event.end_time.replace('T', ' ').replace('Z', '') : ''"></span>
+                            </p>
                         </div>
-                        <div class="dropdown-menu" role="menu">
-                            <div class="dropdown-content">
-                                    <a class="dropdown-item" data-status="CANCELED" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'CANCELED'); open = false">CANCELED</a>
-                                    <a class="dropdown-item" data-status="ACTIVE" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'ACTIVE'); open = false">ACTIVE</a>
-                                    <a class="dropdown-item" data-status="PENDING" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'PENDING'); open = false">PENDING</a>
-                                    <a class="dropdown-item" data-status="READY" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'READY'); open = false">READY</a>
-                                    <a class="dropdown-item" data-status="COMPLETED" data-event_id="{{ event.id }}" @click="updateStatus('{{ event.id }}', 'COMPLETED'); open = false">COMPLETED</a>
+                        <p class="is-size-7" x-text="event.description"></p>
+                        <br>
+                        <p class="is-size-6" x-text="event.community_name"></p>
+                    </td>
+                    <td style="text-align: right;">
+                        <div>
+                            <div class="dropdown" x-data="{ ...eventStatusDropdown(), open: false }" @click.outside="open = false" :class="{ 'is-active': open }">
+                                <div class="dropdown-trigger">
+                                    <button class="button" aria-haspopup="true" aria-controls="dropdown-menu" @click="open = ! open">
+                                        <span x-ref="statusText" x-text="event.status"></span>
+                                        <span class="icon is-small">
+                                            <i class="fas fa-angle-down" aria-hidden="true"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="dropdown-menu" role="menu">
+                                    <div class="dropdown-content">
+                                        <a class="dropdown-item" @click="updateStatus(event.id, 'CANCELED'); open = false">CANCELED</a>
+                                        <a class="dropdown-item" @click="updateStatus(event.id, 'ACTIVE'); open = false">ACTIVE</a>
+                                        <a class="dropdown-item" @click="updateStatus(event.id, 'PENDING'); open = false">PENDING</a>
+                                        <a class="dropdown-item" @click="updateStatus(event.id, 'READY'); open = false">READY</a>
+                                        <a class="dropdown-item" @click="updateStatus(event.id, 'COMPLETED'); open = false">COMPLETED</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
 
-<div id="notifications"></div>
+    <div id="notifications"></div>
+</div>
 
 {% endblock content %}

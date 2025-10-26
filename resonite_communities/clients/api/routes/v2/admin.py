@@ -11,6 +11,8 @@ from resonite_communities.utils.tools import is_local_env
 from resonite_communities.clients.api.utils.models import CommunityRequest
 from pydantic import BaseModel
 from resonite_communities.utils.db import get_current_async_session
+from sqlalchemy import case, and_, not_
+import json
 
 
 from fastapi import Query
@@ -45,6 +47,48 @@ def require_administrator_access(user_auth: UserAuthModel = Depends(get_user_aut
             detail="Administrator access required",
         )
     return user_auth
+
+@router_v2.get("/admin/events")
+async def get_admin_events(
+    request: Request,
+    user_auth: UserAuthModel = Depends(require_moderator_access)
+):
+
+    # Only get Resonite events
+    platform_filter = and_(
+        Event.tags.ilike('%resonite%'),
+        not_(Event.tags.ilike('%vrchat%'))
+    )
+
+    # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
+    # If end_time is available, it will be used; otherwise, fallback to start_time.
+    time_filter = case(
+        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
+        else_=Event.start_time  # Otherwise, fallback to start_time
+    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
+
+    events = await Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
+
+    events_formatted = []
+    for event in events:
+        events_formatted.append({
+            "id": str(event.id),
+            "external_id": str(event.external_id),
+            "name": event.name,
+            "description": event.description,
+            "session_image": event.session_image,
+            "location_str": event.location,
+            "location_web_session_url": event.location_web_session_url,
+            "location_session_url": event.location_session_url,
+            "start_time": event.start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end_time": event.end_time.strftime("%Y-%m-%dT%H:%M:%SZ") if event.end_time else None,
+            "community_name": event.community.name,
+            "community_url": event.community.url,
+            "tags": event.tags,
+            "status": event.status,
+        })
+
+    return events_formatted
 
 @router_v2.post("/admin/events/update_status")
 async def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):

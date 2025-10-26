@@ -1,4 +1,25 @@
 document.addEventListener('alpine:init', () => {
+    Alpine.data('eventsPage', () => ({
+        events: [],
+
+        async loadEvents() {
+            try {
+                const response = await fetch('/v2/admin/events', {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch events: ${response.statusText}`);
+                }
+                this.events = await response.json();
+                console.log('Events loaded:', this.events);
+            } catch (error) {
+                console.error('Error loading events:', error);
+                createNotification('Failed to load events', 'is-danger');
+                this.events = [];
+            }
+        }
+    }));
+
     Alpine.data('eventStatusDropdown', () => ({
         async updateStatus(event_id, status) {
             console.log('Status selected: ', status);
@@ -7,6 +28,7 @@ document.addEventListener('alpine:init', () => {
             try {
                 const response = await fetch('/v2/admin/events/update_status', {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json'
                     },
