@@ -4,6 +4,7 @@ from datetime import datetime
 import easydict
 from sqlmodel import Field, JSON, Relationship
 from sqlalchemy import Column, UniqueConstraint
+from sqlalchemy.orm import Mapped
 
 from resonite_communities.models.types import EasyDictType
 from resonite_communities.models.base import BaseModel
@@ -39,13 +40,13 @@ class Community(BaseModel, table=True):
     members_count: int | None = Field(default=0)
     tags: str | None = Field()
     config: dict | None = Field(default={}, sa_column=Column(EasyDictType, default=easydict.EasyDict()))
-    events: list["Event"] = Relationship(
+    events: Mapped[list["Event"]] = Relationship(
         back_populates="community",
         sa_relationship_kwargs={
             "cascade": "all, delete",
         },
     )
-    streams: list["Stream"] = Relationship(
+    streams: Mapped[list["Stream"]] = Relationship(
         back_populates="community",
         sa_relationship_kwargs={
             "cascade": "all, delete",
