@@ -5,15 +5,16 @@ from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.api.utils.auth import get_user_auth_from_header_or_cookie
 from resonite_communities.models.signal import EventStatus
 from resonite_communities.auth.db import User
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.models.community import CommunityPlatform, Community, events_platforms, streams_platforms
 from resonite_communities.utils.tools import is_local_env
 from resonite_communities.clients.api.utils.models import CommunityRequest
 from pydantic import BaseModel
 from resonite_communities.utils.db import get_current_async_session
-from sqlalchemy import case, and_, not_, select
+from sqlalchemy import case, and_, not_, select, func, extract
 import json
+import calendar
 
 
 from fastapi import Query
@@ -23,6 +24,7 @@ import requests
 
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.utils.config.models import AppConfig, MonitoredDomain, TwitchConfig
+from resonite_communities.clients.models.metrics import Metrics
 
 config_manager = ConfigManager()
 
@@ -479,3 +481,146 @@ async def update_admin_configuration(
         await config_manager.update_twitch_config(**twitch_config_data)
 
     return {"message": "Configuration updated successfully"}
+
+
+@router_v2.get("/admin/metrics")
+async def get_admin_metrics(
+    user_auth: UserAuthModel = Depends(require_administrator_access)
+):
+
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    past_week = today - timedelta(days=7)
+    past_month = today - timedelta(days=30)
+
+    session = await get_current_async_session()
+
+    # Metrics by domain and endpoint (past week)
+    metrics_domains_result = (
+        await session.execute(
+            select(
+                Metrics.domain, Metrics.endpoint, func.count()
+            ).where(
+                func.date(Metrics.timestamp) >= past_week
+            ).group_by(
+                Metrics.domain, Metrics.endpoint
+            )
+        )
+    ).all()
+
+    _metrics_domains = {}
+    for metrics_domain in metrics_domains_result:
+        if metrics_domain[0] not in _metrics_domains:
+            _metrics_domains[metrics_domain[0]] = {
+                "counts": [],
+                "total_counts": 0
+            }
+        _metrics_domains[metrics_domain[0]]["counts"].append({
+            "endpoint": metrics_domain[1],
+            "count": metrics_domain[2]
+        })
+        _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
+
+    # Filter by monitored domains
+    metrics_domains = {}
+    for monitored_url in config_manager.infrastructure_config.get('MONITORED_DOMAINS', []):
+        if monitored_url.url in _metrics_domains:
+            metrics_domains[monitored_url.url] = _metrics_domains[monitored_url.url]
+
+    # Version statistics
+    versions_result = (
+        await session.execute(
+            select(Metrics.version, func.count())
+            .group_by(Metrics.version)
+        )
+    ).all()
+
+    versions = [
+        {"version": version[0], "count": version[1]}
+        for version in versions_result
+    ]
+
+    # Daily unique users (past week)
+    daily_unique_users_result = await session.execute(
+        select(
+            func.date(Metrics.timestamp).label('date'),
+            func.count(func.distinct(Metrics.hashed_ip)).label('count')
+        ).where(
+            func.date(Metrics.timestamp) >= past_week
+        ).group_by(func.date(Metrics.timestamp))
+    )
+    daily_unique_users = {
+        str(date): count
+        for date, count in daily_unique_users_result.all()
+    }
+
+    # Convert to lists for easier frontend consumption
+    daily_unique_users_labels = list(daily_unique_users.keys())
+    daily_unique_users_data = list(daily_unique_users.values())
+
+    # Calculate averages
+    total_unique_users = sum(daily_unique_users.values())
+    average_unique_users = (
+        total_unique_users / len(daily_unique_users)
+        if daily_unique_users else 0
+    )
+    last_day_unique_users = daily_unique_users.get(str(today), 0)
+
+    # Hourly activity heatmap (past 30 days)
+    hourly_activity_result = await session.execute(
+        select(
+            extract('dow', Metrics.timestamp).label('day_of_week'),
+            extract('hour', Metrics.timestamp).label('hour_of_day'),
+            func.count(func.distinct(Metrics.hashed_ip)).label('users')
+        ).where(
+            func.date(Metrics.timestamp) >= past_month
+        ).group_by(
+            extract('dow', Metrics.timestamp),
+            extract('hour', Metrics.timestamp)
+        )
+    )
+
+    # Initialize empty heatmap data
+    days_of_week = 7
+    hours_of_day = 24
+    heatmap_data = [[0 for _ in range(hours_of_day)] for _ in range(days_of_week)]
+
+    # Fill in the heatmap with actual data
+    for day, hour, count in hourly_activity_result.all():
+        # Convert to integer (day is 0-6, where 0 is Sunday)
+        day_idx = int(day)
+        hour_idx = int(hour)
+        heatmap_data[day_idx][hour_idx] = count
+
+    # Prepare labels for the heatmap
+    day_labels = [calendar.day_name[i] for i in range(7)]  # Sunday to Saturday
+    hour_labels = [f"{i:02d}:00" for i in range(24)]
+
+    # Country data (yesterday)
+    country_data_result = await session.execute(
+        select(
+            Metrics.country,
+            func.count(func.distinct(Metrics.hashed_ip)).label('count')
+        ).where(
+            func.date(Metrics.timestamp) == yesterday
+        ).group_by(Metrics.country)
+    )
+    country_data = [
+        {"name": country, "value": count}
+        for country, count in country_data_result.all()
+    ]
+    max_users = max([item["value"] for item in country_data], default=0)
+
+    return {
+        "metrics_domains": metrics_domains,
+        "versions": versions,
+        "daily_unique_users_labels": daily_unique_users_labels,
+        "daily_unique_users_data": daily_unique_users_data,
+        "average_unique_users": average_unique_users,
+        "last_day_unique_users": last_day_unique_users,
+        "country_data": country_data,
+        "max_users": max_users,
+        "heatmap_data": heatmap_data,
+        "day_labels": day_labels,
+        "hour_labels": hour_labels
+    }
