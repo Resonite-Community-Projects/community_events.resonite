@@ -113,6 +113,29 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         ):
             return True
 
+    def determine_event_visibility(self, event: Any, community: Any) -> str:
+        """Determine if an event should be tagged as 'public' or 'private'.
+
+        This implements a "secure by default" approach where events default to private
+        unless explicitly configured otherwise.
+
+        Logic:
+            - If event is in the configured private_channel_id -> 'private'
+            - If community is EXPLICITLY public-only (no 'private' tag) -> 'public'
+            - Otherwise (mixed communities, private-only, or unconfigured) -> 'private' (secure default)
+        """
+        private_channel_id = community.config.get('private_channel_id')
+
+        # Check if event is explicitly in the private channel
+        if event.channel_id and private_channel_id == event.channel_id:
+            return 'private'
+        # Only default to public if community is EXPLICITLY public-only (no 'private' tag)
+        elif 'public' in community.tags.split(',') and 'private' not in community.tags.split(','):
+            return 'public'
+        # Secure default: private for all other cases (mixed communities, private-only, or unconfigured)
+        else:
+            return 'private'
+
     async def detect_and_handle_duplicates(self, community: Any) -> None:
             """ Detect and handle duplicate events for a given community.
 
@@ -278,31 +301,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             ):
                 tags.add('vrchat')
 
-            # Handle public vs private event tagging based on community configuration
-            if 'public' in community.tags.split(','):
-                # For public communities, check if event is in private channel
-                if community.config.get('private_channel_id', None):
-                    if community.config['private_channel_id'] == event.channel_id:
-                        tags.add('private')
-                # Default to 'public' if not explicitly private and not already tagged
-                if 'private' not in tags and 'public' not in tags:
-                    tags.add('public')
-
-            elif 'private' in community.tags.split(','):
-                # For private communities, check if event is in public channel
-                if community.config.get('public_channel_id', None):
-                    if community.config['public_channel_id'] == event.channel_id:
-                        tags.add('public')
-                # Default to 'private' if not explicitly public and not already tagged
-                if 'public' not in tags and 'private' not in tags:
-                    tags.add('private')
-
-            else:
-                # No assumption if neither 'public' or 'private' tag detected
-                # Log an error and skip all the events of this community
-                self.logger.error(f"Community {community.name} have no tags, skipping all events")
-                self.logger.error(f"Please add 'public' or 'private' tag to this community")
-                break
+            # Determine event visibility using the extracted method
+            visibility = self.determine_event_visibility(event, community)
+            tags.add(visibility)
 
             # Extract metadata from description
             pattern = r'^\+(.*?):(.*)\n?'
