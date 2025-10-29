@@ -28,7 +28,7 @@
             <td>
                 <div class="columns">
                     <div class="column">
-                        {% set discord = user.oauth_accounts[0].discord_account if user.oauth_accounts and user.oauth_accounts[0].discord_account else None %}
+                        {% set discord = user.oauth_accounts[0].discord_account if user.oauth_accounts else None %}
                         <p class="is-size-5 has-text-left is-inline-block">{{ discord.name if discord else user.email }}</p>
                     </div>
                 </div>

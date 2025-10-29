@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, Request, Header
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.api.utils.auth import get_user_auth_from_header_or_cookie
 from resonite_communities.models.signal import EventStatus
-from resonite_communities.auth.db import User
+from resonite_communities.auth.db import User, OAuthAccount
 from datetime import datetime, timedelta, date
 from resonite_communities.models.signal import Event, EventStatus
 from resonite_communities.models.community import CommunityPlatform, Community, events_platforms, streams_platforms
@@ -13,6 +13,7 @@ from resonite_communities.clients.api.utils.models import CommunityRequest
 from pydantic import BaseModel
 from resonite_communities.utils.db import get_current_async_session
 from sqlalchemy import case, and_, not_, select, func, extract
+from sqlalchemy.orm import joinedload
 import json
 import calendar
 
@@ -182,6 +183,69 @@ async def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthM
         raise HTTPException(status_code=404, detail="User not found")
 
     return {"id": data.id, "is_superuser": data.is_superuser, "is_moderator": data.is_moderator, "result": result}
+
+
+@router_v2.get("/admin/users")
+async def get_admin_users(
+    user_auth: UserAuthModel = Depends(require_administrator_access)
+):
+
+    session = await get_current_async_session()
+
+    # Query users with joinedload for relationships
+    query = select(User).options(
+        joinedload(User.oauth_accounts).joinedload(OAuthAccount.discord_account)
+    )
+
+    result = await session.execute(query)
+    rows = result.unique().all()
+
+    users = []
+    for row in rows:
+        user = row[0]
+
+        # Build user data with relationships
+        user_data = {
+            "id": str(user.id),
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+            "is_verified": user.is_verified,
+            "is_moderator": user.is_moderator,
+            "is_protected": user.is_protected,
+            "oauth_accounts": []
+        }
+
+        # Add OAuth accounts with Discord data
+        for oauth_account in user.oauth_accounts:
+            oauth_data = {
+                "id": str(oauth_account.id),
+                "oauth_name": oauth_account.oauth_name,
+                "access_token": oauth_account.access_token,
+                "expires_at": oauth_account.expires_at,
+                "refresh_token": oauth_account.refresh_token,
+                "account_id": oauth_account.account_id,
+                "account_email": oauth_account.account_email
+            }
+
+            # Add Discord account data if available
+            if oauth_account.discord_account:
+                discord = oauth_account.discord_account
+                oauth_data["discord_account"] = {
+                    "id": str(discord.id),
+                    "name": discord.name,
+                    "avatar_url": discord.avatar_url,
+                    "user_communities": discord.user_communities,
+                    "discord_update_retry_after": discord.discord_update_retry_after
+                }
+            else:
+                oauth_data["discord_account"] = None
+
+            user_data["oauth_accounts"].append(oauth_data)
+
+        users.append(user_data)
+
+    return users
 
 
 @router_v2.get("/admin/communities/{community_id}")

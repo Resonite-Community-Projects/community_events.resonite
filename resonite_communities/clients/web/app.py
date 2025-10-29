@@ -20,6 +20,10 @@ from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
 from resonite_communities.utils.config import ConfigManager
 
+# Ensure models are loaded for SQLAlchemy relationship resolution
+from resonite_communities.models.signal import Event, Stream
+from resonite_communities.models.community import Community
+
 config_manager = ConfigManager()
 
 app = FastAPI()
