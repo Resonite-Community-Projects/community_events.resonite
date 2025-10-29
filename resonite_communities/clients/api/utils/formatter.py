@@ -122,7 +122,7 @@ async def get_filtered_events(
 
     if host in private_domains:
         visibility_filter = True
-    if user_auth and user_auth.is_superuser:
+    elif user_auth and user_auth.is_superuser:
         visibility_filter = True
     elif user_auth:
         visibility_filter = or_(
