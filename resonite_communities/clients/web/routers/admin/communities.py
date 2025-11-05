@@ -9,6 +9,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import get_current_async_session
 
 config_manager = ConfigManager()
 
@@ -21,12 +22,13 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
-    events_communities = await api_client.get("/v2/admin/communities/", {"type": "event"}, user_auth=user_auth)
-    streams_communities = await api_client.get("/v2/admin/communities/", {"type": "stream"}, user_auth=user_auth)
+    session = await get_current_async_session()
+    events_communities = await api_client.get("/v2/admin/communities/", {"type": "event"}, user_auth=user_auth, use_cache=False)
+    streams_communities = await api_client.get("/v2/admin/communities/", {"type": "stream"}, user_auth=user_auth, use_cache=False)
 
     return templates.TemplateResponse("admin/communities.html", {
         "userlogo" : logo_base64,
-        "app_config": await config_manager.app_config(),
+        "app_config": await config_manager.app_config(session=session),
         "user" : deepcopy(user_auth),
         "events_communities": events_communities,
         "streams_communities": streams_communities,

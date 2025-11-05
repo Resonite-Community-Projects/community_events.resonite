@@ -26,6 +26,7 @@ from resonite_communities.utils.tools import (
 )
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import async_request_session
 
 config_manager = ConfigManager()
 
@@ -37,93 +38,94 @@ if not watchfiles:
     logger.warning("watchfiles not found. --reload option will not be available.")
 
 async def main():
-    config = await config_manager.config()
-    # Clients initialization
-    twitch_client = None
-    discord_client = None
-    if config.Twitch:
-        twitch_client = TwitchClient(
-            client_id=config.Twitch.client_id,
-            secret=config.Twitch.secret,
-            game_id=config.Twitch.game_id,
-            account_name=config.Twitch.account_name,
-        )
+    async with async_request_session() as session:
+        config = await config_manager.config()
+        # Clients initialization
+        twitch_client = None
+        discord_client = None
+        if config.Twitch:
+            twitch_client = TwitchClient(
+                client_id=config.Twitch.client_id,
+                secret=config.Twitch.secret,
+                game_id=config.Twitch.game_id,
+                account_name=config.Twitch.account_name,
+            )
 
-    discord_client = disnake.Client()
-    intents = disnake.Intents.all()
-    bot = disnake.ext.commands.InteractionBot(intents=intents)
-    ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
+        discord_client = disnake.Client()
+        intents = disnake.Intents.all()
+        bot = disnake.ext.commands.InteractionBot(intents=intents)
+        ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
 
-    # Scheduler initialization
-    scheduler = AsyncIOScheduler(daemon=True)
+        # Scheduler initialization
+        scheduler = AsyncIOScheduler(daemon=True)
 
-    # Register clients
-    Services.discord.bot = bot
-    Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
-    Services.discord.client = discord_client
-    Services.twitch = twitch_client
+        # Register clients
+        Services.discord.bot = bot
+        Services.discord.ad_bot = ad_bot #To be removed when removing AD_DISCORD_BOT_TOKEN
+        Services.discord.client = discord_client
+        Services.twitch = twitch_client
 
-    if config.SENTRY_DSN:
+        if config.SENTRY_DSN:
 
-        sentry_sdk.init(
-            dsn=config.SENTRY_DSN,
-            send_default_pii=True,
-            traces_sample_rate=1.0,
-        )
+            sentry_sdk.init(
+                dsn=config.SENTRY_DSN,
+                send_default_pii=True,
+                traces_sample_rate=1.0,
+            )
 
-    # Load collectors
-    logger.info('Loading collectors...')
-    #return
-    for name, obj in inspect.getmembers(collectors, predicate=inspect.isclass):
-        signal_collector = obj(config, Services, scheduler)
+        # Load collectors
+        logger.info('Loading collectors...')
+        #return
+        for name, obj in inspect.getmembers(collectors, predicate=inspect.isclass):
+            signal_collector = obj(config, Services, scheduler)
 
-        match signal_collector.scheduler_type:
-            case SignalSchedulerType.DISCORD:
-                logger.info(f'Setting up {signal_collector.name} collector as Discord bot.')
-                bot.add_cog(signal_collector)
-                # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
-                # Ugly add a cog to a bot with another token
-                ad_bot.add_cog(obj(config, Services, scheduler, True))
-            case SignalSchedulerType.APSCHEDULER:
-                logger.info(f'Setting up {signal_collector.name} collector as scheduled.')
-                await signal_collector.init_scheduler()
+            match signal_collector.scheduler_type:
+                case SignalSchedulerType.DISCORD:
+                    logger.info(f'Setting up {signal_collector.name} collector as Discord bot.')
+                    bot.add_cog(signal_collector)
+                    # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
+                    # Ugly add a cog to a bot with another token
+                    ad_bot.add_cog(obj(config, Services, scheduler, True))
+                case SignalSchedulerType.APSCHEDULER:
+                    logger.info(f'Setting up {signal_collector.name} collector as scheduled.')
+                    await signal_collector.init_scheduler()
 
-    # Loading transmitters
-    logger.info('Loading transmitters...')
-    transmitters_count = 0
+        # Loading transmitters
+        logger.info('Loading transmitters...')
+        transmitters_count = 0
 
-    for name, obj in inspect.getmembers(transmitters, predicate=inspect.isclass):
-        logger.info(f'Initialization {name} transmitter')
-        obj(config, scheduler)
+        for name, obj in inspect.getmembers(transmitters, predicate=inspect.isclass):
+            logger.info(f'Initialization {name} transmitter')
+            obj(config, scheduler)
 
-        transmitters_count += 1
+            transmitters_count += 1
 
-    if not transmitters_count:
-        logger.warning('No transmitters loaded!')
+        if not transmitters_count:
+            logger.warning('No transmitters loaded!')
 
-    # Start scheduler
-    logger.info('Starting scheduler...')
-    scheduler.start()
+        # Start scheduler
+        logger.info('Starting scheduler...')
+        scheduler.start()
 
-    if not config.DISCORD_BOT_TOKEN and not config.AD_DISCORD_BOT_TOKEN:
-        logger.warning('No discord bot token configured at all!')
-        return
+        if not config.DISCORD_BOT_TOKEN and not config.AD_DISCORD_BOT_TOKEN:
+            logger.warning('No discord bot token configured at all!')
+            return
 
-    logger.info('Starting Discord bots...')
+        logger.info('Starting Discord bots...')
 
-    tasks = []
+        tasks = []
 
-    if config.DISCORD_BOT_TOKEN:
-        tasks.append(bot.start(config.DISCORD_BOT_TOKEN))
+        if config.DISCORD_BOT_TOKEN:
+            tasks.append(bot.start(config.DISCORD_BOT_TOKEN))
 
-    if config.DISCORD_BOT_TOKEN and config.AD_DISCORD_BOT_TOKEN:
-        tasks.append(ad_bot.start(config.AD_DISCORD_BOT_TOKEN))
+        if config.DISCORD_BOT_TOKEN and config.AD_DISCORD_BOT_TOKEN:
+            tasks.append(ad_bot.start(config.AD_DISCORD_BOT_TOKEN))
 
-    if tasks:
-        await asyncio.gather(*tasks)
+        if tasks:
+            await asyncio.gather(*tasks)
 
-    # End process
-    logger.info('Stopping...')
+        # End process
+        logger.info('Stopping...')
 
 def run_without_reload():
     asyncio.run(main())

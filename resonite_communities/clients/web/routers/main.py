@@ -1,4 +1,5 @@
 from copy import deepcopy
+import asyncio
 
 from fastapi import APIRouter, Request, Depends
 
@@ -8,6 +9,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import get_current_async_session
 
 config_manager = ConfigManager()
 
@@ -27,11 +29,14 @@ async def about(request: Request, user_auth: UserAuthModel = Depends(get_user_au
 
 async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
 
-    events = await api_client.get("/v2/events", user_auth=user_auth)
-    streams = await api_client.get("/v2/streams", user_auth=user_auth)
+    session = await get_current_async_session()
 
-    # Fetch ALL communities with a single request
-    all_communities = await api_client.get("/v2/communities", {"include_all": True}, user_auth=user_auth)
+    # Make concurrent API calls instead of sequential
+    events, streams, all_communities = await asyncio.gather(
+        api_client.get("/v2/events", user_auth=user_auth),
+        api_client.get("/v2/streams", user_auth=user_auth),
+        api_client.get("/v2/communities", {"include_all": True}, user_auth=user_auth)
+    )
 
     # Client-side filtering
     streamers = [c for c in all_communities if c.get('platform') == 'TWITCH']
@@ -42,7 +47,7 @@ async def render_main(request: Request, user_auth: UserAuthModel, tab: str):
         request = request,
         name = 'index.html',
         context = {
-            "app_config": await config_manager.app_config(),
+            "app_config": await config_manager.app_config(session=session),
             'events': events,
             'communities' : communities,
             'streams' : streams,

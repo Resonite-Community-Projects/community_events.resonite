@@ -332,6 +332,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 external_id=str(event.id),
                 scheduler_type=self.scheduler_type.name,
                 created_at_external=event.created_at,
+                is_private='private' in tags,
+                is_resonite='resonite' in tags,
+                is_vrchat='vrchat' in tags,
             )
 
     async def detect_and_handle_passed_events(self, events: list[Any], community: Any) -> None:

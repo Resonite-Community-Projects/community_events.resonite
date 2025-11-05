@@ -9,6 +9,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import get_current_async_session
 
 config_manager = ConfigManager()
 
@@ -20,8 +21,9 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
     if not user_auth or not user_auth.is_superuser:
         return RedirectResponse(url="/")
 
+    session = await get_current_async_session()
     # Fetch metrics from API
-    metrics_data = await api_client.get("/v2/admin/metrics", user_auth=user_auth)
+    metrics_data = await api_client.get("/v2/admin/metrics", user_auth=user_auth, use_cache=False)
 
     return templates.TemplateResponse("admin/metrics.html", {
         "userlogo": logo_base64,
@@ -38,5 +40,5 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
         "heatmap_data": metrics_data.get("heatmap_data", []),
         "day_labels": metrics_data.get("day_labels", []),
         "hour_labels": metrics_data.get("hour_labels", []),
-        "app_config": await config_manager.app_config(),
+        "app_config": await config_manager.app_config(session=session),
     })

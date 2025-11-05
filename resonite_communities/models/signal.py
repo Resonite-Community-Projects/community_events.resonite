@@ -38,6 +38,9 @@ class Event(BaseModel, table=True):
     external_id: str = Field(unique=True)
     scheduler_type: str = Field()
     status: EventStatus = Field()
+    is_private: bool = Field(default=False, index=True)
+    is_resonite: bool = Field(default=False, index=True)
+    is_vrchat: bool = Field(default=False, index=True)
 
     @classmethod
     def set_insert_fields(cls, fields_to_update: dict):

@@ -23,7 +23,7 @@ async def get_configuration(request: Request, user_auth: UserAuthModel = Depends
     if not user_auth or not user_auth.is_superuser:
         return RedirectResponse(url="/")
 
-    config_data = await api_client.get("/v2/admin/configuration", user_auth=user_auth)
+    config_data = await api_client.get("/v2/admin/configuration", user_auth=user_auth, use_cache=False)
 
     return templates.TemplateResponse("admin/configuration.html", {
         "userlogo": logo_base64,

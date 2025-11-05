@@ -101,7 +101,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 
         session = await get_current_async_session()
         session.add(metrics)
-        await session.commit()
+        # Transaction commit/rollback is handled by DatabaseSessionMiddleware
 
         return response
 

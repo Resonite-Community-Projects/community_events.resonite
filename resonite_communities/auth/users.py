@@ -147,11 +147,11 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
             await session.commit()
 
-        config_db = await config_manager.app_config()
+        config_db = await config_manager.app_config(session)
 
         if not config_db.INITIATED:
             user.is_superuser = True
-            await config_manager.update_app_config(initiated=True)
+            await config_manager.update_app_config(session=session, initiated=True)
 
         if config_db.INITIATED and not config_db.NORMAL_USER_LOGIN and not (user.is_superuser or user.is_moderator):
             raise HTTPException(

@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from resonite_communities.utils.config import ConfigManager
@@ -24,23 +25,20 @@ from contextvars import ContextVar
 from contextlib import asynccontextmanager
 
 
-_async_session_context: ContextVar[AsyncSession] = ContextVar('async_session')
+_async_session_context: ContextVar[Optional[AsyncSession]] = ContextVar('async_session', default=None)
 
 
 async def get_current_async_session() -> AsyncSession:
-    """Get the current async context session, or create a new one if needed"""
-    try:
-        session = _async_session_context.get()
-        if session is None:
-            session = async_session_maker()
-            _async_session_context.set(session)
-        return session
-    except LookupError:
-        session = async_session_maker()
-        _async_session_context.set(session)
-        return session
+    """Get the current async context session. Raises if no session is set."""
+    session = _async_session_context.get()
+    if session is None:
+        raise RuntimeError(
+            "No database session found in context. "
+            "Ensure you're within a request context or use get_async_session() context manager."
+        )
+    return session
 
-def set_async_session_context(session: AsyncSession):
+def set_async_session_context(session: Optional[AsyncSession]):
     """Set the session for current async context"""
     _async_session_context.set(session)
 
@@ -66,15 +64,22 @@ async def get_async_session():
 @asynccontextmanager
 async def async_request_session():
     """Context manager for request-scoped async sessions"""
-    async with async_session_maker() as session:
-        set_async_session_context(session)
-        try:
-            yield session
-        finally:
-            try:
-                _async_session_context.set(None)
-            except:
-                pass
+    session = async_session_maker()
+    set_async_session_context(session)
+    try:
+        yield session
+        # Commit any pending transactions
+        if session.in_transaction():
+            await session.commit()
+    except Exception:
+        # Rollback on any exception
+        if session.in_transaction():
+            await session.rollback()
+        raise
+    finally:
+        # Always close the session and clear context
+        await session.close()
+        set_async_session_context(None)
 
 async def get_session_dependency():
     """FastAPI dependency function that yields database sessions"""

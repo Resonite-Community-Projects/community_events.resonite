@@ -9,6 +9,7 @@ from resonite_communities.clients.web.routers.utils import logo_base64
 from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
+from resonite_communities.utils.db import get_current_async_session
 
 config_manager = ConfigManager()
 
@@ -20,9 +21,10 @@ async def get_communities(request: Request, user_auth: UserAuthModel = Depends(g
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
+    session = await get_current_async_session()
     return templates.TemplateResponse("admin/events.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
-        "app_config": await config_manager.app_config(),
+        "app_config": await config_manager.app_config(session=session),
         "request": request,
     })

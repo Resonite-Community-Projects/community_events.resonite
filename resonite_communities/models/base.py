@@ -131,7 +131,6 @@ class BaseModel(SQLModel):
             await session.refresh(signal_instance)
             return signal_instance
         except Exception as e:
-            await session.rollback()
             logger.error(f"Error in add operation: {e}")
             raise
 
@@ -206,24 +205,22 @@ class BaseModel(SQLModel):
             result = await session.execute(query)
             rows = result.all()
 
-            # Update all instances in batch, then single commit
+            # Update all instances in batch
             for row in rows:
                 instance = row[0]
                 for key, value in fields_to_update.items():
                     setattr(instance, key, value)
                 instances.append(instance)
 
-            # Single commit for all updates
+            # Commit changes before expunging
             if instances:
                 await session.commit()
-                # Refresh all instances
                 for instance in instances:
                     await session.refresh(instance)
                     session.expunge(instance)
 
             return instances
         except Exception as e:
-            await session.rollback()
             logger.error(f"Error in update operation: {e}")
             raise
 
@@ -258,15 +255,14 @@ class BaseModel(SQLModel):
         session = await get_current_async_session()
         try:
             result = await session.execute(stmt)
-            await session.commit()
             row = result.first()
             if row is None:
                 return None
             instance = row[0]
+            await session.commit()
             await session.refresh(instance)
             return instance
         except Exception as e:
-            await session.rollback()
             logger.error(f"Error in upsert operation: {e}")
             raise
 
@@ -285,15 +281,15 @@ class BaseModel(SQLModel):
             rows = result.all()
             deleted = len(rows)
 
-            # Delete all instances in batch, then single commit
+            # Delete all instances in batch
             for row in rows:
                 await session.delete(row[0])
-
+            
+            # Commit deletions
             if deleted > 0:
                 await session.commit()
 
             return deleted
         except Exception as e:
-            await session.rollback()
             logger.error(f"Error in delete operation: {e}")
             raise

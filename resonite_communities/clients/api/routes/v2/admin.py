@@ -164,7 +164,7 @@ async def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthM
     session = await get_current_async_session()
     instances = []
 
-    query = select(User).where(User.id == data.id)
+    query = select(User).where(User.id == data.id).execution_options(populate_existing=True)
 
     result = await session.execute(query)
     rows = result.unique().all()
@@ -195,7 +195,7 @@ async def get_admin_users(
     # Query users with joinedload for relationships
     query = select(User).options(
         joinedload(User.oauth_accounts).joinedload(OAuthAccount.discord_account)
-    )
+    ).execution_options(populate_existing=True)
 
     result = await session.execute(query)
     rows = result.unique().all()
@@ -426,10 +426,11 @@ async def get_admin_configuration(
     user_auth: UserAuthModel = Depends(require_administrator_access)
 ):
 
+    session = await get_current_async_session()
+
     async def load(object):
-        session = await get_current_async_session()
         instances = []
-        query = select(object)
+        query = select(object).execution_options(populate_existing=True)
         result = await session.execute(query)
         rows = result.unique().all()
         for row in rows:
@@ -457,7 +458,7 @@ async def get_admin_configuration(
     ]
 
     # Load app config
-    app_config = await config_manager.app_config()
+    app_config = await config_manager.app_config(session=session)
 
     return {
         "app_config": dict(app_config) if app_config else {},
@@ -472,6 +473,8 @@ async def update_admin_configuration(
     user_auth: UserAuthModel = Depends(require_administrator_access)
 ):
 
+    session = await get_current_async_session()
+
     # Process AppConfig
     app_config_data = {}
     for key, value in data.items():
@@ -481,13 +484,12 @@ async def update_admin_configuration(
             app_config_data[key.replace("app_config_", "")] = value
 
     if app_config_data:
-        await config_manager.update_app_config(**app_config_data)
+        await config_manager.update_app_config(session=session, **app_config_data)
 
     # Process Monitored Domains
     async def load(object):
-        session = await get_current_async_session()
         instances = []
-        query = select(object)
+        query = select(object).execution_options(populate_existing=True)
         result = await session.execute(query)
         rows = result.unique().all()
         for row in rows:
@@ -517,6 +519,7 @@ async def update_admin_configuration(
         if domain_id_str.startswith("new-"):
             # New domain
             await config_manager.add_monitored_domain(
+                session=session,
                 url=domain_data.get('url'),
                 status=domain_data.get('status')
             )
@@ -524,7 +527,7 @@ async def update_admin_configuration(
             # Existing domain
             domain_id = int(domain_id_str)
             if domain_id in existing_domain_ids:
-                await config_manager.update_monitored_domain(domain_id, **domain_data)
+                await config_manager.update_monitored_domain(session=session, domain_id=domain_id, **domain_data)
 
     # Process deletions
     submitted_ids = {
@@ -533,7 +536,7 @@ async def update_admin_configuration(
     }
     for existing_id in existing_domain_ids:
         if existing_id not in submitted_ids:
-            await config_manager.delete_monitored_domain(existing_id)
+            await config_manager.delete_monitored_domain(session=session, domain_id=existing_id)
 
     # Process TwitchConfig
     twitch_config_data = {}
@@ -542,7 +545,7 @@ async def update_admin_configuration(
             twitch_config_data[key.replace("twitch_config_", "")] = value
 
     if twitch_config_data:
-        await config_manager.update_twitch_config(**twitch_config_data)
+        await config_manager.update_twitch_config(session=session, **twitch_config_data)
 
     return {"message": "Configuration updated successfully"}
 
