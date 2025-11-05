@@ -124,17 +124,27 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
             - If community is EXPLICITLY public-only (no 'private' tag) -> 'public'
             - Otherwise (mixed communities, private-only, or unconfigured) -> 'private' (secure default)
         """
-        private_channel_id = community.config.get('private_channel_id')
+        private_channel_id = str(community.config.get('private_channel_id')) if community.config.get('private_channel_id') else None
+        event_channel_id = str(event.channel_id) if event.channel_id else None
 
-        # Check if event is explicitly in the private channel
-        if event.channel_id and private_channel_id == event.channel_id:
+        community_tags = community.tags.split(',')
+
+        # If event is explicitly in the configured private channel, it's private.
+        if event_channel_id and private_channel_id == event_channel_id:
             return 'private'
-        # Only default to public if community is EXPLICITLY public-only (no 'private' tag)
-        elif 'public' in community.tags.split(',') and 'private' not in community.tags.split(','):
+
+        # Community is EXPLICITLY public-only (has 'public' tag and NO 'private' tag).
+        if 'public' in community_tags and 'private' not in community_tags:
             return 'public'
-        # Secure default: private for all other cases (mixed communities, private-only, or unconfigured)
-        else:
-            return 'private'
+
+        # Community has both 'private' AND 'public' tags, AND
+        #       (event has no audio channel OR its audio channel ID is NOT the one configured as "private").
+        if 'public' in community_tags and 'private' in community_tags and \
+            (event_channel_id is None or event_channel_id != private_channel_id):
+            return 'public'
+
+        # Secure default: private for all other cases
+        return 'private'
 
     async def detect_and_handle_duplicates(self, community: Any) -> None:
             """ Detect and handle duplicate events for a given community.

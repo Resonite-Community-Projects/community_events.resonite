@@ -128,7 +128,7 @@ class TestDiscordEventTagging:
 
         result = self.collector.determine_event_visibility(event, community)
 
-        assert result == 'private', "Mixed community without private_channel_id should default to private (secure)"
+        assert result == 'public', "Mixed community with no private channel configured and no event channel should be public"
 
     def test_mixed_community_event_in_private_channel(self):
         """
@@ -154,7 +154,7 @@ class TestDiscordEventTagging:
 
         result = self.collector.determine_event_visibility(event, community)
 
-        assert result == 'private', "Mixed community event not in private channel should default to private (secure)"
+        assert result == 'public', "Mixed community event not in private channel should be public"
 
     # Test Case 4: Events with no channel_id
     def test_event_without_channel_id_public_community(self):
@@ -194,7 +194,7 @@ class TestDiscordEventTagging:
 
         result = self.collector.determine_event_visibility(event, community)
 
-        assert result == 'private', "Event without channel in mixed community should default to private (secure)"
+        assert result == 'public', "Event without channel in mixed community should be public"
 
     # Test Case 5: Edge cases
     def test_tags_with_spaces(self):
@@ -242,7 +242,7 @@ class TestDiscordEventTagging:
         result2 = self.collector.determine_event_visibility(event, community2)
 
         assert result1 == result2, "Tag order should not affect the result"
-        assert result1 == 'private', "Both should default to private"
+        assert result1 == 'public', "Both should be public as they have both tags and event is not in private channel"
 
     def test_channel_id_string_vs_int(self):
         """
@@ -257,6 +257,19 @@ class TestDiscordEventTagging:
         result = self.collector.determine_event_visibility(event, community)
 
         assert result == 'private', "String channel IDs should match"
+
+    def test_mixed_community_event_in_private_channel_with_int_id(self):
+        """
+        Given: Community with both 'public' and 'private' tags, private_channel_id configured as string
+        When: Event is in the private channel, with channel_id as an integer
+        Then: Event should be tagged as 'private'
+        """
+        community = self.create_mock_community(tags='public,private', private_channel_id='999')
+        event = self.create_mock_event(channel_id=999) # Simulate integer channel_id from Discord API
+
+        result = self.collector.determine_event_visibility(event, community)
+
+        assert result == 'private', "Mixed community event in private channel (int ID) should be private"
 
 
 if __name__ == '__main__':
