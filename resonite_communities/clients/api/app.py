@@ -13,15 +13,8 @@ from resonite_communities.utils.db import async_request_session
 config_manager = ConfigManager()
 
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
+from resonite_communities.clients.middleware.rate_limit import RateLimitMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
-
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-
-from redis import asyncio as aioredis
 
 class DatabaseSessionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -33,6 +26,10 @@ app = FastAPI()
 
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
 app.add_middleware(DatabaseSessionMiddleware)
+app.add_middleware(
+    RateLimitMiddleware,
+    max_concurrent_requests=config_manager.infrastructure_config.MAX_CONCURRENT_REQUESTS
+)
 
 import resonite_communities.clients.api.routes.v1
 import resonite_communities.clients.api.routes.v2
@@ -51,6 +48,7 @@ app.include_router(router_v2)
 from fastapi import Depends, HTTPException, Request
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.utils.config.models import MonitoredDomain
+from resonite_communities.utils.db import get_current_async_session
 import json
 
 @app.post("/admin/update/configuration")
@@ -59,6 +57,7 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
     if not user_auth or not user_auth.is_superuser:
         raise HTTPException(status_code=403, detail="Not authenticated or not a superuser.")
 
+    session = await get_current_async_session()
     form_data = await request.form()
     config_manager = ConfigManager()
 
@@ -72,10 +71,10 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
             else:
                 app_config_data[field_name] = value
     if app_config_data:
-        config_manager.update_app_config(**app_config_data)
+        await config_manager.update_app_config(session=session, **app_config_data)
 
     # Process MonitoredDomain
-    existing_domains = config_manager.load(MonitoredDomain)
+    existing_domains = await config_manager.load(MonitoredDomain, session=session)
     existing_domain_ids = {domain.id for domain in existing_domains}
     submitted_domain_ids = set()
     monitored_domains_data = {}
@@ -98,14 +97,14 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
     # Update existing domains and add new ones
     for domain_key, data in monitored_domains_data.items():
         if isinstance(domain_key, int): # Existing domain
-            config_manager.update_monitored_domain(domain_key, **data)
+            await config_manager.update_monitored_domain(session=session, domain_id=domain_key, **data)
         else: # New domain
-            config_manager.add_monitored_domain(url=data.get('url'), status=data.get('status'))
+            await config_manager.add_monitored_domain(session=session, url=data.get('url'), status=data.get('status'))
 
     # Delete removed domains
     domains_to_delete = existing_domain_ids - submitted_domain_ids
     for domain_id in domains_to_delete:
-        config_manager.delete_monitored_domain(domain_id)
+        await config_manager.delete_monitored_domain(session=session, domain_id=domain_id)
 
     # Process TwitchConfig
     twitch_config_data = {}
@@ -113,7 +112,7 @@ async def update_configuration(request: Request, user_auth: UserAuthModel = Depe
         if key.startswith("twitch_config_"):
             twitch_config_data[key.replace("twitch_config_", "")] = value
     if twitch_config_data:
-        config_manager.update_twitch_config(**twitch_config_data)
+        await config_manager.update_twitch_config(session=session, **twitch_config_data)
 
     return {"message": "Configuration updated successfully"}
 

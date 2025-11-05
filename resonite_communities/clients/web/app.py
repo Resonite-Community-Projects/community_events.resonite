@@ -16,6 +16,7 @@ from resonite_communities.clients.web.routers import (
 )
 from resonite_communities.clients.web.routers.admin import metrics, events, communities, users, configuration
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
+from resonite_communities.clients.middleware.rate_limit import RateLimitMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path
 
 from resonite_communities.utils.config import ConfigManager
@@ -47,6 +48,10 @@ class DatabaseSessionMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(MetricsMiddleware, db_path=get_geoip_db_path())
+app.add_middleware(
+    RateLimitMiddleware,
+    max_concurrent_requests=config_manager.infrastructure_config.MAX_CONCURRENT_REQUESTS
+)
 app.add_middleware(DatabaseSessionMiddleware)
 
 app.include_router(logout.router)
