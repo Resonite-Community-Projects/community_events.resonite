@@ -66,6 +66,9 @@ class CommunityEventsCollector(EventsCollector):
                         scheduler_type=self.scheduler_type.name,
                         status=event['status'],
                         created_at_external=None,
+                        is_private='private' in event['tags'],
+                        is_resonite='resonite' in event['tags'],
+                        is_vrchat='vrchat' in event['tags'],
                     )
             except Exception as e:
                 self.logger.error(f"Error processing community {community.name}: {str(e)}")
