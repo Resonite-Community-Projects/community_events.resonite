@@ -15,7 +15,20 @@
 
 {% block content %}
 
-<div x-data="eventsPage()" x-init="loadEvents()">
+<div x-data="eventsPage()" x-init="init()">
+    <div class="field">
+        <div class="control">
+            <div class="select">
+                <select x-model="selectedCommunity" @change="loadEvents($event.target.value)">
+                    <option value="">All Communities</option>
+                    {% for community in communities %}
+                        <option value="{{ community.id }}" :selected="'{{ community.id }}' === selectedCommunity">{{ community.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
     <table class="table is-fullwidth">
         <thead>
             <tr>

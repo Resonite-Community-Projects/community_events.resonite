@@ -96,6 +96,7 @@ def require_administrator_access(user_auth: UserAuthModel = Depends(get_user_aut
 @router_v2.get("/admin/events")
 async def get_admin_events(
     request: Request,
+    community_id: Optional[str] = Query(None, description="Filter events by community ID"),
     user_auth: UserAuthModel = Depends(require_moderator_access)
 ):
 
@@ -112,7 +113,12 @@ async def get_admin_events(
         else_=Event.start_time  # Otherwise, fallback to start_time
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
-    events = await Event().find(__order_by=['start_time'], __custom_filter=and_(time_filter, platform_filter))
+    custom_filter = and_(time_filter, platform_filter)
+
+    if community_id:
+        custom_filter = and_(custom_filter, Event.community_id == community_id)
+
+    events = await Event().find(__order_by=['start_time'], __custom_filter=custom_filter)
 
     events_formatted = []
     for event in events:
@@ -281,15 +287,27 @@ async def get_admin_communities_list(
     type: str = Query(..., description="Type of community list to fetch ('event' or 'stream')"),
     user_auth: UserAuthModel = Depends(require_moderator_access)
 ):
+    session = await get_current_async_session()
 
-
-    communities = []
     if type == 'event':
-        communities = await Community().find(platform__in=events_platforms, configured__eq=True)
+        platforms = events_platforms
     elif type == 'stream':
-        communities = await Community().find(platform__in=streams_platforms, configured__eq=True)
+        platforms = streams_platforms
     else:
         raise HTTPException(status_code=400, detail="Invalid community type")
+
+    # Fetch communities
+    stmt = select(Community).where(Community.platform.in_(platforms), Community.configured == True)
+    result = await session.execute(stmt)
+    communities = result.scalars().all()
+    community_ids = [community.id for community in communities]
+
+    # Fetch event counts for these communities
+    event_counts_stmt = select(Event.community_id, func.count(Event.id).label("event_count")) \
+        .where(Event.community_id.in_(community_ids)) \
+        .group_by(Event.community_id)
+    event_counts_result = await session.execute(event_counts_stmt)
+    event_counts = {str(community_id): count for community_id, count in event_counts_result}
 
     communities_formatted = []
     for community in communities:
@@ -307,6 +325,7 @@ async def get_admin_communities_list(
             "private_channel_id": community.config.get("private_channel_id", None),
             "events_url": community.config.get("events_url", None),
             "platform_on_remote": community.platform_on_remote,
+            "event_count": event_counts.get(str(community.id), 0),
         })
 
     return communities_formatted

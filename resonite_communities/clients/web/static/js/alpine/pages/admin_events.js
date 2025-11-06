@@ -1,10 +1,34 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('eventsPage', () => ({
         events: [],
+        selectedCommunity: '',
 
-        async loadEvents() {
+        init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const communityId = urlParams.get('community_id');
+            if (communityId) {
+                this.selectedCommunity = communityId;
+            }
+            this.loadEvents(this.selectedCommunity, false);
+        },
+
+        async loadEvents(communityId = '', changeURL = true) {
+            this.selectedCommunity = communityId;
+            let url = '/v2/admin/events';
+            if (this.selectedCommunity) {
+                url += `?community_id=${this.selectedCommunity}`;
+            }
+
+            if (changeURL) {
+                let pageUrl = '/admin/events';
+                if (this.selectedCommunity) {
+                    pageUrl += `?community_id=${this.selectedCommunity}`;
+                }
+                history.replaceState({}, '', pageUrl);
+            }
+
             try {
-                const response = await fetch('/v2/admin/events', {
+                const response = await fetch(url, {
                     credentials: 'include'
                 });
                 if (!response.ok) {

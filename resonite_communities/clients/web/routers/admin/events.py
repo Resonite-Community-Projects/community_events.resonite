@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Request
 from starlette.responses import RedirectResponse
@@ -16,15 +17,20 @@ config_manager = ConfigManager()
 router = APIRouter()
 
 @router.get("/admin/events")
-async def get_communities(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
+async def get_events(request: Request, community_id: Optional[str] = None, user_auth: UserAuthModel = Depends(get_user_auth)):
 
     if not user_auth or not (user_auth.is_superuser or user_auth.is_moderator):
         return RedirectResponse(url="/")
 
     session = await get_current_async_session()
+
+    communities = await api_client.get("/v2/admin/communities/", {"type": "event"}, user_auth=user_auth, use_cache=False)
+
     return templates.TemplateResponse("admin/events.html", {
         "userlogo" : logo_base64,
         "user" : deepcopy(user_auth),
         "app_config": await config_manager.app_config(session=session),
+        "communities": communities,
         "request": request,
+        "selected_community_id": community_id,
     })

@@ -84,7 +84,7 @@
 
     .community-indicators {
         display: grid;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
         gap: 0.5rem;
         align-items: center;
         justify-content: center;
@@ -105,7 +105,7 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 120px;
+        min-height: 160px;
     }
 
     .card-content .columns {
@@ -113,6 +113,18 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+    }
+
+    .event-count-indicator {
+        background-color: hsl(48, 100%, 90%);
+        color: #333;
+        padding: 0.5rem 1.5rem;
+        border-radius: 4px;
+        text-align: center;
+        display: block;
+        width: 180px;
+        font-size: 0.875rem;
+        font-weight: bold;
     }
 </style>
 {% endblock %}
@@ -184,6 +196,18 @@
                                                 </span>
                                                 Public
                                             </div>
+                                        </template>
+                                    </div>
+                                    <div class="indicator-slot">
+                                        <template x-if="community.event_count !== undefined">
+                                            <a :href="`/admin/events?community_id=${community.id}`">
+                                                <div class="event-count-indicator">
+                                                    <span class="icon">
+                                                        <i class="fas fa-calendar-check"></i>
+                                                    </span>
+                                                    <span x-text="`Events: ${community.event_count}`"></span>
+                                                </div>
+                                            </a>
                                         </template>
                                     </div>
                                 </div>
