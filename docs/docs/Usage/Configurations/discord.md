@@ -18,7 +18,7 @@ We will then verify that your community complies with the [Resonite Guidelines](
 
 !!! info
 
-    Remember that to have your event shown you need to respect the validation format as stated in the [general configuration overview, section `Event definition`](overview.md#Event definition).
+    Remember that to have your event shown you need to respect the validation format as stated in the [general configuration overview, section `Event definition`](guide.md#event-submission-guidelines).
 
 ### Submitting a Community
 

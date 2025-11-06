@@ -28,6 +28,7 @@ Metadata can be placed on any line but the line must only contain the metadata i
 ```
 
 Each metadata line must:
+
 - Start with a `+` character
 - Be on its own line in description
 - Follow the format `+key:value`
