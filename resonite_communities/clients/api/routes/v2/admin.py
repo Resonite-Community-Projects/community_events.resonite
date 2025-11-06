@@ -19,7 +19,7 @@ import calendar
 
 
 from fastapi import Query
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import requests
 
@@ -97,28 +97,45 @@ def require_administrator_access(user_auth: UserAuthModel = Depends(get_user_aut
 async def get_admin_events(
     request: Request,
     community_id: Optional[str] = Query(None, description="Filter events by community ID"),
+    platform_filter: Optional[str] = Query(None, description="Filter events by platform (e.g., 'resonite', 'vrchat', 'none', 'all')"),
     user_auth: UserAuthModel = Depends(require_moderator_access)
 ):
 
-    # Only get Resonite events
-    platform_filter = and_(
-        Event.tags.ilike('%resonite%'),
-        not_(Event.tags.ilike('%vrchat%'))
-    )
-
     # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
     # If end_time is available, it will be used; otherwise, fallback to start_time.
-    time_filter = case(
+    time_filter_condition = case(
         (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
         else_=Event.start_time  # Otherwise, fallback to start_time
     ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
 
-    custom_filter = and_(time_filter, platform_filter)
+    custom_filters = [time_filter_condition]
+
+    if platform_filter == 'all':
+        pass
+    elif platform_filter == 'none':
+        # Filter for events with no platform tags
+        # This checks if 'resonite' or 'vrchat' are NOT in the tags
+        custom_filters.append(
+            and_(
+                not_(Event.tags.ilike('%resonite%')),
+                not_(Event.tags.ilike('%vrchat%'))
+            )
+        )
+    elif platform_filter:
+        custom_filters.append(Event.tags.ilike(f'%{platform_filter}%'))
+    else:
+        # Default filter: Only get Resonite events, excluding VR Chat
+        custom_filters.append(
+            and_(
+                Event.tags.ilike('%resonite%'),
+                not_(Event.tags.ilike('%vrchat%'))
+            )
+        )
 
     if community_id:
-        custom_filter = and_(custom_filter, Event.community_id == community_id)
+        custom_filters.append(Event.community_id == community_id)
 
-    events = await Event().find(__order_by=['start_time'], __custom_filter=custom_filter)
+    events = await Event().find(__order_by=['start_time'], __custom_filter=and_(*custom_filters))
 
     events_formatted = []
     for event in events:
@@ -302,9 +319,15 @@ async def get_admin_communities_list(
     communities = result.scalars().all()
     community_ids = [community.id for community in communities]
 
-    # Fetch event counts for these communities
+    # Fetch event counts for these communities, filtering for Resonite platform only
     event_counts_stmt = select(Event.community_id, func.count(Event.id).label("event_count")) \
-        .where(Event.community_id.in_(community_ids)) \
+        .where(
+            Event.community_id.in_(community_ids),
+            and_(
+                Event.tags.ilike('%resonite%'),
+                not_(Event.tags.ilike('%vrchat%'))
+            )
+        ) \
         .group_by(Event.community_id)
     event_counts_result = await session.execute(event_counts_stmt)
     event_counts = {str(community_id): count for community_id, count in event_counts_result}

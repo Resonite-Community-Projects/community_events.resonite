@@ -2,27 +2,45 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('eventsPage', () => ({
         events: [],
         selectedCommunity: '',
+        selectedPlatformFilter: '',
 
         init() {
             const urlParams = new URLSearchParams(window.location.search);
             const communityId = urlParams.get('community_id');
+            const platformFilter = urlParams.get('platform_filter');
+
             if (communityId) {
                 this.selectedCommunity = communityId;
             }
-            this.loadEvents(this.selectedCommunity, false);
+            if (platformFilter) {
+                this.selectedPlatformFilter = platformFilter;
+            }
+
+            this.loadEvents(this.selectedCommunity, this.selectedPlatformFilter, false);
         },
 
-        async loadEvents(communityId = '', changeURL = true) {
+        async loadEvents(communityId = '', platformFilter = '', changeURL = true) {
             this.selectedCommunity = communityId;
+            this.selectedPlatformFilter = platformFilter;
+
             let url = '/v2/admin/events';
+            const params = new URLSearchParams();
+
             if (this.selectedCommunity) {
-                url += `?community_id=${this.selectedCommunity}`;
+                params.append('community_id', this.selectedCommunity);
+            }
+            if (this.selectedPlatformFilter) {
+                params.append('platform_filter', this.selectedPlatformFilter);
+            }
+
+            if (params) {
+                url += `?${params.toString()}`;
             }
 
             if (changeURL) {
                 let pageUrl = '/admin/events';
-                if (this.selectedCommunity) {
-                    pageUrl += `?community_id=${this.selectedCommunity}`;
+                if (params) {
+                    pageUrl += `?${params.toString()}`;
                 }
                 history.replaceState({}, '', pageUrl);
             }

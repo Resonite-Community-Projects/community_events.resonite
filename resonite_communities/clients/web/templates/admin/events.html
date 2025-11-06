@@ -16,15 +16,35 @@
 {% block content %}
 
 <div x-data="eventsPage()" x-init="init()">
-    <div class="field">
-        <div class="control">
-            <div class="select">
-                <select x-model="selectedCommunity" @change="loadEvents($event.target.value)">
-                    <option value="">All Communities</option>
-                    {% for community in communities %}
-                        <option value="{{ community.id }}" :selected="'{{ community.id }}' === selectedCommunity">{{ community.name }}</option>
-                    {% endfor %}
-                </select>
+    <div class="columns">
+        <div class="column is-narrow">
+            <div class="field">
+                <label class="label">Community</label>
+                <div class="control">
+                    <div class="select">
+                        <select x-model="selectedCommunity" @change="loadEvents(selectedCommunity, selectedPlatformFilter)">
+                            <option value="">All Communities</option>
+                            {% for community in communities %}
+                                <option value="{{ community.id }}" :selected="'{{ community.id }}' === selectedCommunity">{{ community.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="column is-narrow">
+            <div class="field">
+                <label class="label">Platform Filter</label>
+                <div class="control">
+                    <div class="select">
+                        <select x-model="selectedPlatformFilter" @change="loadEvents(selectedCommunity, selectedPlatformFilter)">
+                            <option value="">Resonite Only (Default)</option>
+                            <option value="none">No Platform Tag</option>
+                            <option value="vrchat">VR Chat</option>
+                            <option value="all">All Platforms</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
