@@ -15,7 +15,7 @@
 
 {% block content %}
 
-<div x-data="eventsPage()" x-init="init()">
+<div x-data="{ ...eventsPage(), ...eventModal() }" x-init="init()">
     <div class="columns">
         <div class="column is-narrow">
             <div class="field">
@@ -64,9 +64,20 @@
                             <div class="column">
                                 <p class="is-size-5 has-text-left is-inline-block" x-text="event.name"></p>
                                 <template x-if="event.session_image">
-                                    <span class="icon">
-                                        <i class="mdi mdi-image-area"></i>
-                                    </span>
+                                    <div class="dropdown is-hoverable is-inline-block">
+                                        <div class="dropdown-trigger">
+                                            <span class="icon">
+                                                <i class="mdi mdi-image-area"></i>
+                                            </span>
+                                        </div>
+                                        <div class="dropdown-menu" role="menu">
+                                            <div class="dropdown-content">
+                                                <div class="dropdown-item">
+                                                    <img :src="event.session_image" alt="Session Image" style="max-width: 200px; height: auto;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </template>
                             </div>
                             <p class="column is-size-6 has-text-right">
@@ -75,12 +86,28 @@
                                 <span class="fixed-width has-text-left" x-text="event.end_time ? event.end_time.replace('T', ' ').replace('Z', '') : ''"></span>
                             </p>
                         </div>
-                        <p class="is-size-7" x-text="event.description"></p>
+                        <div x-data="{ showDescription: false }" style="position: relative;">
+                            <button class="button is-info is-light is-small" @click="showDescription = !showDescription">
+                                <span class="icon is-small">
+                                    <i class="fas fa-info-circle"></i>
+                                </span>
+                                <span x-text="showDescription ? 'Hide Description' : 'Show Description'"></span>
+                            </button>
+                            <div class="content has-background-light p-2 mt-2" x-show="showDescription" style="position: relative; max-height: 150px; overflow-y: auto; max-width: 600px; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <p class="is-size-7" x-text="event.description"></p>
+                            </div>
+                        </div>
                         <br>
                         <p class="is-size-6" x-text="event.community_name"></p>
                     </td>
                     <td style="text-align: right;">
-                        <div>
+                        <div class="buttons is-right">
+                            <button class="button is-danger" @click="deleteEvent(event.id)">
+                                <span class="icon is-small">
+                                    <i class="fas fa-trash-alt"></i>
+                                </span>
+                                <span>Delete</span>
+                            </button>
                             <div class="dropdown" x-data="{ ...eventStatusDropdown(), open: false }" @click.outside="open = false" :class="{ 'is-active': open }">
                                 <div class="dropdown-trigger">
                                     <button class="button" aria-haspopup="true" aria-controls="dropdown-menu" @click="open = ! open">
@@ -106,6 +133,23 @@
             </template>
         </tbody>
     </table>
+
+    <div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
+        <div class="modal-background" @click="closeModal()"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" x-text="modalTitle"></p>
+                <button class="delete" aria-label="close" @click="closeModal()"></button>
+            </header>
+            <section class="modal-card-body" x-html="modalBodyContent" id="modal-body">
+                <!-- Content will be dynamically injected here -->
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" @click="saveCallback()" x-text="modalActionButtonText"></button>
+                <button class="button" @click="closeModal()">Cancel</button>
+            </footer>
+        </div>
+    </div>
 
     <div id="notifications"></div>
 </div>

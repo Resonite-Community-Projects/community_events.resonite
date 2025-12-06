@@ -171,6 +171,15 @@ async def update_event_status(data: EventUpdateStatusRequest, user_auth: UserAut
 
     return {"id": data.id, "status": data.status, "result": result}
 
+@router_v2.delete("/admin/events/{event_id}")
+async def delete_event(event_id: str, user_auth: UserAuthModel = Depends(require_moderator_access)):
+    deleted = await Event.delete(id__eq=event_id)
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    return {"id": event_id, "message": "Event deleted successfully"}
+
 
 @router_v2.post("/admin/users/update_status")
 async def update_user_status(data: UserUpdateStatusRequest, user_auth: UserAuthModel = Depends(require_administrator_access)):
