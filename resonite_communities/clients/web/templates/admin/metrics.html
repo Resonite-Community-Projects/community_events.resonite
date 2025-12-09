@@ -1,38 +1,21 @@
 {% extends "admin/base.html" %}
+    {% block alpine_components_head %}
+    <script defer src="/static/js/alpine/pages/admin_metrics.js"></script>
+    {% endblock %}
     {% block extended_head %}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load('current', {
-        'packages':['geochart'],
-      });
-      google.charts.setOnLoadCallback(drawRegionsMap);
-
-      function drawRegionsMap() {
-        var data = google.visualization.arrayToDataTable([
-          ['Country', 'Users'],
-          {% for item in country_data %}
-          ['{{ item.name }}', {{ item.value }}],
-          {% endfor %}
-        ]);
-
-        var options = {
-          colorAxis: {colors: ['#e0ffff', '#006edd']}
-        };
-
-        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
-
-        chart.draw(data, options);
-      }
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     <style>
-        .chart-container {
+        .chart-container, .pie-chart-container {
             width: 100%;
             height: 400px;
             margin-bottom: 30px;
+        }
+        .pie-chart-container {
+            height: 200px;
         }
         .metrics-card {
             background-color: #f5f5f5;
@@ -60,15 +43,12 @@
         .metric-label {
             color: #666;
         }
+
     </style>
     {% endblock %}
     {% block content %}
 
-
-
-
-
-    <div class="fixed-grid has-1-cols">
+    <div x-data="metricsPage()" class="fixed-grid has-1-cols">
         <div class="grid">
 
             <div class="fixed-grid has-4-cols">
@@ -79,7 +59,7 @@
                             <div class="card-content">
                                 <p class="title">Today Users Average</p>
                                 <div class="content is-size-3">
-                                    <p>{{ average_unique_users|int }}</p>
+                                    <p x-text="Math.round(summaryData?.average_unique_users || 0)"></p>
                                 </div>
                             </div>
                         </div>
@@ -89,7 +69,7 @@
                             <div class="card-content">
                                 <p class="title">Yesterday Users Average</p>
                                 <div class="content is-size-3">
-                                    <p>{{ last_day_unique_users }}</p>
+                                    <p x-text="Math.round(summaryData?.last_day_unique_users || 0)"></p>
                                 </div>
                             </div>
                         </div>
@@ -114,7 +94,9 @@
                 <div class="card-content">
                     <p class="title has-text-centered">Weekly Unique Users</p>
                     <div class="content">
-                        <div id="daily-users-chart" class="chart-container"></div>
+                        <div id="daily-users-chart" class="chart-container">
+                            <!-- Daily Unique Users Chart will be inserted here dynamically -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -125,31 +107,11 @@
                     <p class="title has-text-centered">User Activity by Day and Hour</p>
                     <p class="subtitle has-text-centered">Optimal maintenance window appears in lighter colors</p>
                     <div class="content">
-                        <div id="activity-heatmap" class="chart-container"></div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="cell">
-                <div class="card">
-                    <div class="card-content">
-                        <p class="title has-text-centered">Client versions</p>
-                        <div class="content">
-                            <table class="table" style="width: 100%;">
-                                <tr>
-                                    <th>Endpoint</th>
-                                    <th>Count</th>
-                                </tr>
-                                <tbody>
-                                    {% for version in versions %}
-                                    <tr>
-                                        <td>{{ version.version }}</td>
-                                        <td>{{ version.count }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        <div x-show="loadingHeatmap" class="has-text-centered py-5">
+                            <p class="is-size-5">Loading heatmap...</p>
+                        </div>
+                        <div x-show="!loadingHeatmap && heatmapData" id="activity-heatmap" class="chart-container">
+                            <!-- User Activity Heatmap will be inserted here dynamically -->
                         </div>
                     </div>
                 </div>
@@ -162,7 +124,9 @@
             <div class="content">
                 <div class="columns">
                     <div class="column is-5">
-                        <div id="version-chart" class="version-chart-container"></div>
+                        <div id="version-chart-container" class="chart-container pie-chart-container">
+                            <!-- Version Distribution Chart will be inserted here dynamically -->
+                        </div>
                     </div>
                     <div class="column is-7">
                         <table class="table is-fullwidth">
@@ -174,18 +138,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set total_count = namespace(value=0) %}
-                                {% for version in versions %}
-                                    {% set total_count.value = total_count.value + version.count %}
-                                {% endfor %}
-                                
-                                {% for version in versions %}
-                                <tr>
-                                    <td>{{ version.version or 'Unknown' }}</td>
-                                    <td>{{ version.count }}</td>
-                                    <td>{{ "%.1f"|format(version.count / total_count.value * 100) }}%</td>
-                                </tr>
-                                {% endfor %}
+                                <template x-for="version in summaryData?.versions || []">
+                                    <tr>
+                                        <td x-text="version.version || 'Unknown'"></td>
+                                        <td x-text="version.count"></td>
+                                        <td x-text="(version.count / (summaryData?.versions || []).reduce((sum, v) => sum + v.count, 0) * 100).toFixed(1) + '%'"></td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -195,283 +154,43 @@
     </div>
 
     <!-- Domain Activity -->
-    {% for domain, metrics in metrics_domains.items() %}
-    <div class="card metrics-card">
-        <div class="card-content">
-            <p class="title has-text-centered">{{ domain }} ({{ metrics["total_counts"] }})</p>
-            <div class="content">
-                <div class="columns">
-                    <div class="column is-5">
-                        <div id="domain-chart-{{ loop.index }}" class="domain-chart-container"></div>
-                    </div>
-                    <div class="column is-7">
-                        <table class="table is-fullwidth">
-                            <thead>
-                                <tr>
-                                    <th>Endpoint</th>
-                                    <th>Count</th>
-                                    <th>Percentage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for metric in metrics["counts"] %}
-                                <tr>
-                                    <td>{{ metric.endpoint }}</td>
-                                    <td>{{ metric.count }}</td>
-                                    <td>{{ "%.1f"|format(metric.count / metrics["total_counts"] * 100) }}%</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <div id="domain-charts-container">
+        <template x-for="(entry, index) in Object.entries(domainData || {})" :key="entry[0]">
+            <div class="card metrics-card">
+                <div class="card-content">
+                    <p class="title has-text-centered" x-text="`${entry[0]} (${entry[1].total_counts})`"></p>
+                    <div class="content">
+                        <div class="columns">
+                            <div class="column is-5">
+                                <div :id="`domain-chart-${entry[0].replace(/\./g, '-')}`" class="chart-container pie-chart-container">
+                                    <!-- Domain Activity Chart will be inserted here dynamically -->
+                                </div>
+                            </div>
+                            <div class="column is-7">
+                                <table class="table is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th>Endpoint</th>
+                                            <th>Count</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="metric in entry[1].counts" :key="metric.endpoint">
+                                            <tr>
+                                                <td x-text="metric.endpoint"></td>
+                                                <td x-text="metric.count"></td>
+                                                <td x-text="((metric.count / entry[1].total_counts) * 100).toFixed(1) + '%'"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
-
-    {% endfor %}
-
-    <script>
-            // Daily Unique Users Chart
-            const dailyUsersChart = echarts.init(document.getElementById('daily-users-chart'));
-            const dailyUsersOption = {
-                tooltip: {
-                    trigger: 'axis',
-                    formatter: '{b}: {c} users'
-                },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true
-                },
-                xAxis: {
-                    type: 'category',
-                    data: {{ daily_unique_users_labels|tojson }},
-                    axisLabel: {
-                        rotate: 45
-                    },
-                    boundaryGap: false
-                },
-                yAxis: {
-                    type: 'value',
-                    name: 'Unique Users'
-                },
-                series: [{
-                    name: 'Unique Users',
-                    type: 'line',
-                    data: {{ daily_unique_users_data|tojson }},
-                    smooth: true,
-                    lineStyle: {
-                        width: 3,
-                        color: '#3298dc'
-                    },
-                    areaStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: 'rgba(50, 152, 220, 0.5)' },
-                            { offset: 1, color: 'rgba(50, 152, 220, 0.1)' }
-                        ])
-                    },
-                    markPoint: {
-                        data: [
-                            { type: 'max', name: 'Max' },
-                            { type: 'min', name: 'Min' }
-                        ]
-                    },
-                    markLine: {
-                        data: [{ type: 'average', name: 'Average' }]
-                    }
-                }]
-            };
-            dailyUsersChart.setOption(dailyUsersOption);
-        </script>
-    <script>
-            // Version Distribution Chart
-            const versionChart = echarts.init(document.getElementById('version-chart'));
-            const versionData = {{ versions|tojson }};
-
-            const versionOption = {
-                title: {
-                    text: 'Referer of a Website',
-                    subtext: 'Fake Data',
-                    left: 'center'
-                },
-                tooltip: {
-                    trigger: 'item'
-                },
-                legend: {
-                    orient: 'vertical',
-                    left: 'left'
-                },
-                series: [{
-                    name: 'Version Distribution',
-                    type: 'pie',
-                    radius: '50%',
-                    emphasis: {
-                        itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    },
-                    data: versionData.map(item => ({
-                        name: item.version || 'Unknown',
-                        value: item.count
-                    }))
-                }]
-            };
-            versionChart.setOption(versionOption);
-        </script>
-    <script>
-            // Domain Charts
-            {% for domain, metrics in metrics_domains.items() %}
-            const domainChart{{ loop.index }} = echarts.init(document.getElementById('domain-chart-{{ loop.index }}'));
-            const domainData{{ loop.index }} = {{ metrics.counts|tojson }};
-            
-            const domainOption{{ loop.index }} = {
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{b}: {c} ({d}%)'
-                },
-                series: [{
-                    name: 'Endpoints',
-                    type: 'pie',
-                    radius: '75%',
-                    itemStyle: {
-                        borderRadius: 5,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    },
-                    label: {
-                        formatter: '{b}: {d}%',
-                        show: true
-                    },
-                    data: domainData{{ loop.index }}.map(item => ({
-                        name: item.endpoint,
-                        value: item.count
-                    }))
-                }]
-            };
-            domainChart{{ loop.index }}.setOption(domainOption{{ loop.index }});
-            {% endfor %}
-    
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                worldMap.resize();
-                dailyUsersChart.resize();
-                versionChart.resize();
-                {% for domain in metrics_domains %}
-                domainChart{{ loop.index }}.resize();
-                {% endfor %}
-            });
-        });
-    </script>
-    <script>
-        // User Activity Heatmap
-        const activityHeatmap = echarts.init(document.getElementById('activity-heatmap'));
-        
-        const days = {{ day_labels|tojson }};
-        const hours = {{ hour_labels|tojson }};
-        const heatmapData = {{ heatmap_data|tojson }};
-        
-        // Transform the data for ECharts
-        const transformedData = [];
-        for (let day = 0; day < 7; day++) {
-            for (let hour = 0; hour < 24; hour++) {
-                transformedData.push([hour, day, heatmapData[day][hour]]);
-            }
-        }
-        
-        // Find the minimum and maximum values for better color scaling
-        let minValue = Number.MAX_VALUE;
-        let maxValue = 0;
-        for (let day = 0; day < 7; day++) {
-            for (let hour = 0; hour < 24; hour++) {
-                const value = heatmapData[day][hour];
-                if (value < minValue) minValue = value;
-                if (value > maxValue) maxValue = value;
-            }
-        }
-        
-        const heatmapOption = {
-            tooltip: {
-                position: 'top',
-                formatter: function (params) {
-                    return `${days[params.value[1]]} at ${hours[params.value[0]]}<br>` +
-                           `${params.value[2]} unique users`;
-                }
-            },
-            grid: {
-                height: '70%',
-                top: '10%'
-            },
-            xAxis: {
-                type: 'category',
-                data: hours,
-                splitArea: {
-                    show: true
-                },
-                name: 'Hour of Day',
-                nameLocation: 'middle',
-                nameGap: 40,
-                axisLabel: {
-                    interval: 2,
-                    fontSize: 11
-                }
-            },
-            yAxis: {
-                type: 'category',
-                data: days,
-                splitArea: {
-                    show: true
-                },
-                name: 'Day of Week',
-                nameLocation: 'middle',
-                nameGap: 70
-            },
-            visualMap: {
-                min: minValue,
-                max: maxValue,
-                calculable: true,
-                orient: 'horizontal',
-                left: 'center',
-                bottom: '0%',
-                text: ['High', 'Low'],
-                color: ['#d62728', '#2ca02c', '#98df8a', '#d9f0d3', '#f7f7f7'],
-                textStyle: {
-                    color: '#333'
-                }
-            },
-            series: [{
-                name: 'User Activity',
-                type: 'heatmap',
-                data: transformedData,
-                label: {
-                    show: true,
-                    formatter: function(params) {
-                        return params.value[2] > 0 ? params.value[2] : '';
-                    }
-                },
-                emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            }]
-        };
-        
-        activityHeatmap.setOption(heatmapOption);
-        
-        // Add the resize handler for this chart too
-        window.addEventListener('resize', function() {
-            // Add this line to your existing resize event handler
-            activityHeatmap.resize();
-        });
-    </script>
-
-
-
-
 
     {% endblock %}

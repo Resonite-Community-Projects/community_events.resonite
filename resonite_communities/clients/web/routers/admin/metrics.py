@@ -22,23 +22,10 @@ async def get_metrics(request: Request, user_auth: UserAuthModel = Depends(get_u
         return RedirectResponse(url="/")
 
     session = await get_current_async_session()
-    # Fetch metrics from API
-    metrics_data = await api_client.get("/v2/admin/metrics", user_auth=user_auth, use_cache=False)
 
     return templates.TemplateResponse("admin/metrics.html", {
         "userlogo": logo_base64,
         "user": deepcopy(user_auth),
         "request": request,
-        "metrics_domains": metrics_data.get("metrics_domains", {}),
-        "versions": metrics_data.get("versions", []),
-        "daily_unique_users_labels": metrics_data.get("daily_unique_users_labels", []),
-        "daily_unique_users_data": metrics_data.get("daily_unique_users_data", []),
-        "average_unique_users": metrics_data.get("average_unique_users", 0),
-        "last_day_unique_users": metrics_data.get("last_day_unique_users", 0),
-        "country_data": metrics_data.get("country_data", []),
-        "max_users": metrics_data.get("max_users", 0),
-        "heatmap_data": metrics_data.get("heatmap_data", []),
-        "day_labels": metrics_data.get("day_labels", []),
-        "hour_labels": metrics_data.get("hour_labels", []),
         "app_config": await config_manager.app_config(session=session),
     })

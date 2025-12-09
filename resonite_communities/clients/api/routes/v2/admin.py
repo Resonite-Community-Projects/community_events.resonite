@@ -601,49 +601,14 @@ async def update_admin_configuration(
     return {"message": "Configuration updated successfully"}
 
 
-@router_v2.get("/admin/metrics")
-async def get_admin_metrics(
-    user_auth: UserAuthModel = Depends(require_administrator_access)
-):
-
+@router_v2.get("/admin/metrics/summary")
+async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_administrator_access)):
     today = date.today()
     yesterday = today - timedelta(days=1)
     past_week = today - timedelta(days=7)
     past_month = today - timedelta(days=30)
 
     session = await get_current_async_session()
-
-    # Metrics by domain and endpoint (past week)
-    metrics_domains_result = (
-        await session.execute(
-            select(
-                Metrics.domain, Metrics.endpoint, func.count()
-            ).where(
-                func.date(Metrics.timestamp) >= past_week
-            ).group_by(
-                Metrics.domain, Metrics.endpoint
-            )
-        )
-    ).all()
-
-    _metrics_domains = {}
-    for metrics_domain in metrics_domains_result:
-        if metrics_domain[0] not in _metrics_domains:
-            _metrics_domains[metrics_domain[0]] = {
-                "counts": [],
-                "total_counts": 0
-            }
-        _metrics_domains[metrics_domain[0]]["counts"].append({
-            "endpoint": metrics_domain[1],
-            "count": metrics_domain[2]
-        })
-        _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
-
-    # Filter by monitored domains
-    metrics_domains = {}
-    for monitored_url in config_manager.infrastructure_config.get('MONITORED_DOMAINS', []):
-        if monitored_url.url in _metrics_domains:
-            metrics_domains[monitored_url.url] = _metrics_domains[monitored_url.url]
 
     # Version statistics
     versions_result = (
@@ -684,32 +649,6 @@ async def get_admin_metrics(
     )
     last_day_unique_users = daily_unique_users.get(str(today), 0)
 
-    # Hourly activity heatmap (past 30 days)
-    hourly_activity_result = await session.execute(
-        select(
-            extract('dow', Metrics.timestamp).label('day_of_week'),
-            extract('hour', Metrics.timestamp).label('hour_of_day'),
-            func.count(func.distinct(Metrics.hashed_ip)).label('users')
-        ).where(
-            func.date(Metrics.timestamp) >= past_month
-        ).group_by(
-            extract('dow', Metrics.timestamp),
-            extract('hour', Metrics.timestamp)
-        )
-    )
-
-    # Initialize empty heatmap data
-    days_of_week = 7
-    hours_of_day = 24
-    heatmap_data = [[0 for _ in range(hours_of_day)] for _ in range(days_of_week)]
-
-    # Fill in the heatmap with actual data
-    for day, hour, count in hourly_activity_result.all():
-        # Convert to integer (day is 0-6, where 0 is Sunday)
-        day_idx = int(day)
-        hour_idx = int(hour)
-        heatmap_data[day_idx][hour_idx] = count
-
     # Prepare labels for the heatmap
     day_labels = [calendar.day_name[i] for i in range(7)]  # Sunday to Saturday
     hour_labels = [f"{i:02d}:00" for i in range(24)]
@@ -730,7 +669,6 @@ async def get_admin_metrics(
     max_users = max([item["value"] for item in country_data], default=0)
 
     return {
-        "metrics_domains": metrics_domains,
         "versions": versions,
         "daily_unique_users_labels": daily_unique_users_labels,
         "daily_unique_users_data": daily_unique_users_data,
@@ -738,7 +676,90 @@ async def get_admin_metrics(
         "last_day_unique_users": last_day_unique_users,
         "country_data": country_data,
         "max_users": max_users,
-        "heatmap_data": heatmap_data,
         "day_labels": day_labels,
         "hour_labels": hour_labels
     }
+
+@router_v2.get("/admin/metrics/heatmap")
+async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_administrator_access)):
+
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    past_week = today - timedelta(days=7)
+    past_month = today - timedelta(days=30)
+
+    session = await get_current_async_session()
+
+    # Initialize empty heatmap data
+    days_of_week = 7
+    hours_of_day = 24
+    heatmap_data = [[0 for _ in range(hours_of_day)] for _ in range(days_of_week)]
+
+    # Hourly activity heatmap (past 30 days)
+    hourly_activity_result = await session.execute(
+        select(
+            extract('dow', Metrics.timestamp).label('day_of_week'),
+            extract('hour', Metrics.timestamp).label('hour_of_day'),
+            func.count(func.distinct(Metrics.hashed_ip)).label('users')
+        ).where(
+            func.date(Metrics.timestamp) >= past_month
+        ).group_by(
+            extract('dow', Metrics.timestamp),
+            extract('hour', Metrics.timestamp)
+        )
+    )
+
+    heatmap_data = [[0 for _ in range(hours_of_day)] for _ in range(days_of_week)]
+
+    # Fill in the heatmap with actual data
+    for day, hour, count in hourly_activity_result.all():
+        # Convert to integer (day is 0-6, where 0 is Sunday)
+        day_idx = int(day)
+        hour_idx = int(hour)
+        heatmap_data[day_idx][hour_idx] = count
+
+    return heatmap_data
+
+@router_v2.get("/admin/metrics/domains")
+async def get_admin_metrics_domains(user_auth: UserAuthModel = Depends(require_administrator_access)):
+
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    past_week = today - timedelta(days=7)
+    past_month = today - timedelta(days=30)
+
+    session = await get_current_async_session()
+
+    # Metrics by domain and endpoint (past week)
+    metrics_domains_result = (
+        await session.execute(
+            select(
+                Metrics.domain, Metrics.endpoint, func.count()
+            ).where(
+                func.date(Metrics.timestamp) >= past_week
+            ).group_by(
+                Metrics.domain, Metrics.endpoint
+            )
+        )
+    ).all()
+
+    _metrics_domains = {}
+    for metrics_domain in metrics_domains_result:
+        if metrics_domain[0] not in _metrics_domains:
+            _metrics_domains[metrics_domain[0]] = {
+                "counts": [],
+                "total_counts": 0
+            }
+        _metrics_domains[metrics_domain[0]]["counts"].append({
+            "endpoint": metrics_domain[1],
+            "count": metrics_domain[2]
+        })
+        _metrics_domains[metrics_domain[0]]["total_counts"] += metrics_domain[2]
+
+    # Filter by monitored domains
+    metrics_domains = {}
+    for monitored_url in config_manager.infrastructure_config.get('MONITORED_DOMAINS', []):
+        if monitored_url.url in _metrics_domains:
+            metrics_domains[monitored_url.url] = _metrics_domains[monitored_url.url]
+
+    return _metrics_domains
