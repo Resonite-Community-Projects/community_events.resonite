@@ -12,7 +12,7 @@ from resonite_communities.utils.tools import is_local_env
 from resonite_communities.clients.api.utils.models import CommunityRequest
 from pydantic import BaseModel
 from resonite_communities.utils.db import get_current_async_session
-from sqlalchemy import case, and_, not_, select, func, extract
+from sqlalchemy import case, and_, or_, not_, select, func, extract
 from sqlalchemy.orm import joinedload
 import json
 import calendar
@@ -25,7 +25,7 @@ import requests
 
 from resonite_communities.utils.config import ConfigManager
 from resonite_communities.utils.config.models import AppConfig, MonitoredDomain, TwitchConfig
-from resonite_communities.clients.models.metrics import Metrics
+from resonite_communities.clients.models.metrics import Metrics, ClientType
 
 config_manager = ConfigManager()
 
@@ -629,7 +629,13 @@ async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_a
             func.date(Metrics.timestamp).label('date'),
             func.count(func.distinct(Metrics.hashed_ip)).label('count')
         ).where(
-            func.date(Metrics.timestamp) >= past_week
+            and_(
+                func.date(Metrics.timestamp) >= past_week,
+                or_(
+                    Metrics.client.is_(None),
+                    Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
+                )
+            )
         ).group_by(func.date(Metrics.timestamp))
     )
     daily_unique_users = {
@@ -659,7 +665,13 @@ async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_a
             Metrics.country,
             func.count(func.distinct(Metrics.hashed_ip)).label('count')
         ).where(
-            func.date(Metrics.timestamp) == yesterday
+            and_(
+                func.date(Metrics.timestamp) == yesterday,
+                or_(
+                    Metrics.client.is_(None),
+                    Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
+                )
+            )
         ).group_by(Metrics.country)
     )
     country_data = [
@@ -702,7 +714,13 @@ async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_a
             extract('hour', Metrics.timestamp).label('hour_of_day'),
             func.count(func.distinct(Metrics.hashed_ip)).label('users')
         ).where(
-            func.date(Metrics.timestamp) >= past_month
+            and_(
+                func.date(Metrics.timestamp) >= past_month,
+                or_(
+                    Metrics.client.is_(None),
+                    Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
+                )
+            )
         ).group_by(
             extract('dow', Metrics.timestamp),
             extract('hour', Metrics.timestamp)
