@@ -59,7 +59,7 @@
                             <div class="card-content">
                                 <p class="title">Today Users Average</p>
                                 <div class="content is-size-3">
-                                    <p x-text="Math.round(summaryData?.average_unique_users || 0)"></p>
+                                    <p x-text="usersAverageCounterData?.average_unique_users ? Math.round(usersAverageCounterData.average_unique_users) : '-'"></p>
                                 </div>
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                             <div class="card-content">
                                 <p class="title">Yesterday Users Average</p>
                                 <div class="content is-size-3">
-                                    <p x-text="Math.round(summaryData?.last_day_unique_users || 0)"></p>
+                                    <p x-text="usersAverageCounterData?.last_day_unique_users ? Math.round(usersAverageCounterData.last_day_unique_users) : '-'"></p>
                                 </div>
                             </div>
                         </div>
@@ -177,7 +177,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <template x-for="version in summaryData?.versions || []">
+                                <template x-for="version in versionChartData?.versions || []">
                                     <tr>
                                         <td x-text="version.version || 'Unknown'"></td>
                                         <td x-text="version.count"></td>

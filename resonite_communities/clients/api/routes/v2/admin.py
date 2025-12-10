@@ -601,8 +601,8 @@ async def update_admin_configuration(
     return {"message": "Configuration updated successfully"}
 
 
-@router_v2.get("/admin/metrics/summary")
-async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_administrator_access)):
+@router_v2.get("/admin/metrics/users-average")
+async def get_admin_metrics_users_average(user_auth: UserAuthModel = Depends(require_administrator_access)):
     today = date.today()
     yesterday = today - timedelta(days=1)
     past_week = today - timedelta(days=7)
@@ -610,18 +610,48 @@ async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_a
 
     session = await get_current_async_session()
 
-    # Version statistics
-    versions_result = (
-        await session.execute(
-            select(Metrics.version, func.count())
-            .group_by(Metrics.version)
-        )
-    ).all()
+    # Daily unique users (past week)
+    daily_unique_users_result = await session.execute(
+        select(
+            func.date(Metrics.timestamp).label('date'),
+            func.count(func.distinct(Metrics.hashed_ip)).label('count')
+        ).where(
+            and_(
+                func.date(Metrics.timestamp) >= past_week,
+                or_(
+                    Metrics.client.is_(None),
+                    Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
+                )
+            )
+        ).group_by(func.date(Metrics.timestamp))
+    )
+    daily_unique_users = {
+        str(date): count
+        for date, count in daily_unique_users_result.all()
+    }
 
-    versions = [
-        {"version": version[0], "count": version[1]}
-        for version in versions_result
-    ]
+    # Calculate averages
+    total_unique_users = sum(daily_unique_users.values())
+    average_unique_users = (
+        total_unique_users / len(daily_unique_users)
+        if daily_unique_users else 0
+    )
+    last_day_unique_users = daily_unique_users.get(str(today), 0)
+
+
+    return {
+        "average_unique_users": average_unique_users,
+        "last_day_unique_users": last_day_unique_users
+    }
+
+@router_v2.get("/admin/metrics/daily-users")
+async def get_admin_metrics_daily_users(user_auth: UserAuthModel = Depends(require_administrator_access)):
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    past_week = today - timedelta(days=7)
+    past_month = today - timedelta(days=30)
+
+    session = await get_current_async_session()
 
     # Daily unique users (past week)
     daily_unique_users_result = await session.execute(
@@ -647,17 +677,42 @@ async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_a
     daily_unique_users_labels = list(daily_unique_users.keys())
     daily_unique_users_data = list(daily_unique_users.values())
 
-    # Calculate averages
-    total_unique_users = sum(daily_unique_users.values())
-    average_unique_users = (
-        total_unique_users / len(daily_unique_users)
-        if daily_unique_users else 0
-    )
-    last_day_unique_users = daily_unique_users.get(str(today), 0)
+    return {
+        "daily_unique_users_labels": daily_unique_users_labels,
+        "daily_unique_users_data": daily_unique_users_data
+    }
 
-    # Prepare labels for the heatmap
-    day_labels = [calendar.day_name[i] for i in range(7)]  # Sunday to Saturday
-    hour_labels = [f"{i:02d}:00" for i in range(24)]
+@router_v2.get("/admin/metrics/client-versions")
+async def get_admin_metrics_client_versions(user_auth: UserAuthModel = Depends(require_administrator_access)):
+
+    session = await get_current_async_session()
+
+    # Version statistics
+    versions_result = (
+        await session.execute(
+            select(Metrics.version, func.count())
+            .group_by(Metrics.version)
+        )
+    ).all()
+
+    versions = [
+        {"version": version[0], "count": version[1]}
+        for version in versions_result
+    ]
+
+    return {
+        "versions": versions
+    }
+
+
+@router_v2.get("/admin/metrics/google-map")
+async def get_admin_metrics_google_map(user_auth: UserAuthModel = Depends(require_administrator_access)):
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    past_week = today - timedelta(days=7)
+    past_month = today - timedelta(days=30)
+
+    session = await get_current_async_session()
 
     # Country data (yesterday)
     country_data_result = await session.execute(
@@ -678,18 +733,9 @@ async def get_admin_metrics_summary(user_auth: UserAuthModel = Depends(require_a
         {"name": country, "value": count}
         for country, count in country_data_result.all()
     ]
-    max_users = max([item["value"] for item in country_data], default=0)
 
     return {
-        "versions": versions,
-        "daily_unique_users_labels": daily_unique_users_labels,
-        "daily_unique_users_data": daily_unique_users_data,
-        "average_unique_users": average_unique_users,
-        "last_day_unique_users": last_day_unique_users,
-        "country_data": country_data,
-        "max_users": max_users,
-        "day_labels": day_labels,
-        "hour_labels": hour_labels
+        "country_data": country_data
     }
 
 @router_v2.get("/admin/metrics/heatmap")
@@ -736,7 +782,15 @@ async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_a
         hour_idx = int(hour)
         heatmap_data[day_idx][hour_idx] = count
 
-    return heatmap_data
+    # Prepare labels for the heatmap
+    day_labels = [calendar.day_name[i] for i in range(7)]  # Sunday to Saturday
+    hour_labels = [f"{i:02d}:00" for i in range(24)]
+
+    return {
+        'heatmap_data': heatmap_data,
+        "day_labels": day_labels,
+        "hour_labels": hour_labels
+    }
 
 @router_v2.get("/admin/metrics/client-types")
 async def get_admin_metrics_client_types(user_auth: UserAuthModel = Depends(require_administrator_access)):

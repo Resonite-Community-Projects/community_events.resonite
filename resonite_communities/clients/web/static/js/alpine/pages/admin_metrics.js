@@ -1,9 +1,17 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('metricsPage', () => ({
         summaryData: null,
+        googleMapData: null,
+        usersAverageCounterData: null,
+        dailyUsersChartData: null,
+        versionChartData: null,
         heatmapData: null,
         domainData: null,
         clientTypeData: null,
+        loadingUsersAverageCounter: false,
+        loadingGoogleMap: false,
+        loadingDailyUsersChart: false,
+        loadingVersionChart: false,
         loadingHeatmap: false,
         loadingDomains: false,
         loadingClientTypes: false,
@@ -17,11 +25,13 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.loadGoogleCharts();
-            await this.loadSummary();
-            this.initSummaryCharts();
+            this.loadUsersAverageCounter();
+            this.loadGoogleMap();
+            this.loadDailyUsersChart();
             this.loadHeatmap();
-            this.loadDomains();
             this.loadClientTypes();
+            this.loadVersionChart();
+            this.loadDomains();
             this.setupResizeHandlers();
         },
 
@@ -31,21 +41,46 @@ document.addEventListener('alpine:init', () => {
                     resolve();
                     return;
                 }
-                
+
                 google.charts.load('current', {
                     'packages': ['geochart']
                 });
-                
+
                 google.charts.setOnLoadCallback(() => {
-                    console.log('Google Charts loaded');
                     resolve();
                 });
             });
         },
 
-        async loadSummary() {
-            const response = await fetch('/v2/admin/metrics/summary');
-            this.summaryData = await response.json();
+        async loadUsersAverageCounter() {
+            this.loadingUsersAverageCounter = true;
+            const response = await fetch('/v2/admin/metrics/users-average');
+            this.usersAverageCounterData = await response.json();
+            this.loadingUsersAverageCounter = false;
+        },
+
+        async loadDailyUsersChart() {
+            this.loadingDailyUsersChart = true;
+            const response = await fetch('/v2/admin/metrics/daily-users');
+            this.dailyUsersChartData = await response.json();
+            this.loadingDailyUsersChart = false;
+            this.initDailyUsersChart();
+        },
+
+        async loadVersionChart() {
+            this.loadingVersionChart = true;
+            const response = await fetch('/v2/admin/metrics/client-versions');
+            this.versionChartData = await response.json();
+            this.loadingVersionChart = false;
+            this.initVersionChart();
+        },
+
+        async loadGoogleMap() {
+            this.loadingGoogleMap = true;
+            const response = await fetch('/v2/admin/metrics/google-map');
+            this.googleMapData = await response.json();
+            this.loadingGoogleMap = false;
+            this.initGoogleMap();
         },
 
         async loadHeatmap() {
@@ -76,11 +111,20 @@ document.addEventListener('alpine:init', () => {
             }, 100);
         },
 
-        initSummaryCharts() {
-            if (!this.summaryData) return;
-            this.initDailyUsersChart();
-            this.initVersionChart();
-            this.initGoogleMap();
+        initGoogleMap() {
+            console.log(this.googleMapData)
+            console.log(this.googleMapData?.country_data)
+            if (!this.googleMapData?.country_data) { return; }
+
+            console.log('sdsd')
+            const data = google.visualization.arrayToDataTable([
+                ['Country', 'Users'],
+                ...this.googleMapData.country_data.map(item => [item.name, item.value])
+            ]);
+
+            const options = { colorAxis: { colors: ['#e0ffff', '#006edd'] } };
+            this.googleMap = new google.visualization.GeoChart(document.getElementById('regions_div'));
+            this.googleMap.draw(data, options);
         },
 
         initDailyUsersChart() {
@@ -101,7 +145,7 @@ document.addEventListener('alpine:init', () => {
                 },
                 xAxis: {
                     type: 'category',
-                    data: this.summaryData.daily_unique_users_labels,
+                    data: this.dailyUsersChartData.daily_unique_users_labels,
                     axisLabel: {
                         rotate: 45
                     },
@@ -114,7 +158,7 @@ document.addEventListener('alpine:init', () => {
                 series: [{
                     name: 'Unique Users',
                     type: 'line',
-                    data: this.summaryData.daily_unique_users_data,
+                    data: this.dailyUsersChartData.daily_unique_users_data,
                     smooth: true,
                     lineStyle: {
                         width: 3,
@@ -140,89 +184,6 @@ document.addEventListener('alpine:init', () => {
             this.dailyUsersChart.setOption(option);
         },
 
-        initVersionChart() {
-            const chartDom = document.getElementById('version-chart-container');
-            if (!chartDom) return;
-
-            this.versionChart = echarts.init(chartDom);
-            const option = {
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{b}: {c} ({d}%)'
-                },
-                legend: {
-                    orient: 'vertical',
-                    left: 'left'
-                },
-                series: [{
-                    name: 'Version Distribution',
-                    type: 'pie',
-                    radius: '70%',
-                    itemStyle: {
-                        borderRadius: 5,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    },
-                    label: {
-                        formatter: '{b}: {d}%',
-                        show: true
-                    },
-                    data: this.summaryData.versions.map(item => ({
-                        name: item.version || 'Unknown',
-                        value: item.count
-                    }))
-                }]
-            };
-            this.versionChart.setOption(option);
-        },
-
-        initClientTypeChart() {
-            if (!this.clientTypeData) return;
-
-            const chartDom = document.getElementById('client-type-chart-container');
-            if (!chartDom) return;
-
-            this.clientTypeChart = echarts.init(chartDom);
-            const option = {
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{b}: {c} ({d}%)'
-                },
-                series: [{
-                    name: 'Client Type Distribution',
-                    type: 'pie',
-                    radius: '70%',
-                    itemStyle: {
-                        borderRadius: 5,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    },
-                    label: {
-                        formatter: '{b}: {d}%',
-                        show: true
-                    },
-                    data: this.clientTypeData.map(item => ({
-                        name: item.client || 'Unknown',
-                        value: item.count
-                    }))
-                }]
-            };
-            this.clientTypeChart.setOption(option);
-        },
-
-        initGoogleMap() {
-            if (!this.summaryData?.country_data) { return; }
-
-            const data = google.visualization.arrayToDataTable([
-                ['Country', 'Users'],
-                ...this.summaryData.country_data.map(item => [item.name, item.value])
-            ]);
-
-            const options = { colorAxis: { colors: ['#e0ffff', '#006edd'] } };
-            this.googleMap = new google.visualization.GeoChart(document.getElementById('regions_div'));
-            this.googleMap.draw(data, options);
-        },
-
         initHeatmapChart() {
             if (!this.heatmapData) return;
 
@@ -234,7 +195,7 @@ document.addEventListener('alpine:init', () => {
             const transformedData = [];
             for (let day = 0; day < 7; day++) {
                 for (let hour = 0; hour < 24; hour++) {
-                    transformedData.push([hour, day, this.heatmapData[day][hour]]);
+                    transformedData.push([hour, day, this.heatmapData.heatmap_data[day][hour]]);
                 }
             }
 
@@ -242,14 +203,14 @@ document.addEventListener('alpine:init', () => {
             let maxValue = 0;
             for (let day = 0; day < 7; day++) {
                 for (let hour = 0; hour < 24; hour++) {
-                    const value = this.heatmapData[day][hour];
+                    const value = this.heatmapData.heatmap_data[day][hour];
                     if (value < minValue) minValue = value;
                     if (value > maxValue) maxValue = value;
                 }
             }
 
-            const days = this.summaryData.day_labels;
-            const hours = this.summaryData.hour_labels;
+            const days = this.heatmapData.day_labels;
+            const hours = this.heatmapData.hour_labels;
 
             const option = {
                 tooltip: {
@@ -265,7 +226,7 @@ document.addEventListener('alpine:init', () => {
                 },
                 xAxis: {
                     type: 'category',
-                    data: this.summaryData.hour_labels,
+                    data: this.heatmapData.hour_labels,
                     splitArea: {
                         show: true
                     },
@@ -279,7 +240,7 @@ document.addEventListener('alpine:init', () => {
                 },
                 yAxis: {
                     type: 'category',
-                    data: this.summaryData.day_labels,
+                    data: this.heatmapData.day_labels,
                     splitArea: {
                         show: true
                     },
@@ -322,6 +283,72 @@ document.addEventListener('alpine:init', () => {
 
         },
 
+        initClientTypeChart() {
+            if (!this.clientTypeData) return;
+
+            const chartDom = document.getElementById('client-type-chart-container');
+            if (!chartDom) return;
+
+            this.clientTypeChart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                series: [{
+                    name: 'Client Type Distribution',
+                    type: 'pie',
+                    radius: '70%',
+                    itemStyle: {
+                        borderRadius: 5,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        formatter: '{b}: {d}%',
+                        show: true
+                    },
+                    data: this.clientTypeData.map(item => ({
+                        name: item.client || 'Unknown',
+                        value: item.count
+                    }))
+                }]
+            };
+            this.clientTypeChart.setOption(option);
+        },
+
+        initVersionChart() {
+            const chartDom = document.getElementById('version-chart-container');
+            if (!chartDom) return;
+
+            this.versionChart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                series: [{
+                    name: 'Version Distribution',
+                    type: 'pie',
+                    radius: '70%',
+                    itemStyle: {
+                        borderRadius: 5,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        formatter: '{b}: {d}%',
+                        show: true
+                    },
+                    data: this.versionChartData.versions.map(item => ({
+                        name: item.version || 'Unknown',
+                        value: item.count
+                    }))
+                }]
+            };
+            this.versionChart.setOption(option);
+        },
+
         initDomainCharts() {
 
             // Wait for Alpine.js to render the template
@@ -347,10 +374,6 @@ document.addEventListener('alpine:init', () => {
                         tooltip: {
                             trigger: 'item',
                             formatter: '{b}: {c} ({d}%)'
-                        },
-                        legend: {
-                            orient: 'vertical',
-                            left: 'left'
                         },
                         series: [{
                             name: 'Endpoints',
@@ -388,7 +411,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         getVersionTotal() {
-            return (this.summaryData?.versions || []).reduce((sum, v) => sum + v.count, 0);
+            return (this.versionChartData?.versions || []).reduce((sum, v) => sum + v.count, 0);
         },
 
         getVersionPercentage(version) {
