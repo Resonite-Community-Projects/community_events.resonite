@@ -181,7 +181,7 @@
                                     <tr>
                                         <td x-text="version.version || 'Unknown'"></td>
                                         <td x-text="version.count"></td>
-                                        <td x-text="(version.count / (summaryData?.versions || []).reduce((sum, v) => sum + v.count, 0) * 100).toFixed(1) + '%'"></td>
+                                        <td x-text="getVersionPercentage(version) + '%'"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -219,7 +219,7 @@
                                             <tr>
                                                 <td x-text="metric.endpoint"></td>
                                                 <td x-text="metric.count"></td>
-                                                <td x-text="((metric.count / entry[1].total_counts) * 100).toFixed(1) + '%'"></td>
+                                                <td x-text="getDomainPercentage(metric.count, entry[1].total_counts) + '%'"></td>
                                             </tr>
                                         </template>
                                     </tbody>

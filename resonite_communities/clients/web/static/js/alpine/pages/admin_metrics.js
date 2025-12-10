@@ -387,6 +387,19 @@ document.addEventListener('alpine:init', () => {
             return total > 0 ? Math.round((clientType.count / total) * 100) : 0;
         },
 
+        getVersionTotal() {
+            return (this.summaryData?.versions || []).reduce((sum, v) => sum + v.count, 0);
+        },
+
+        getVersionPercentage(version) {
+            const total = this.getVersionTotal();
+            return total > 0 ? Math.round((version.count / total) * 100) : 0;
+        },
+
+        getDomainPercentage(count, total) {
+            return total > 0 ? Math.round((count / total) * 100) : 0;
+        },
+
         setupResizeHandlers() {
             window.addEventListener('resize', () => {
                 if (this.dailyUsersChart) this.dailyUsersChart.resize();
