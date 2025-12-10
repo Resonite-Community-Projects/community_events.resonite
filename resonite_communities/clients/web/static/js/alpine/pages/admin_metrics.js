@@ -112,11 +112,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         initGoogleMap() {
-            console.log(this.googleMapData)
-            console.log(this.googleMapData?.country_data)
             if (!this.googleMapData?.country_data) { return; }
 
-            console.log('sdsd')
             const data = google.visualization.arrayToDataTable([
                 ['Country', 'Users'],
                 ...this.googleMapData.country_data.map(item => [item.name, item.value])
