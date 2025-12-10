@@ -3,11 +3,14 @@ document.addEventListener('alpine:init', () => {
         summaryData: null,
         heatmapData: null,
         domainData: null,
+        clientTypeData: null,
         loadingHeatmap: false,
         loadingDomains: false,
+        loadingClientTypes: false,
 
         dailyUsersChart: null,
         versionChart: null,
+        clientTypeChart: null,
         activityHeatmap: null,
         googleMap: null,
         domainCharts: [],
@@ -18,6 +21,7 @@ document.addEventListener('alpine:init', () => {
             this.initSummaryCharts();
             this.loadHeatmap();
             this.loadDomains();
+            this.loadClientTypes();
             this.setupResizeHandlers();
         },
 
@@ -60,6 +64,16 @@ document.addEventListener('alpine:init', () => {
             this.domainData = await response.json();
             this.loadingDomains = false;
             this.initDomainCharts();
+        },
+
+        async loadClientTypes() {
+            this.loadingClientTypes = true;
+            const response = await fetch('/v2/admin/metrics/client-types');
+            this.clientTypeData = await response.json();
+            this.loadingClientTypes = false;
+            setTimeout(() => {
+                this.initClientTypeChart();
+            }, 100);
         },
 
         initSummaryCharts() {
@@ -160,6 +174,40 @@ document.addEventListener('alpine:init', () => {
                 }]
             };
             this.versionChart.setOption(option);
+        },
+
+        initClientTypeChart() {
+            if (!this.clientTypeData) return;
+
+            const chartDom = document.getElementById('client-type-chart-container');
+            if (!chartDom) return;
+
+            this.clientTypeChart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                series: [{
+                    name: 'Client Type Distribution',
+                    type: 'pie',
+                    radius: '70%',
+                    itemStyle: {
+                        borderRadius: 5,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        formatter: '{b}: {d}%',
+                        show: true
+                    },
+                    data: this.clientTypeData.map(item => ({
+                        name: item.client || 'Unknown',
+                        value: item.count
+                    }))
+                }]
+            };
+            this.clientTypeChart.setOption(option);
         },
 
         initGoogleMap() {
@@ -330,10 +378,20 @@ document.addEventListener('alpine:init', () => {
             }, 500);
         },
 
+        getClientTypeTotal() {
+            return (this.clientTypeData || []).reduce((sum, ct) => sum + ct.count, 0);
+        },
+
+        getClientTypePercentage(clientType) {
+            const total = this.getClientTypeTotal();
+            return total > 0 ? Math.round((clientType.count / total) * 100) : 0;
+        },
+
         setupResizeHandlers() {
             window.addEventListener('resize', () => {
                 if (this.dailyUsersChart) this.dailyUsersChart.resize();
                 if (this.versionChart) this.versionChart.resize();
+                if (this.clientTypeChart) this.clientTypeChart.resize();
                 if (this.activityHeatmap) this.activityHeatmap.resize();
                 if (this.domainCharts) {
                     this.domainCharts.forEach(chart => chart.resize());

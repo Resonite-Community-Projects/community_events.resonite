@@ -117,6 +117,45 @@
                 </div>
             </div>
 
+    <!-- Client Type Distribution Chart -->
+    <div class="card metrics-card">
+        <div class="card-content">
+            <p class="title has-text-centered">Client Types Distribution</p>
+            <div class="content">
+                <div x-show="loadingClientTypes" class="has-text-centered py-5">
+                    <p class="is-size-5">Loading client types...</p>
+                </div>
+                <div x-show="!loadingClientTypes && clientTypeData" class="columns">
+                    <div class="column is-5">
+                        <div id="client-type-chart-container" class="chart-container pie-chart-container">
+                            <!-- Client Type Distribution Chart will be inserted here dynamically -->
+                        </div>
+                    </div>
+                    <div class="column is-7">
+                        <table class="table is-fullwidth">
+                            <thead>
+                                <tr>
+                                    <th>Client Type</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="clientType in clientTypeData || []">
+                                    <tr>
+                                        <td x-text="clientType.client || 'Unknown'"></td>
+                                        <td x-text="clientType.count"></td>
+                                        <td x-text="getClientTypePercentage(clientType) + '%'"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Version Distribution Chart -->
     <div class="card metrics-card">
         <div class="card-content">

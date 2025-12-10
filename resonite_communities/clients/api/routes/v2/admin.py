@@ -738,6 +738,24 @@ async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_a
 
     return heatmap_data
 
+@router_v2.get("/admin/metrics/client-types")
+async def get_admin_metrics_client_types(user_auth: UserAuthModel = Depends(require_administrator_access)):
+    session = await get_current_async_session()
+
+    client_types_result = (
+        await session.execute(
+            select(Metrics.client, func.count())
+            .group_by(Metrics.client)
+        )
+    ).all()
+
+    client_types = [
+        {"client": client_type[0].value if client_type[0] else 'Unknown', "count": client_type[1]}
+        for client_type in client_types_result
+    ]
+
+    return client_types
+
 @router_v2.get("/admin/metrics/domains")
 async def get_admin_metrics_domains(user_auth: UserAuthModel = Depends(require_administrator_access)):
 
