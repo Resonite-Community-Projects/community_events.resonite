@@ -684,6 +684,8 @@ async def get_admin_metrics_daily_users(user_auth: UserAuthModel = Depends(requi
 
 @router_v2.get("/admin/metrics/client-versions")
 async def get_admin_metrics_client_versions(user_auth: UserAuthModel = Depends(require_administrator_access)):
+    today = date.today()
+    past_month = today - timedelta(days=30)
 
     session = await get_current_async_session()
 
@@ -691,6 +693,7 @@ async def get_admin_metrics_client_versions(user_auth: UserAuthModel = Depends(r
     versions_result = (
         await session.execute(
             select(Metrics.version, func.count())
+            .where(func.date(Metrics.timestamp) >= past_month)
             .group_by(Metrics.version)
         )
     ).all()
@@ -794,11 +797,15 @@ async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_a
 
 @router_v2.get("/admin/metrics/client-types")
 async def get_admin_metrics_client_types(user_auth: UserAuthModel = Depends(require_administrator_access)):
+    today = date.today()
+    past_month = today - timedelta(days=30)
+
     session = await get_current_async_session()
 
     client_types_result = (
         await session.execute(
             select(Metrics.client, func.count())
+            .where(func.date(Metrics.timestamp) >= past_month)
             .group_by(Metrics.client)
         )
     ).all()
@@ -820,13 +827,13 @@ async def get_admin_metrics_domains(user_auth: UserAuthModel = Depends(require_a
 
     session = await get_current_async_session()
 
-    # Metrics by domain and endpoint (past week)
+    # Metrics by domain and endpoint (past month)
     metrics_domains_result = (
         await session.execute(
             select(
                 Metrics.domain, Metrics.endpoint, func.count()
             ).where(
-                func.date(Metrics.timestamp) >= past_week
+                func.date(Metrics.timestamp) >= past_month
             ).group_by(
                 Metrics.domain, Metrics.endpoint
             )
