@@ -58,6 +58,9 @@ class JSONEventsCollector(EventsCollector):
                         scheduler_type=self.scheduler_type.name,
                         status=EventStatus.READY,
                         created_at_external=None,
+                        is_private='private' in community.tags,
+                        is_resonite='resonite' in community.tags,
+                        is_vrchat='vrchat' in community.tags,
                     )
             except Exception as e:
                 self.logger.error(f"Error processing community {community.name}: {str(e)}")
