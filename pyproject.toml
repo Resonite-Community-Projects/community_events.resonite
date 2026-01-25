@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "resonite_communities"
 version = "0.1.0"
-description = "Your project description here"
+description = "Service for announcing Resonite events and streams from multiple source like Discord to client like a Resonite Facet or a Web Browsers."
 authors = ["brodokk <brodokk@brodokk.space>"]
 
 [tool.poetry.dependencies]

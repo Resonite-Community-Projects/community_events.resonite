@@ -68,7 +68,7 @@ def authenticated_request_key_builder(
         request.url.path,
         repr(sorted(request.query_params.items()))
     ]
-    
+
     # Add user-specific cache key components
     if user_auth:
         if user_auth.is_superuser:
@@ -81,7 +81,7 @@ def authenticated_request_key_builder(
             key_parts.append("authenticated")
     else:
         key_parts.append("anonymous")
-    
+
     return ":".join(key_parts)
 
 def filtered_events_key_builder(
@@ -102,7 +102,7 @@ def filtered_events_key_builder(
         version or "unknown",
         communities or "all"
     ]
-    
+
     # Add user-specific cache key components
     if user_auth:
         if user_auth.is_superuser:
@@ -115,5 +115,5 @@ def filtered_events_key_builder(
             key_parts.append("authenticated")
     else:
         key_parts.append("anonymous")
-    
+
     return ":".join(key_parts)
