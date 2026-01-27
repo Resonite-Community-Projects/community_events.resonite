@@ -98,6 +98,7 @@ async def get_filtered_events(
     user_auth: UserAuthModel = None,
     session = None,
 ):
+
     # Build cache key
     cache_key = filtered_events_key_builder(
         get_filtered_events,
@@ -107,15 +108,15 @@ async def get_filtered_events(
         communities=communities,
         user_auth=user_auth
     )
-    
+
     # Try to get from cache first (fast path)
     cached_data = await get_cached(cache_key)
     if cached_data is not None:
         return cached_data
-    
+
     # Get lock for this cache key to prevent stampede
     lock = await get_cache_lock(cache_key)
-    
+
     async with lock:
         # Double-check cache after acquiring lock (another request might have populated it)
         cached_data = await get_cached(cache_key)
