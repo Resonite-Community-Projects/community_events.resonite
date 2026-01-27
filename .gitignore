@@ -163,3 +163,4 @@ credentials.json
 GeoLite2-Country.mmdb
 backups/*
 data/*
+.envrc.d/*
