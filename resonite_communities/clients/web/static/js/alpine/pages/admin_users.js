@@ -20,10 +20,8 @@ document.addEventListener('alpine:init', () => {
                 });
 
                 if (response.ok) {
-                    const result = await response.json();
                     createNotification('Status updated successfully', 'is-success');
                 } else {
-                    const result = await response.json();
                     createNotification(`Failed to update status: ${result.detail || 'Unknown error'}`, 'is-danger');
                 }
             } catch (error) {

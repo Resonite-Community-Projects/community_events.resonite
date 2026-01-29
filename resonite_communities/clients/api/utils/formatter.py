@@ -122,7 +122,7 @@ async def get_filtered_events(
         cached_data = await get_cached(cache_key)
         if cached_data is not None:
             return cached_data
-        
+
         # Cache miss - execute the actual query
         signals = []
 
@@ -217,10 +217,12 @@ async def get_filtered_events(
                 })
             else:
                 raise HTTPException(status_code=400, detail="Unsupported version")
-        
+
+        #raise ValueError(versioned_events)
+
         # Store in cache with 5 minute TTL
         await set_cached(cache_key, versioned_events, expire=300)
-        
+
         return versioned_events
 
 def generate_events_response(

@@ -1,11 +1,12 @@
 from collections.abc import AsyncGenerator
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase, SQLAlchemyBaseOAuthAccountTableUUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship
-from sqlalchemy import Column, ForeignKey, UUID, String, JSON, Integer, Boolean
+from sqlalchemy import Column, ForeignKey, UUID, String, JSON, Integer, Boolean, DateTime
 from fastapi_users_db_sqlalchemy.access_token import (
     SQLAlchemyAccessTokenDatabase,
     SQLAlchemyBaseAccessTokenTableUUID,
@@ -14,8 +15,9 @@ from fastapi_users_db_sqlalchemy.access_token import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from resonite_communities.utils.db import get_async_session, get_session_dependency
+from resonite_communities.models.base import DatabaseMethodsMixin
 
-class BaseModel(DeclarativeBase):
+class BaseModel(DeclarativeBase, DatabaseMethodsMixin):
     pass
 
 
@@ -40,6 +42,7 @@ class User(SQLAlchemyBaseUserTableUUID, BaseModel):
     )
     is_moderator: Mapped[bool] = Column(Boolean)
     is_protected: Mapped[bool] = Column(Boolean)
+    updated_at: Mapped[datetime] = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
 class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, BaseModel):
     pass

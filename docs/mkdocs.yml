@@ -60,6 +60,7 @@ nav:
     - ClientIntegration/versioning.md
   - Developer Guide:
     - DeveloperGuide/development-guide.md
+    - DeveloperGuide/development-guidelines.md
     - DeveloperGuide/architecture.md
     - DeveloperGuide/requirements.md
     - DeveloperGuide/setup.md

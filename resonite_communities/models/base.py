@@ -16,8 +16,10 @@ from resonite_communities.utils.db import get_current_async_session
 logger = get_logger('BaseModel')
 
 
-class BaseModel(SQLModel):
-    insert_only_fields: ClassVar[list[str]]= ['created_at']
+class DatabaseMethodsMixin:
+    """Mixin providing custom database methods for SQLAlchemy models"""
+
+    insert_only_fields: ClassVar[list[str]] = ['created_at']
     update_only_fields: ClassVar[list[str]] = ['updated_at']
 
     def __str__(self):
@@ -203,7 +205,7 @@ class BaseModel(SQLModel):
             instances = []
             query = select(cls).where(filters)
             result = await session.execute(query)
-            rows = result.all()
+            rows = result.unique().all()
 
             # Update all instances in batch
             for row in rows:
@@ -293,3 +295,7 @@ class BaseModel(SQLModel):
         except Exception as e:
             logger.error(f"Error in delete operation: {e}")
             raise
+
+
+class BaseModel(DatabaseMethodsMixin, SQLModel):
+    pass
