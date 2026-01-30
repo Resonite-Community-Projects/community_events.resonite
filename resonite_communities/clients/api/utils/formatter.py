@@ -95,6 +95,7 @@ async def get_filtered_events(
     host: str,
     version: str,
     communities: str,
+    languages: str,
     user_auth: UserAuthModel = None,
     session = None,
 ):
@@ -106,6 +107,7 @@ async def get_filtered_events(
         host=host,
         version=version,
         communities=communities,
+        languages=languages,
         user_auth=user_auth
     )
 
@@ -178,7 +180,23 @@ async def get_filtered_events(
             (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
             else_=Event.start_time  # Otherwise, fallback to start_time
         ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
-        custom_filter=and_(communities_filter, visibility_filter, platform_filter, status_filter, time_filter)
+
+        # Determine the languages
+        if languages:
+            language_filter = or_(
+                *[Event.tags.ilike(f"%lang:{language}%") for language in languages.split(',')]
+            )
+        else:
+            language_filter = True
+
+        custom_filter=and_(
+            communities_filter,
+            visibility_filter,
+            platform_filter,
+            status_filter,
+            time_filter,
+            language_filter
+        )
 
         # TODO: Instead of extend the signals variable, the Event and Stream find command should be one
         # SQL commend, optimization to order elements by date

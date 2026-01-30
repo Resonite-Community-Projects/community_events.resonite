@@ -91,6 +91,7 @@ def filtered_events_key_builder(
     host: str = None,
     version: str = None,
     communities: str = None,
+    languages: str = None,
     user_auth = None,
     **kwargs,
 ):
@@ -100,7 +101,8 @@ def filtered_events_key_builder(
         func.__name__,
         host or "unknown",
         version or "unknown",
-        communities or "all"
+        communities or "all",
+        languages.replace(',', '_') or "all",
     ]
 
     # Add user-specific cache key components

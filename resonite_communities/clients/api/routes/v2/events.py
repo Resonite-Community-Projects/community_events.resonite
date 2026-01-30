@@ -12,11 +12,12 @@ async def get_events_v2(
     request: Request,
     format_type: FormatType = None,
     communities: str = "",
+    languages: str = "",
     user_auth: UserAuthModel = Depends(get_user_auth_from_header_or_cookie)
 ):
     session = await get_current_async_session()
     return generate_events_response(
         version="v2",
         format_type=set_default_format(version="v2", format_type=format_type),
-        events=await get_filtered_events(request.url.hostname, "v2", communities, user_auth, session=session)
+        events=await get_filtered_events(request.url.hostname, "v2", communities, languages, user_auth, session=session)
     )

@@ -5,13 +5,13 @@ from resonite_communities.utils.db import get_current_async_session
 
 
 @router_v1.get("/events")
-async def get_events_v1(request: Request, format_type: FormatType = None, communities: str = ""):
+async def get_events_v1(request: Request, format_type: FormatType = None, communities: str = "", languages: str = ""):
     format_type = set_default_format(version="v1", format_type=format_type)
     session = await get_current_async_session()
     return generate_events_response(
         version="v1",
         format_type=set_default_format(version="v1", format_type=format_type),
-        events=await get_filtered_events(request.url.hostname, "v1", communities, session=session),
+        events=await get_filtered_events(request.url.hostname, "v1", communities, languages, session=session),
     )
 
 
