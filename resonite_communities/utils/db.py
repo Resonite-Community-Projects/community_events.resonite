@@ -13,6 +13,7 @@ engine = create_async_engine(
     pool_timeout=config_manager.infrastructure_config.DB_POOL_TIMEOUT,
     pool_recycle=config_manager.infrastructure_config.DB_POOL_RECYCLE,
     pool_pre_ping=config_manager.infrastructure_config.DB_POOL_PRE_PING,
+    connect_args={"server_settings": {"application_name": config_manager.infrastructure_config.DB_APPLICATION_NAME}},
 )
 
 async_session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)

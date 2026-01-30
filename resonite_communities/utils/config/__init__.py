@@ -2,6 +2,7 @@ import toml
 from datetime import datetime
 from easydict import EasyDict as edict
 import os
+import sys
 import json
 import multiprocessing
 from sqlmodel import select
@@ -9,14 +10,35 @@ from typing import Any, Dict, List
 from .models import AppConfig, MonitoredDomain, TwitchConfig
 from resonite_communities.utils.logger import get_logger
 
+def guess_service_name() -> str:
+    """ Guess service name from environment and process context
+
+    Returns:
+        str: The service name
+    """
+    service_name = (
+        os.path.basename(sys.argv[0]) or
+        os.get_env('HOSTNAME', '') or
+        os.getenv('POD_NAME', '')
+    )
+
+    app_name = 'app'
+    if 'signals_manager' in service_name:
+        app_name = 'signals-manager'
+    if 'api_client' in service_name:
+        app_name = 'api-client'
+    if 'web_client' in service_name:
+        app_name = 'web-client'
+
+    return f'resonite-communities-{app_name}'
+
 class ConfigManager:
+
     def __init__(self):
         self.infrastructure_config = self._load_infrastructure_config()
         self.app_config = self._load_db_config
         self.config = self._build_legacy_config
         self.logger = get_logger(__name__)
-
-
 
     def _load_infrastructure_config(self):
         optional_vars = [
@@ -30,6 +52,7 @@ class ConfigManager:
             'API_WORKERS',
             'MAX_CONCURRENT_REQUESTS',
             'CACHE_URL',
+            'DB_APPLICATION_NAME',
         ]
         required_vars = [
             'PUBLIC_DOMAIN',
@@ -82,14 +105,15 @@ class ConfigManager:
 
         config['PUBLIC_DOMAIN'] = config['PUBLIC_DOMAIN'].split(',')
         config['PRIVATE_DOMAIN'] = config['PRIVATE_DOMAIN'].split(',') if config.get('PRIVATE_DOMAIN') else []
+        config['DB_APPLICATION_NAME'] = config['DB_APPLICATION_NAME'] if config.get('DB_APPLICATION_NAME') else guess_service_name()
 
         return edict(config)
 
     async def _load_db_config(self, session=None):
         from resonite_communities.utils.db import get_async_session
-        
+
         config = self.infrastructure_config.copy()
-        
+
         if session is not None:
             # Use provided session directly
             stmt = select(AppConfig).execution_options(populate_existing=True)
@@ -187,7 +211,7 @@ class ConfigManager:
 
     async def load(self, model, session=None):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             stmt = select(model)
             result = await session.execute(stmt)
@@ -200,7 +224,7 @@ class ConfigManager:
 
     async def update_app_config(self, session=None, **kwargs):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             stmt = select(AppConfig).execution_options(populate_existing=True)
             result = await session.execute(stmt)
@@ -245,7 +269,7 @@ class ConfigManager:
 
     async def update_monitored_domain(self, domain_id: int, session=None, **kwargs):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id).execution_options(populate_existing=True)
             result = await session.execute(stmt)
@@ -274,7 +298,7 @@ class ConfigManager:
 
     async def add_monitored_domain(self, url: str, status: str, session=None):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             new_domain = MonitoredDomain(url=url, status=status)
             session.add(new_domain)
@@ -289,7 +313,7 @@ class ConfigManager:
 
     async def delete_monitored_domain(self, domain_id: int, session=None):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             stmt = select(MonitoredDomain).where(MonitoredDomain.id == domain_id).execution_options(populate_existing=True)
             result = await session.execute(stmt)
@@ -310,7 +334,7 @@ class ConfigManager:
 
     async def update_twitch_config(self, session=None, **kwargs):
         from resonite_communities.utils.db import get_async_session
-        
+
         if session is not None:
             stmt = select(TwitchConfig).execution_options(populate_existing=True)
             result = await session.execute(stmt)
