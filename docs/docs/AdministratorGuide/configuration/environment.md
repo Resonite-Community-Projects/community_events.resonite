@@ -42,6 +42,7 @@ Some of these variables have default values and can be customized as needed.
 | `DB_POOL_TIMEOUT` | `int` | Database connection timeout in seconds (default: 30) |
 | `DB_POOL_RECYCLE` | `int` | Database connection recycle time in seconds (default: 1800) |
 | `DB_POOL_PRE_PING` | `bool` | Whether to pre-ping database connections (default: true) |
+| `DB_APPLICATION_NAME` | `str` | Name of the application in the database (default: auto detected but always start with `resonite-communities-` and end with either `api-client`, `web-client`, `signals-manager` or default to `app`)  |
 
 ### Application Workers
 
