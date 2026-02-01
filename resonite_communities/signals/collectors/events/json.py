@@ -1,3 +1,4 @@
+import re
 from dateutil.parser import parse
 import requests
 import traceback
@@ -41,14 +42,31 @@ class JSONEventsCollector(EventsCollector):
                     raise ValueError(f"{response.status_code} from server: {response.text}")
 
                 for event in response.json():
+                    tags = {tag for tag in community.tags.split(',') if tag != 'public' and tag != 'private'}
+
+                    # Extract metadata from description
+                    pattern = r'^\+(.*?):(.*)\n?'
+                    matches = dict(re.findall(pattern, event['description'], re.MULTILINE))
+                    if 'language' in matches:
+                        langs = [f'lang:{tag.strip()}' for tag in matches['language'].split(",")]
+                        for lang in langs:
+                            tags.add(lang)
+                    if 'tags' in matches:
+                        tags.add(matches['tags'].rstrip())
+                    description = re.sub(pattern, '', event['description'], flags=re.MULTILINE)
+
+                    # Guess language from community
+                    if 'lang' not in tags and community.languages:
+                        tags.add(f"lang:{community.languages.split(',')[0]}")
+
                     await self.model.upsert(
                         _filter_field='external_id',
                         _filter_value=event['event_id'],
                         name=event['name'],
-                        description=event['description'],
+                        description=description,
                         session_image=None,
                         location=event['location'],
-                        location_web_session_url=self.get_location_web_session_url(event['description']),
+                        location_web_session_url=self.get_location_web_session_url(description),
                         location_session_url=event['session_url'],
                         start_time=parse(event['start_time']),
                         end_time=parse(event['end_time']),

@@ -38,7 +38,9 @@ class CommunityEventsCollector(EventsCollector):
         for community in self.communities:
             try:
                 self.logger.info(f'Collecting signals for {community.name}')
-                #self.logger.info(f"Processing events for {community.name} from {community.config}")
+                if not community.config.get('community_configurator'):
+                    self.logger.error(f"Invalid config for community '{community.name}': {community.config}")
+                    continue
                 community_configurator = (await Community.find(id=community.config.community_configurator))[0]
 
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
@@ -61,7 +63,7 @@ class CommunityEventsCollector(EventsCollector):
                         start_time=parse(event['start_time']),
                         end_time=parse(event['end_time']) if event['end_time'] else None,
                         community_id=community.id,
-                        tags='resonite'+ (',' + community.tags if community.tags else ''),
+                        tags=event['tags'],
                         external_id=event['id'],
                         scheduler_type=self.scheduler_type.name,
                         status=event['status'],

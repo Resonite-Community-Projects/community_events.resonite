@@ -326,6 +326,12 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 tags.add(matches['tags'].rstrip())
             description = re.sub(pattern, '', event.description, flags=re.MULTILINE)
 
+            # Guess language from community
+            if 'lang' not in tags and community.languages:
+                tags.add(f"lang:{community.languages.split(',')[0]}")
+
+            self.logger.error(tags)
+
             await self.model.upsert(
                 _filter_field='external_id',
                 _filter_value=str(event.id),

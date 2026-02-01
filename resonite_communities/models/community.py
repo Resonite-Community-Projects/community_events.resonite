@@ -39,6 +39,7 @@ class Community(BaseModel, table=True):
     url: str | None = Field()
     members_count: int | None = Field(default=0)
     tags: str | None = Field()
+    languages: str | None = Field()
     config: dict | None = Field(default={}, sa_column=Column(EasyDictType, default=easydict.EasyDict()))
     events: Mapped[list["Event"]] = Relationship(
         back_populates="community",

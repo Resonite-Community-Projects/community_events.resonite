@@ -47,7 +47,7 @@ async def get_communities(
             "icon": community.logo,
             "external_id": community.external_id,
             "platform": community.platform,
-            "public": True if 'public' in community.tags else False,
+            "public": True if 'public' in (community.tags or []) else False,
             "configured": community.configured,
         })
     return communities_formatted
@@ -68,6 +68,8 @@ async def get_community(community_id: str):
         "monitored": community.monitored,
         "members_count": community.members_count,
         "url": community.url,
+        "tags": community.tags,
+        "languages": community.languages,
         "external_id": community.external_id,
         "platform": community.platform,
         "public": True if 'public' in community.tags else False,

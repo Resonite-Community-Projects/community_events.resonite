@@ -50,6 +50,49 @@ document.addEventListener('alpine:init', () => {
             let content = null;
             let saveFunc = null;
 
+            const validateRequiredFields = () => {
+                let isValid = true;
+
+                const requiredFields = ['name', 'external_id', 'platform', 'languages'];
+
+                const platformInput = document.querySelector('select[name="platform"]');
+                const platformValue = platformInput ? platformInput.value : '';
+
+                requiredFields.forEach(fieldName => {
+
+                    if (fieldName === 'languages' && platformValue == 'JSON_COMMUNITY_EVENT') {
+                        return;
+                    }
+
+                    const input = document.querySelector(`input[name="${fieldName}"], textarea[name="${fieldName}"], select[name="${fieldName}"]`);
+
+                    if (!input) {
+                        return;
+                    }
+
+                    if (!input.value.trim()) {
+                        input.required = true;
+                        let errorEl = document.querySelector(`.${fieldName}-error`);
+                        if (!errorEl) {
+                            errorEl = document.createElement('p');
+                            errorEl.className = `help ${fieldName}-error`;
+                            errorEl.style.color = 'red';
+                            input.parentElement.appendChild(errorEl);
+                        }
+                        errorEl.textContent = `Field is required`;
+                        isValid = false;
+                    } else {
+                        const errorEl = document.querySelector(`.${fieldName}-error`);
+                        if (errorEl) {
+                            input.required = false;
+                            errorEl.textContent = '';
+                        }
+                    }
+                });
+
+                return isValid;
+            };
+
             const performBackendAction = async (method, body = null) => {
                 try {
                     const response = await fetch(`/v2/admin/communities/${communityId || ''}`, {
@@ -102,6 +145,10 @@ document.addEventListener('alpine:init', () => {
                     actionButton = 'Create';
                     content = await getCommunityForm(null, communityType);
                     saveFunc = async () => {
+                        if (!validateRequiredFields()) {
+                            return;
+                        }
+
                         const body = serializeFormData();
                         if (!body) return;
                         await performBackendAction('POST', body);
@@ -150,6 +197,10 @@ document.addEventListener('alpine:init', () => {
                     actionButton = 'Save';
                     content = await getCommunityForm(communityId, communityType);
                     saveFunc = async () => {
+                        if (!validateRequiredFields()) {
+                            return;
+                        }
+
                         const body = serializeFormData();
                         if (!body) return;
                         await performBackendAction('PATCH', body);
@@ -268,6 +319,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
     const platformOnRemoteValue = communityData.platform_on_remote || '';
     const urlValue = communityData.url || '';
     const tagsValue = communityData.tags || '';
+    const languagesValue = communityData.languages || '';
     const descriptionValue = communityData.description || '';
     const isCustomDescription = communityData.is_custom_description || '';
     const privateRoleIdValue = communityData.private_role_id || '';
@@ -350,11 +402,11 @@ async function getCommunityForm(communityId = null, communityType = null) {
                                         <label class="box cursor-pointer" style="display: block; ${alreadyLocal ? 'background-color: #f5f5f5; color: #999;' : ''}">
                                             <div class="columns is-vcentered">
                                                 <div class="column py-0 is-1">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        name="selected_community_external_ids" 
-                                                        value="${c.id}" 
-                                                        class="mr-2" 
+                                                    <input
+                                                        type="checkbox"
+                                                        name="selected_community_external_ids"
+                                                        value="${c.id}"
+                                                        class="mr-2"
                                                         ${alreadyLocal ? 'disabled' : ''}
                                                     >
                                                 </div>
@@ -405,6 +457,51 @@ async function getCommunityForm(communityId = null, communityType = null) {
         <p class="help">This is the default description set from Discord, any update to this description can be reset later.</p>
         `
     }
+    descriptionField = `
+    <div class="field">
+        <label class="label">Description</label>
+        <div class="control">
+            <textarea name="description" class="textarea" placeholder="Description">${descriptionValue}</textarea>
+        </div>
+        ${descriptionHelp}
+    </div>
+    `
+
+    tagsField = `
+    <div class="field">
+        <label class="label">Tags</label>
+        <div class="control">
+            <input name="tags" class="input" type="text" value="${tagsValue}" placeholder="Tags (comma-separated)">
+        </div>
+        <p class="help">Tags are separated with a comma.</p>
+    </div>
+    `
+
+    languagesField = `
+    <div class="field">
+        <label class="label">Languages</label>
+        <div class="control">
+            <input name="languages" class="input" type="text" value="${languagesValue}" placeholder="Languages (comma-separated)">
+        </div>
+        <p class="help">Code are in <a href='https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes'>ISO 639-1 Code</a> format, separated with a coma. The language on the most left is used as default for events without language set.</p>
+    </div>
+    `
+
+    urlField = `
+    <div class="field">
+        <label class="label">URL</label>
+        <div class="control">
+            <input name="url" class="input" type="text" value="${urlValue}" placeholder="Community URL">
+        </div>
+    </div>
+    `
+
+    if (platformValue == 'JSON_COMMUNITY_EVENT') {
+        urlField = ``
+        tagsField = ``
+        languagesField = ``
+        descriptionField = ``
+    }
 
     return `
         <div class="field">
@@ -429,26 +526,10 @@ async function getCommunityForm(communityId = null, communityType = null) {
                 </div>
             </div>
         </div>
-        <div class="field">
-            <label class="label">URL</label>
-            <div class="control">
-                <input name="url" class="input" type="text" value="${urlValue}" placeholder="Community URL">
-            </div>
-        </div>
-        <div class="field">
-            <label class="label">Tags</label>
-            <div class="control">
-                <input name="tags" class="input" type="text" value="${tagsValue}" placeholder="Tags (comma-separated)">
-            </div>
-            <p class="help">Tags are separated with a comma.</p>
-        </div>
-        <div class="field">
-            <label class="label">Description</label>
-            <div class="control">
-                <textarea name="description" class="textarea" placeholder="Description">${descriptionValue}</textarea>
-            </div>
-            ${descriptionHelp}
-        </div>
+        ${urlField}
+        ${tagsField}
+        ${languagesField}
+        ${descriptionField}
         ${formCommunityConfiguration}
     `;
 }
@@ -485,6 +566,7 @@ async function getCommunityInfo(communityId = null, communityType = null) {
         <p><strong>Platform:</strong> ${communityData.platform || 'N/A'}</p>
         <p><strong>URL:</strong> <a href="${communityData.url || '#'}" target="_blank">${communityData.url || 'N/A'}</a></p>
         <p><strong>Tags:</strong> ${communityData.tags || 'N/A'}</p>
+        <p><strong>Languages:</strong> ${communityData.languages || 'N/A'}</p>
         <p><strong>Description:</strong> ${communityData.description || 'N/A'}</p>
         ${formCommunityConfiguration}
     `;

@@ -315,6 +315,7 @@ async def get_community_details(community_id: UUID, user_auth: UserAuthModel = D
         "platform_on_remote": community.platform_on_remote,
         "url": community.url,
         "tags": community.tags,
+        "languages": community.languages,
         "description": community.default_description if not community.custom_description else community.custom_description,
         "is_custom_description": bool(community.custom_description),
         "private_role_id": community.config.get("private_role_id", None),
@@ -370,6 +371,7 @@ async def get_admin_communities_list(
             "platform": community.platform.value,
             "url": community.url,
             "tags": community.tags,
+            "languages": community.languages,
             "description": community.custom_description if community.custom_description else community.default_description,
             "is_custom_description": bool(community.custom_description),
             "logo": community.logo,
@@ -384,6 +386,22 @@ async def get_admin_communities_list(
 
 @router_v2.post("/admin/communities/")
 async def create_community(data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+
+    # check mandatory fields
+    # TODO: This kind of test should be done with typing or something like this
+    errors = []
+    if not data.name:
+        errors.append("Name is mandatory.")
+    if not data.external_id:
+        errors.append("External id is mandatory.")
+    if not data.platform:
+        errors.append("Platform is mandatory.")
+    if (data.platform or '').upper().replace(' ', '_') != 'JSON_COMMUNITY_EVENT' and not data.languages:
+        errors.append("At least one language is mandatory.")
+
+    if errors:
+        raise HTTPException(status_code=422, detail="".join(errors))
+
     try:
         new_community = await Community().add(
             name=data.name,
@@ -393,6 +411,7 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
             monitored=False,
             configured=True,
             tags=data.tags,
+            languages=data.languages,
             custom_description=data.description,
             config={
                 "private_role_id": data.private_role_id,
@@ -410,6 +429,22 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
 
 @router_v2.patch("/admin/communities/{community_id}")
 async def update_community(community_id: UUID, data: CommunityRequest, user_auth: UserAuthModel = Depends(require_moderator_access)):
+
+    # check mandatory fields
+    # TODO: This kind of test should be done with typing or something like this
+    errors = []
+    if not data.name:
+        errors.append("Name is mandatory.")
+    if not data.external_id:
+        errors.append("External id is mandatory.")
+    if not data.platform:
+        errors.append("Platform is mandatory.")
+    if (data.platform or '').upper().replace(' ', '_') != 'JSON_COMMUNITY_EVENT' and not data.languages:
+        errors.append("At least one language is mandatory.")
+
+    if errors:
+        raise HTTPException(status_code=422, detail="".join(errors))
+
     if data.platform == 'JSON Community Event' and data.selected_community_external_ids:
         for selected_community_id, selected_community_to_add in data.selected_community_external_ids.items():
             if selected_community_to_add:
@@ -421,7 +456,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                     response.raise_for_status()
                     logger.info(f"Successfully fetched community {selected_community_id} from remote server")
                     response_data = response.json()
-
+                    logger.error(response_data)
                     await Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[response_data['external_id'], CommunityPlatform.DISCORD],
@@ -433,11 +468,13 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                         configured=True,
                         logo=response_data['icon'],
                         default_description=response_data['description'],
-                        tags="public" if response_data['public'] else "private",
+                        tags=response_data['tags'],
+                        languages=response_data['languages'],
                         config={
-                            "community_configurator": community_id
+                            "community_configurator": str(community_id)
                         }
                     )
+                    logger.error('dfdfdf')
                 except RequestException as e:
                     logger.error(f"Failed to fetch community {selected_community_id}: {str(e)}")
                     raise HTTPException(
@@ -459,6 +496,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
             platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
             url=data.url,
             tags=data.tags,
+            languages=data.languages,
             custom_description=data.description if not data.resetDescription else None,
             config={
                 "private_role_id": data.private_role_id,

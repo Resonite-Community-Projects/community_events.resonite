@@ -141,7 +141,6 @@
     <div x-show="activeTab === 'events'" style="width: 100%;">
         <button class="button is-success" @click="handleCommunityAction('add', null, 'event')">Add event community manually</button>
         <button class="button is-success" @click="handleCommunityAction('auto_add_discord', null, 'event')">Add event community auto</button>
-        {# Use x-for to loop through the communities data #}
         <div class="columns is-multiline">
             <template x-for="community in communities" :key="community.id">
                 <div class="column is-one-fifth">
@@ -210,6 +209,15 @@
                                             </a>
                                         </template>
                                     </div>
+                                    <div class="indicator-slot">
+                                        <template x-if="community.languages">
+                                            <div class="event-languages-indicator">
+                                                <template x-for="language in community.languages.split(',')">
+                                                    <span class='tag is-info m-1'x-text="language"></span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -235,7 +243,7 @@
     <div x-show="activeTab === 'streams'" style="width: 100%;">
         <button class="button is-success" @click="handleCommunityAction('add', null, 'stream')">Add stream community</button>
         <div class="columns is-multiline">
-             <template x-for="community in communities" :key="community.id">
+            <template x-for="community in communities" :key="community.id">
                 <div class="column is-one-fifth">
                     <div class="card">
                         <div class="card-image has-text-centered pt-4">
