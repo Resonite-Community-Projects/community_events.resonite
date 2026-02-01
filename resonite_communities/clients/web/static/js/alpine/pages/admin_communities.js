@@ -35,8 +35,6 @@ document.addEventListener('alpine:init', () => {
                 }
                 const data = await response.json();
                 this.communities = data;
-                console.log(this.communities)
-                console.log(`Reloaded ${type} community list data`);
             } catch (error) {
                 console.error(`Error reloading community list:`, error);
                 createNotification('Failed to reload community list', 'is-danger');
@@ -109,7 +107,6 @@ document.addEventListener('alpine:init', () => {
                         throw new Error(`Failed to ${action} community: ${response.statusText}`);
                     }
 
-                    console.log(`${action} action successful`);
                     createNotification('Community update successfully', 'is-success');
                     this.reloadCommunityList();
                 } catch (error) {
@@ -143,7 +140,7 @@ document.addEventListener('alpine:init', () => {
                 case 'add':
                     title = `Add ${communityType} community`;
                     actionButton = 'Create';
-                    content = await getCommunityForm(null, communityType);
+                    content = await getCommunityForm('add', null, communityType);
                     saveFunc = async () => {
                         if (!validateRequiredFields()) {
                             return;
@@ -195,7 +192,7 @@ document.addEventListener('alpine:init', () => {
                 case 'edit':
                     title = `Edit ${communityType} Community`;
                     actionButton = 'Save';
-                    content = await getCommunityForm(communityId, communityType);
+                    content = await getCommunityForm('edit', communityId, communityType);
                     saveFunc = async () => {
                         if (!validateRequiredFields()) {
                             return;
@@ -297,9 +294,14 @@ async function getListDiscordCommunities() {
     return formHTML;
 }
 
-async function getCommunityForm(communityId = null, communityType = null) {
+async function getCommunityForm(action, communityId = null, communityType = null) {
     let communityData = {};
-    if (communityId) {
+
+    if (action == 'edit') {
+        if (!communityId) {
+            return "Error: can't load form. No community id."
+        }
+
         try {
             const response = await fetch(`/v2/admin/communities/${communityId}`, {
                 credentials: 'include'
@@ -310,8 +312,35 @@ async function getCommunityForm(communityId = null, communityType = null) {
             communityData = await response.json();
         } catch (error) {
             console.error("Error fetching community data:", error);
+            return "Error: can't load form. Failed to fetch community data."
+        }
+
+        if (!communityData) {
+            return "Error: can't load form. No community data."
         }
     }
+
+    let communityRemoteListings = ''
+
+    if (communityData.platform_on_remote) {
+        try {
+            const response = await fetch(`/v2/admin/communities?type=remote`, {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch any JSON_COMMUNITY_EVENT communities : ${response.statusText}`);
+            }
+            communityRemoteListings = await response.json();
+        } catch (error) {
+            console.error("Error fetching community data:", error);
+            return "Error: can't load form. Failed to fetch any JSON_COMMUNITY_EVENT communities."
+        }
+
+        if (!communityRemoteListings) {
+            return "Error: can't load form. No remote communities data."
+        }
+    }
+
 
     const nameValue = communityData.name || '';
     const platformIdValue = communityData.external_id || '';
@@ -325,6 +354,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
     const privateRoleIdValue = communityData.private_role_id || '';
     const privateChannelIdValue = communityData.private_channel_id || '';
     const eventsURLValue = communityData.events_url || '';
+    const communityConfigurator = communityData.community_configurator || '';
 
     let formOptions = '';
     let formCommunityConfiguration = '';
@@ -372,7 +402,6 @@ async function getCommunityForm(communityId = null, communityType = null) {
             } catch (error) {
                 console.error("Error fetching community data:", error);
             }
-            console.log(local_communities)
             try {
                 const remote_response = await fetch(`${eventsURLValue.replace(/\/+$/, '')}/v2/communities`);
                 if (!remote_response.ok) {
@@ -496,6 +525,31 @@ async function getCommunityForm(communityId = null, communityType = null) {
     </div>
     `
 
+    let communityRemoteListingsField = ''
+    let communityRemoteListingsFormOptions = ''
+
+    if (communityRemoteListings) {
+        communityRemoteListings.forEach(communityRemote => {
+            communityRemoteListingsFormOptions += `
+            <option ${communityConfigurator === communityRemote.id ? 'selected' : ''} value='${communityRemote.id}'>${communityRemote.name}</option>
+            `
+            }
+        )
+
+        communityRemoteListingsField = `
+        <div class="field">
+            <label class="label">Community Remote Listing</label>
+            <div class="control">
+                <div class="select">
+                    <select name="community_configurator">
+                        ${communityRemoteListingsFormOptions}
+                    </select>
+                </div>
+            </div>
+        </div>
+        `
+    }
+
     if (platformValue == 'JSON_COMMUNITY_EVENT') {
         urlField = ``
         tagsField = ``
@@ -526,6 +580,7 @@ async function getCommunityForm(communityId = null, communityType = null) {
                 </div>
             </div>
         </div>
+        ${communityRemoteListingsField}
         ${urlField}
         ${tagsField}
         ${languagesField}

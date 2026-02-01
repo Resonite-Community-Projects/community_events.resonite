@@ -321,6 +321,7 @@ async def get_community_details(community_id: UUID, user_auth: UserAuthModel = D
         "private_role_id": community.config.get("private_role_id", None),
         "private_channel_id": community.config.get("private_channel_id", None),
         "events_url": community.config.get("events_url", None),
+        "community_configurator": community.config.get("community_configurator", None),
     }
 
 
@@ -336,6 +337,8 @@ async def get_admin_communities_list(
         platforms = events_platforms
     elif type == 'stream':
         platforms = streams_platforms
+    elif type == 'remote':
+        platforms = [CommunityPlatform.JSON_COMMUNITY_EVENT]
     else:
         raise HTTPException(status_code=400, detail="Invalid community type")
 
@@ -501,7 +504,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
             config={
                 "private_role_id": data.private_role_id,
                 "private_channel_id": data.private_channel_id,
-                "events_url": data.events_url,
+                "community_configurator": data.community_configurator,
             },
         )
     except SQLAlchemyError as e:
