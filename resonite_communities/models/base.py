@@ -5,7 +5,7 @@ from typing import Optional, Any
 
 from sqlalchemy import select, inspect, desc, asc, ClauseElement
 from sqlalchemy.dialects.postgresql import insert as dialects_insert
-from sqlalchemy.orm import RelationshipProperty, joinedload
+from sqlalchemy.orm import RelationshipProperty, selectinload
 from sqlmodel import SQLModel
 
 
@@ -162,7 +162,7 @@ class DatabaseMethodsMixin:
             # Include other model
             for rel_name, rel_attr in inspect(cls).relationships.items():
                 if isinstance(rel_attr, RelationshipProperty):
-                    query = query.options(joinedload(rel_attr))
+                    query = query.options(selectinload(rel_attr))
 
             query = cls._apply_simple_filter(query, filters)
             query = cls._apply_operator_filter(query, filters)
