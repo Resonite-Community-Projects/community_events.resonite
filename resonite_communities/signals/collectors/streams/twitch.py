@@ -31,6 +31,8 @@ class TwitchStreamsCollector(StreamsCollector):
             except ValueError as exc:
                 self.logger.error(exc)
                 continue
+            if not 'followers' in broadcaster['twitch'] or not 'profile_image_url' in broadcaster['twitch']:
+                continue
             await Community.upsert(
                 _filter_field=['external_id', 'platform'],
                 _filter_value=[streamer.external_id, CommunityPlatform.TWITCH],
