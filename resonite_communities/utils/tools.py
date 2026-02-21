@@ -31,7 +31,7 @@ class TwitchClient:
     def _parse_error(self, response):
         try:
             dict_error = response.json()
-            if 'error' not in dict_error.keys() or 'message' not in dict_error.key():
+            if 'error' not in dict_error.keys() or 'message' not in dict_error.keys():
                 return f"{response.status_code} - {response.text}"
             return f"{response.status_code} - {dict_error['error']} - {dict_error['message']}"
         except Exception:
