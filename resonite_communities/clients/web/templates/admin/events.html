@@ -49,6 +49,14 @@
         </div>
     </div>
 
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-4">
+                <span class="tag is-info is-light"><span class="icon"><i class="fa-solid fa-circle-info"></i></span>Only event starting now and later are visible in this list.</span>
+            </div>
+        </div>
+    </div>
+
     <table class="table is-fullwidth">
         <thead>
             <tr>
@@ -133,6 +141,24 @@
             </template>
         </tbody>
     </table>
+
+    <template x-if="events.length === 0">
+        <section class="section">
+            <div class="container">
+                <div class="columns is-centered">
+                    <div class="column is-4">
+                        <div class="card" style="border: 1px solid #ccc;">
+                            <div class="card-content">
+                                <p class="content">
+                                No events available for this community and filter.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
 
     <div class="modal" x-show="isOpen" :class="{ 'is-active': isOpen }" x-cloak>
         <div class="modal-background" @click="closeModal()"></div>
