@@ -265,7 +265,33 @@ async function getListDiscordCommunities() {
 
 
             <div class="">
-                ${communities.map(c => `
+                ${communities.map(c => {
+
+                    let updateAtText = '--';
+                    let updateAtBgColor = '#EDE9FE';
+                    let updateAtFgColor = '#5B21B6';
+
+
+                    if (c.updated_at) {
+                        updateAtDate = new Date(c.updated_at);
+                        updateAtText = updateAtDate.toISOString().split('T')[0];
+
+                        const nowDate = new Date();
+                        const diffDays = (nowDate - updateAtDate) / (1000 * 60 * 60 * 24);
+
+                        if (diffDays < 7) {
+                            updateAtBgColor = '#DCFCE7';
+                            updateAtFgColor = '#166534';
+                        } else if (diffDays < 15) {
+                            updateAtBgColor = '#FEF3C7';
+                            updateAtFgColor = '#62400E';
+                        } else {
+                            updateAtBgColor = '#FEE2E2';
+                            updateAtFgColor = '#991B1B';
+                        }
+                    }
+
+                    return `
                     <label class="box cursor-pointer" style="display: block">
                         <div class="columns is-vcentered">
                             <div class="column py-0 is-1">
@@ -281,13 +307,17 @@ async function getListDiscordCommunities() {
                                             <strong>${c.name}</strong><br>
                                             <span class="has-text-grey">${c.default_description || 'No description available'}</span><br>
                                             <small><strong>ID:</strong> ${c.external_id}</small>
+                                            <div>
+                                                <span class="tag" style="background-color: #DBEAFE; color: #1E3A8A;">First seen: ${c.created_at ? c.created_at.split('T')[0] : '--'}</span><span class="tag" style="background-color: ${updateAtBgColor}; color: ${updateAtFgColor}">Last seen: ${updateAtText}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </label>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         </form>
     `;
