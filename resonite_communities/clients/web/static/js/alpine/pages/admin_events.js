@@ -3,11 +3,13 @@ document.addEventListener('alpine:init', () => {
         events: [],
         selectedCommunity: '',
         selectedPlatformFilter: '',
+        selectedDateFilter: '',
 
         init() {
             const urlParams = new URLSearchParams(window.location.search);
             const communityId = urlParams.get('community_id');
             const platformFilter = urlParams.get('platform_filter');
+            const start_date = urlParams.get('start_date');
 
             if (communityId) {
                 this.selectedCommunity = communityId;
@@ -15,13 +17,19 @@ document.addEventListener('alpine:init', () => {
             if (platformFilter) {
                 this.selectedPlatformFilter = platformFilter;
             }
+            if (start_date) {
+                this.selectedDateFilter = start_date;
+            } else {
+                this.selectedDateFilter = new Date().toISOString().split('T')[0];
+            }
 
-            this.loadEvents(this.selectedCommunity, this.selectedPlatformFilter, false);
+            this.loadEvents(this.selectedCommunity, this.selectedPlatformFilter, this.selectedDateFilter, false);
         },
 
-        async loadEvents(communityId = '', platformFilter = '', changeURL = true) {
+        async loadEvents(communityId = '', platformFilter = '', dateFilter = '', changeURL = true) {
             this.selectedCommunity = communityId;
             this.selectedPlatformFilter = platformFilter;
+            this.selectedDateFilter = dateFilter;
 
             let url = '/v2/admin/events';
             const params = new URLSearchParams();
@@ -31,6 +39,9 @@ document.addEventListener('alpine:init', () => {
             }
             if (this.selectedPlatformFilter) {
                 params.append('platform_filter', this.selectedPlatformFilter);
+            }
+            if (this.selectedDateFilter) {
+                params.append('start_date', this.selectedDateFilter);
             }
 
             if (params) {

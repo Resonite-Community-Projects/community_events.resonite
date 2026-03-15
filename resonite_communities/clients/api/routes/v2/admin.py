@@ -111,16 +111,25 @@ async def get_admin_events(
     request: Request,
     community_id: Optional[str] = Query(None, description="Filter events by community ID"),
     platform_filter: Optional[str] = Query(None, description="Filter events by platform (e.g., 'resonite', 'vrchat', 'none', 'all')"),
+    start_date: Optional[str] = Query(None, description="Filter events by starting date"),
     user_auth: UserAuthModel = Depends(require_moderator_access)
 ):
+
+    custom_filters = []
+
+    if not start_date:
+        start_date = datetime.utcnow()
+    else:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+
     # Determine if an event is either active or upcoming by comparing end_time or start_time with the current time.
     # If end_time is available, it will be used; otherwise, fallback to start_time.
-    time_filter_condition = case(
-        (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
-        else_=Event.start_time  # Otherwise, fallback to start_time
-    ) >= datetime.utcnow()  # Event is considered active or upcoming if the time is greater than or equal to now
-
-    custom_filters = [time_filter_condition]
+    custom_filters.append(
+        case(
+            (Event.end_time.isnot(None), Event.end_time),  # Use end_time if it's not None
+            else_=Event.start_time  # Otherwise, fallback to start_time
+        ) >= start_date  # Event is considered active or upcoming if the time is greater than or equal to requested start date
+    )
 
     if platform_filter == 'all':
         pass
@@ -459,7 +468,6 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                     response.raise_for_status()
                     logger.info(f"Successfully fetched community {selected_community_id} from remote server")
                     response_data = response.json()
-                    logger.error(response_data)
                     await Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[response_data['external_id'], CommunityPlatform.DISCORD],
@@ -477,7 +485,6 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                             "community_configurator": str(community_id)
                         }
                     )
-                    logger.error('dfdfdf')
                 except RequestException as e:
                     logger.error(f"Failed to fetch community {selected_community_id}: {str(e)}")
                     raise HTTPException(

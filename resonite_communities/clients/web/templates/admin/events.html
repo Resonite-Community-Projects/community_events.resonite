@@ -22,7 +22,7 @@
                 <label class="label">Community</label>
                 <div class="control">
                     <div class="select">
-                        <select x-model="selectedCommunity" @change="loadEvents(selectedCommunity, selectedPlatformFilter)">
+                        <select x-model="selectedCommunity" @change="loadEvents(selectedCommunity, selectedPlatformFilter, selectedDateFilter)">
                             <option value="">All Communities</option>
                             {% for community in communities %}
                                 <option value="{{ community.id }}" :selected="'{{ community.id }}' === selectedCommunity">{{ community.name }}</option>
@@ -37,7 +37,7 @@
                 <label class="label">Platform Filter</label>
                 <div class="control">
                     <div class="select">
-                        <select x-model="selectedPlatformFilter" @change="loadEvents(selectedCommunity, selectedPlatformFilter)">
+                        <select x-model="selectedPlatformFilter" @change="loadEvents(selectedCommunity, selectedPlatformFilter, selectedDateFilter)">
                             <option value="">Resonite Only (Default)</option>
                             <option value="none">No Platform Tag</option>
                             <option value="vrchat">VR Chat</option>
@@ -47,12 +47,28 @@
                 </div>
             </div>
         </div>
+        <div class="column is-narrow">
+            <div class="field">
+                <label class="label">Starting date</label>
+                <div class="control">
+                    <input
+                        class="input"
+                        type="date"
+                        x-model="selectedDateFilter"
+                        @change="loadEvents(selectedCommunity, selectedPlatformFilter, selectedDateFilter)"
+                    >
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
         <div class="columns is-centered">
             <div class="column is-4">
-                <span class="tag is-info is-light"><span class="icon"><i class="fa-solid fa-circle-info"></i></span>Only event starting now and later are visible in this list.</span>
+                <span class="tag is-info is-light">
+                <span class="icon"><i class="fa-solid fa-circle-info"></i></span>
+                <span x-text="`Only events starting ${selectedDateFilter === new Date().toISOString().split('T')[0] ? 'today' : selectedDateFilter} and later are visible in this list.`"></span>
+                </span>
             </div>
         </div>
     </div>
