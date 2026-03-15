@@ -2,12 +2,22 @@ import requests
 
 from resonite_communities.utils.logger import get_logger
 
+def _parse_error(response):
+    try:
+        dict_error = response.json()
+        if 'error' not in dict_error.keys() or 'message' not in dict_error.keys():
+            return f"{response.status_code} - {response.text}"
+        return f"{response.status_code} - {dict_error['error']} - {dict_error['message']}"
+    except Exception:
+        return f"{response.status_code}"
 
 def get_current_user(access_token):
     url = "https://discord.com/api/v10/users/@me"
     headers = {"Authorization": f"Bearer {access_token}"}
 
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        get_logger("get_user_roles_in_guild_safe").error(f"Error when getting user information: {_parse_error(response)}")
     user_data = response.json()
 
     # Construct the avatar URL
@@ -34,6 +44,8 @@ def get_user_guilds(access_token):
     url = "https://discord.com/api/v10/users/@me/guilds"
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        get_logger("get_user_roles_in_guild_safe").error(f"Error when getting user information: {_parse_error(response)}")
     return response.json()
 
 
@@ -41,6 +53,8 @@ def get_user_roles_in_guild_safe(access_token, guild_id):
     url = f"https://discord.com/api/v10/users/@me/guilds/{guild_id}/member"
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        get_logger("get_user_roles_in_guild_safe").error(f"Error when getting user information: {_parse_error(response)}")
     roles = []
     retry_after = 0
     if "roles" in response.json():

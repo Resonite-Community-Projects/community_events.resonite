@@ -40,8 +40,8 @@ class TwitchStreamsCollector(StreamsCollector):
                 platform=CommunityPlatform.TWITCH,
                 monitored=streamer.monitored,
                 external_id=streamer.external_id,
-                members_count=broadcaster['twitch']['followers']['total'],
-                logo=broadcaster['twitch']['profile_image_url'],
+                members_count=broadcaster.get('twitch', {}).get('followers', {}).get('total', 0),
+                logo=broadcaster.get('twitch', {}).get('profile_image_url', None),
             )
             if not any(b.get('id') == broadcaster['twitch']['id'] for b in self.broadcasters):
                 self.broadcasters.append(broadcaster)
