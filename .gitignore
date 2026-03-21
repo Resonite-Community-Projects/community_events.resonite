@@ -164,3 +164,5 @@ GeoLite2-Country.mmdb
 backups/*
 data/*
 .envrc.d/*
+env.d/*
+config.toml*
