@@ -352,26 +352,6 @@ async function getCommunityForm(action, communityId = null, communityType = null
 
     let communityRemoteListings = ''
 
-    if (communityData.platform_on_remote) {
-        try {
-            const response = await fetch(`/v2/admin/communities?type=remote`, {
-                credentials: 'include'
-            });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch any JSON_COMMUNITY_EVENT communities : ${response.statusText}`);
-            }
-            communityRemoteListings = await response.json();
-        } catch (error) {
-            console.error("Error fetching community data:", error);
-            return "Error: can't load form. Failed to fetch any JSON_COMMUNITY_EVENT communities."
-        }
-
-        if (!communityRemoteListings) {
-            return "Error: can't load form. No remote communities data."
-        }
-    }
-
-
     const nameValue = communityData.name || '';
     const platformIdValue = communityData.external_id || '';
     const platformValue = communityData.platform || '';
@@ -555,31 +535,6 @@ async function getCommunityForm(action, communityId = null, communityType = null
     </div>
     `
 
-    let communityRemoteListingsField = ''
-    let communityRemoteListingsFormOptions = ''
-
-    if (communityRemoteListings) {
-        communityRemoteListings.forEach(communityRemote => {
-            communityRemoteListingsFormOptions += `
-            <option ${communityConfigurator === communityRemote.id ? 'selected' : ''} value='${communityRemote.id}'>${communityRemote.name}</option>
-            `
-            }
-        )
-
-        communityRemoteListingsField = `
-        <div class="field">
-            <label class="label">Community Remote Listing</label>
-            <div class="control">
-                <div class="select">
-                    <select name="community_configurator">
-                        ${communityRemoteListingsFormOptions}
-                    </select>
-                </div>
-            </div>
-        </div>
-        `
-    }
-
     if (platformValue == 'JSON_COMMUNITY_EVENT') {
         urlField = ``
         tagsField = ``
@@ -610,7 +565,6 @@ async function getCommunityForm(action, communityId = null, communityType = null
                 </div>
             </div>
         </div>
-        ${communityRemoteListingsField}
         ${urlField}
         ${tagsField}
         ${languagesField}
