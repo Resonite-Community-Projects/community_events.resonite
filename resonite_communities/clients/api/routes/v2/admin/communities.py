@@ -149,6 +149,17 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
         raise HTTPException(status_code=422, detail="".join(errors))
 
     try:
+
+        config = {}
+        if getattr(data, "events_url"):
+            config["events_url"] = data.events_url
+        if getattr(data, "community_configurator"):
+            config["community_configurator"] = data.community_configurator
+        if getattr(data, "private_channel_id"):
+            config["private_channel_id"] = data.private_channel_id
+        if getattr(data, "private_role_id"):
+            config["private_role_id"] = data.private_role_id
+
         new_community = await Community().add(
             name=data.name,
             external_id=data.external_id,
@@ -159,11 +170,7 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
             tags=data.tags,
             languages=data.languages,
             custom_description=data.description,
-            config={
-                "private_role_id": data.private_role_id,
-                "private_channel_id": data.private_channel_id,
-                "events_url": data.events_url,
-            },
+            config=config,
         )
     except SQLAlchemyError as e:
         logger.error(f"Database error creating community {data.name}: {str(e)}")
@@ -233,6 +240,17 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                     )
 
     try:
+
+        config = {}
+        if getattr(data, "events_url"):
+            config["events_url"] = data.events_url
+        if getattr(data, "community_configurator"):
+            config["community_configurator"] = data.community_configurator
+        if getattr(data, "private_channel_id"):
+            config["private_channel_id"] = data.private_channel_id
+        if getattr(data, "private_role_id"):
+            config["private_role_id"] = data.private_role_id
+
         updated = await Community.update(
             filters=(Community.id == community_id),
             name=data.name,
@@ -242,11 +260,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
             tags=data.tags,
             languages=data.languages,
             custom_description=data.description if not data.resetDescription else None,
-            config={
-                "private_role_id": data.private_role_id,
-                "private_channel_id": data.private_channel_id,
-                "community_configurator": data.community_configurator,
-            },
+            config=config,
         )
     except SQLAlchemyError as e:
         logger.error(f"Database error updating community {community_id}: {str(e)}")
