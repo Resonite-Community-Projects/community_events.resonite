@@ -25,15 +25,7 @@ services:
     build: ../..
     env_file:
       - ../../env.d/official.env
-    command: >
-      /bin/bash -c "
-      poetry run alembic upgrade head;
-      EXIT_CODE=$?;
-      if [ $EXIT_CODE -ne 0 ]; then
-        echo 'Alembic migration failed with exit code' $EXIT_CODE;
-        exit $EXIT_CODE;
-      fi
-      "
+    command: /bin/bash -c "set -e; poetry run alembic upgrade head"
     volumes:
       - "../../resonite_communities:/app/resonite_communities"
       - "../../migrations:/app/migrations"
