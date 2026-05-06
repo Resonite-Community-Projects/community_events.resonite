@@ -3,7 +3,7 @@ title: Testing
 prev: DeveloperGuide/migrations.md
 ---
 
-For now their is no unit test but this is the thing to keep in mind when doing functional testing.
+For now their is only some unit tests but this is the thing to keep in mind when doing functional testing.
 
 ## Preview private events based on different user permissions
 
@@ -30,3 +30,11 @@ Connect to Discord and you should see all events, public and private. In the dat
 Connect to Discord and you should see all the public events and the private events that your user have access to. In the database, the column `is_superuser` of the table `user` should be `False`.
 
 You can simulate the fact the user is not part of some communities by editing the correct row in the `discord_account` table. Remove some id in the `user_communities` **after** you are logged in with your Discord user into the app. Keep in mind logging out and relogin after will reset the column so you need to redo this again. (See the section about configuring the Discord bot and it's callback.)
+
+## Unit testing
+
+To be run like this:
+
+```bash
+pytest tests/ --cov=resonite_communities --cov-report=term-missing
+```

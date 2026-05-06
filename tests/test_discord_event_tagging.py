@@ -1,276 +1,214 @@
-"""
-Unit tests for Discord event tagging logic.
-
-Tests the secure-by-default approach for determining whether events
-should be tagged as 'public' or 'private' based on community configuration
-and event channel placement.
-
-These tests directly test the determine_event_visibility method by
-instantiating the class with minimal mocking.
-"""
-
 import sys
-from unittest.mock import Mock, MagicMock
-import pytest
+from datetime import datetime, timezone
+from unittest.mock import MagicMock
+from uuid import uuid4
+
 from easydict import EasyDict
+from freezegun import freeze_time
+from disnake import GuildScheduledEvent
 
+sys.modules['resonite_communities.utils.config'] = MagicMock()
+sys.modules['resonite_communities.utils.db'] = MagicMock()
 
-def test_module_setup():
-    """Setup mock modules to allow importing DiscordEventsCollector."""
-    # Mock only the problematic imports that require environment variables
-    sys.modules['resonite_communities.utils.config'] = MagicMock()
-    sys.modules['resonite_communities.utils.db'] = MagicMock()
+from resonite_communities.models.community import Community, CommunityPlatform
+from resonite_communities.signals.collectors.events.discord import DiscordEventsCollector
+from resonite_communities.models.signal import Event, EventStatus
 
+class _DiscordState:
+    def get_user(self, user_id):
+        return None
 
+def create_event(channel_id=None):
+    return GuildScheduledEvent(state=_DiscordState(), data={
+        'id': '1',
+        'guild_id': '1',
+        'channel_id': str(channel_id) if channel_id is not None else None,
+        'creator_id': None,
+        'name': 'Test Event',
+        'scheduled_start_time': '2025-01-01T00:00:00+00:00',
+        'scheduled_end_time': None,
+        'privacy_level': 2,
+        'status': 1,
+        'entity_type': 2,
+        'entity_id': None,
+        'entity_metadata': None,
+    })
+
+def create_community(tags, private_channel_id=None):
+    return Community(
+        created_at=datetime.now(timezone.utc),
+        external_id='test',
+        platform=CommunityPlatform.DISCORD,
+        name='Test Community',
+        monitored=False,
+        tags=tags,
+        config=EasyDict({'private_channel_id': private_channel_id})
+    )
 class TestDiscordEventTagging:
-    """Test suite for Discord event tagging logic."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup for each test."""
-        test_module_setup()
-
-        # Now import after mocking
-        from resonite_communities.signals.collectors.events.discord import DiscordEventsCollector
-
-        # Create a minimal instance
-        self.collector = DiscordEventsCollector.__new__(DiscordEventsCollector)
-
-    def create_mock_event(self, channel_id=None):
-        """Helper to create a mock Discord event."""
-        event = Mock()
-        event.channel_id = channel_id
-        return event
-
-    def create_mock_community(self, tags, private_channel_id=None):
-        """Helper to create a mock community."""
-        community = Mock()
-        community.tags = tags
-        community.config = EasyDict({'private_channel_id': private_channel_id})
-        return community
 
     # Test Case 1: Public-only community
     def test_public_only_community_no_private_channel(self):
-        """
-        Given: Community with only 'public' tag, no private_channel_id configured
-        When: Processing an event
-        Then: Event should be tagged as 'public'
-        """
-        community = self.create_mock_community(tags='public')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Public-only community should default to public"
+        community = create_community(tags='public')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     def test_public_only_community_event_in_private_channel(self):
-        """
-        Given: Community with only 'public' tag, private_channel_id configured
-        When: Event is in the private channel
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='public', private_channel_id='999')
-        event = self.create_mock_event(channel_id='999')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Event in private channel should be private"
+        community = create_community(tags='public', private_channel_id='999')
+        event = create_event(channel_id='999')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_public_only_community_event_not_in_private_channel(self):
-        """
-        Given: Community with only 'public' tag, private_channel_id configured
-        When: Event is NOT in the private channel
-        Then: Event should be tagged as 'public'
-        """
-        community = self.create_mock_community(tags='public', private_channel_id='999')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Public community event not in private channel should be public"
+        community = create_community(tags='public', private_channel_id='999')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     # Test Case 2: Private-only community
     def test_private_only_community(self):
-        """
-        Given: Community with only 'private' tag
-        When: Processing any event
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='private')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Private-only community should default to private"
+        community = create_community(tags='private')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_private_only_community_with_private_channel_id(self):
-        """
-        Given: Community with only 'private' tag, private_channel_id configured
-        When: Event is in the private channel
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='private', private_channel_id='999')
-        event = self.create_mock_event(channel_id='999')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Private community event in private channel should be private"
+        community = create_community(tags='private', private_channel_id='999')
+        event = create_event(channel_id='999')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     # Test Case 3: Mixed community (both public and private)
     def test_mixed_community_no_private_channel_configured(self):
-        """
-        Given: Community with both 'public' and 'private' tags, NO private_channel_id
-        When: Processing an event
-        Then: Event should default to 'private' (secure default)
-        """
-        community = self.create_mock_community(tags='public,private')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Mixed community with no private channel configured and no event channel should be public"
+        community = create_community(tags='public,private')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     def test_mixed_community_event_in_private_channel(self):
-        """
-        Given: Community with both 'public' and 'private' tags, private_channel_id configured
-        When: Event is in the private channel
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='public,private', private_channel_id='999')
-        event = self.create_mock_event(channel_id='999')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Mixed community event in private channel should be private"
+        community = create_community(tags='public,private', private_channel_id='999')
+        event = create_event(channel_id='999')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_mixed_community_event_not_in_private_channel(self):
-        """
-        Given: Community with both 'public' and 'private' tags, private_channel_id configured
-        When: Event is NOT in the private channel
-        Then: Event should default to 'private' (secure default)
-        """
-        community = self.create_mock_community(tags='public,private', private_channel_id='999')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Mixed community event not in private channel should be public"
+        community = create_community(tags='public,private', private_channel_id='999')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     # Test Case 4: Events with no channel_id
     def test_event_without_channel_id_public_community(self):
-        """
-        Given: Community with only 'public' tag
-        When: Event has no channel_id (None)
-        Then: Event should be tagged as 'public'
-        """
-        community = self.create_mock_community(tags='public')
-        event = self.create_mock_event(channel_id=None)
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Event without channel in public community should be public"
+        community = create_community(tags='public')
+        event = create_event(channel_id=None)
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     def test_event_without_channel_id_private_community(self):
-        """
-        Given: Community with only 'private' tag
-        When: Event has no channel_id (None)
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='private')
-        event = self.create_mock_event(channel_id=None)
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Event without channel in private community should be private"
+        community = create_community(tags='private')
+        event = create_event(channel_id=None)
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_event_without_channel_id_mixed_community(self):
-        """
-        Given: Community with both 'public' and 'private' tags
-        When: Event has no channel_id (None)
-        Then: Event should default to 'private' (secure default)
-        """
-        community = self.create_mock_community(tags='public,private')
-        event = self.create_mock_event(channel_id=None)
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'public', "Event without channel in mixed community should be public"
+        community = create_community(tags='public,private')
+        event = create_event(channel_id=None)
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
     # Test Case 5: Edge cases
-    def test_tags_with_spaces(self):
-        """
-        Given: Community tags with spaces (e.g., 'public, private')
-        When: Processing an event
-        Then: Current implementation treats ' private' as different from 'private'
-        
-        Note: This documents a known limitation. Tags should be stored without spaces
-        in production (e.g., 'public,private' not 'public, private').
-        """
-        community = self.create_mock_community(tags='public, private')
-        event = self.create_mock_event(channel_id='123')
+    def test_tags_with_spaces_public(self):
+        community = create_community(tags='public, private')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'public'
 
-        result = self.collector.determine_event_visibility(event, community)
-
-        # Current behavior: 'public' is found but ' private' (with space) is not equal to 'private'
-        # So the condition 'private' not in tags is True, making this public
-        assert result == 'public', "Documents current behavior with spaces in tags"
+    def test_tags_with_spaces_private(self):
+        community = create_community(tags='public, private', private_channel_id='999')
+        event = create_event(channel_id='999')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_empty_tags(self):
-        """
-        Given: Community with empty tags
-        When: Processing an event
-        Then: Event should default to 'private' (secure default)
-        """
-        community = self.create_mock_community(tags='')
-        event = self.create_mock_event(channel_id='123')
-
-        result = self.collector.determine_event_visibility(event, community)
-
-        assert result == 'private', "Empty tags should default to private (secure)"
+        community = create_community(tags='')
+        event = create_event(channel_id='123')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
     def test_tags_in_different_order(self):
-        """
-        Given: Community with tags in different order ('private,public' vs 'public,private')
-        When: Processing events
-        Then: Results should be the same (order shouldn't matter)
-        """
-        community1 = self.create_mock_community(tags='public,private')
-        community2 = self.create_mock_community(tags='private,public')
-        event = self.create_mock_event(channel_id='123')
-
-        result1 = self.collector.determine_event_visibility(event, community1)
-        result2 = self.collector.determine_event_visibility(event, community2)
-
-        assert result1 == result2, "Tag order should not affect the result"
-        assert result1 == 'public', "Both should be public as they have both tags and event is not in private channel"
+        community1 = create_community(tags='public,private')
+        community2 = create_community(tags='private,public')
+        event = create_event(channel_id='123')
+        event_visibility_1 = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community1)
+        event_visibility_2 = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community2)
+        assert event_visibility_1 == event_visibility_2, "Tag order should not affect the result"
+        assert event_visibility_2 == 'public', "Both should be public as they have both tags and event is not in private channel"
 
     def test_channel_id_string_vs_int(self):
-        """
-        Given: Channel IDs as strings vs integers
-        When: Comparing event.channel_id with private_channel_id
-        Then: Comparison should work correctly
-        """
-        # Test with both as strings (typical Discord API)
-        community = self.create_mock_community(tags='public', private_channel_id='999')
-        event = self.create_mock_event(channel_id='999')
+        community = create_community(tags='public', private_channel_id=999)
+        event = create_event(channel_id='999')
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
-        result = self.collector.determine_event_visibility(event, community)
+    def test_private_channel_id_string_vs_int(self):
+        community = create_community(tags='public', private_channel_id='999')
+        event = create_event(channel_id=999)
+        event_visibility = DiscordEventsCollector(config=None, services=None, scheduler=None).determine_event_visibility(event, community)
+        assert event_visibility == 'private'
 
-        assert result == 'private', "String channel IDs should match"
+@freeze_time("2023-10-6T18:00:00+00:00")
+class TestDiscordIsCancel:
 
-    def test_mixed_community_event_in_private_channel_with_int_id(self):
-        """
-        Given: Community with both 'public' and 'private' tags, private_channel_id configured as string
-        When: Event is in the private channel, with channel_id as an integer
-        Then: Event should be tagged as 'private'
-        """
-        community = self.create_mock_community(tags='public,private', private_channel_id='999')
-        event = self.create_mock_event(channel_id=999) # Simulate integer channel_id from Discord API
+    def test_event_with_end_time_in_the_past(self):
+        local_event = Event(
+            created_at=datetime(2023, 10, 6, 18, 0, 0, tzinfo=timezone.utc),
+            external_id='resonite',
+            name='Fluffy opening!',
+            start_time=datetime(2023, 10, 6, 19, 0, 0, tzinfo=timezone.utc),
+            end_time=datetime(2023, 10, 6, 18, 0, 0, tzinfo=timezone.utc),
+            community_id=uuid4(),
+            scheduler_type='DISCORD',
+            status=EventStatus.READY,
+        )
+        is_cancel = DiscordEventsCollector.is_cancel(None, local_event)
+        assert is_cancel == None
 
-        result = self.collector.determine_event_visibility(event, community)
+    def test_event_with_end_time_in_the_future(self):
+        local_event = Event(
+            created_at=datetime(2023, 10, 6, 18, 0, 0, tzinfo=timezone.utc),
+            external_id='resonite',
+            name='Fluffy opening!',
+            start_time=datetime(2023, 10, 6, 19, 0, 0, tzinfo=timezone.utc),
+            end_time=datetime(2023, 10, 6, 20, 0, 0, tzinfo=timezone.utc),
+            community_id=uuid4(),
+            scheduler_type='DISCORD',
+            status=EventStatus.READY,
+        )
+        is_cancel = DiscordEventsCollector.is_cancel(None, local_event)
+        assert is_cancel == None
 
-        assert result == 'private', "Mixed community event in private channel (int ID) should be private"
+    def test_event_without_end_time_start_time_in_the_past(self):
+        local_event = Event(
+            created_at=datetime(2023, 10, 6, 18, 0, 0, tzinfo=timezone.utc),
+            external_id='resonite',
+            name='Fluffy opening!',
+            start_time=datetime(2023, 10, 6, 17, 0, 0, tzinfo=timezone.utc),
+            community_id=uuid4(),
+            scheduler_type='DISCORD',
+            status=EventStatus.READY,
+        )
+        is_cancel = DiscordEventsCollector.is_cancel(None, local_event)
+        assert is_cancel == True
 
-
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+    def test_event_without_end_time_start_time_in_the_future(self):
+        local_event = Event(
+            created_at=datetime(2023, 10, 6, 18, 0, 0, tzinfo=timezone.utc),
+            external_id='resonite',
+            name='Fluffy opening!',
+            start_time=datetime(2023, 10, 6, 20, 0, 0, tzinfo=timezone.utc),
+            community_id=uuid4(),
+            scheduler_type='DISCORD',
+            status=EventStatus.READY,
+        )
+        is_cancel = DiscordEventsCollector.is_cancel(None, local_event)
+        assert is_cancel == None

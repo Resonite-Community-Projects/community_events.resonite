@@ -29,7 +29,7 @@ separators = {
 def clean_text(text):
     """ Remove all invalid characters for text_dumps. """
     if text:
-        text = text.replace('`', ' ')
+        text = text.replace('`', '')
         text = text.replace('\n\n', ' ')
         text = text.replace('\n\r', ' ')
         text = text.replace('\n', ' ')
@@ -42,7 +42,7 @@ def text_dumps(events, version):
     """ Convert the Python Dictionary to a text string. """
 
     if version not in separators:
-        raise ValueError("Unsported version.")
+        raise ValueError("Unsupported version.")
     field_separator = separators[version]['field']
     object_separator = separators[version]['object']
 
