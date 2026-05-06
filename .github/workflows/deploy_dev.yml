@@ -2,6 +2,7 @@ name: Deploy Dev
 
 on:
   workflow_run:
+    workflows: ["Create and publish a Docker image"]
     branches: [master]
     types: [completed]
 
