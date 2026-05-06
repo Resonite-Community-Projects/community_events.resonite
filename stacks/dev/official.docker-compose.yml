@@ -39,7 +39,7 @@ services:
       start_period: 30s
 
   migrations_official:
-    build: ../..
+    image: ghcr.io/resonite-community-projects/community_events.resonite:dev
     command: /bin/bash -c "set -e; poetry run alembic upgrade head"
     secrets:
       - database_url
@@ -68,7 +68,7 @@ services:
 
 
   signals_manager_official:
-    build: ../..
+    image: ghcr.io/resonite-community-projects/community_events.resonite:dev
     restart: always
     command: poetry run signals_manager
     profiles:
@@ -98,7 +98,7 @@ services:
       - API_CLIENT_URL=${API_CLIENT_URL}
 
   api_client_official:
-    build: ../..
+    image: ghcr.io/resonite-community-projects/community_events.resonite:dev
     restart: always
     profiles:
       - client
@@ -152,7 +152,7 @@ services:
 
 
   web_client_official:
-    build: ../..
+    image: ghcr.io/resonite-community-projects/community_events.resonite:dev
     restart: always
     profiles:
       - client
