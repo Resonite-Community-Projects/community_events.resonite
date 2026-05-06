@@ -1,14 +1,16 @@
 name: Deploy Dev
 
 on:
-  push:
-    branches: [ master ]
+  workflow_run:
+    branches: [master]
+    types: [completed]
 
 jobs:
 
   community:
     runs-on: SANVM07
     environment: dev_community
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
@@ -70,6 +72,7 @@ jobs:
   official:
     runs-on: SANVM07
     environment: dev_official
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
