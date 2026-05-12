@@ -1,14 +1,18 @@
 name: Deploy Prod
 
 on:
-  push:
-    tags:
-      - '*'
+  workflow_run:
+    workflows: ["Create and publish a Docker image"]
+    branches: [stable]
+    tags: ['*']
+    types: [completed]
 
 jobs:
+
   build:
     runs-on: SANVM07
     environment: prod
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
