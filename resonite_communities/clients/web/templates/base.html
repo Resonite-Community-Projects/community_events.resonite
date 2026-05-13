@@ -34,7 +34,7 @@
 
         .hero.is-link {
           {% if not app_config.HERO_COLOR %}
-          background-color: red;
+          background-color: hsl(var(--bulma-hero-h),var(--bulma-hero-s),var(--bulma-hero-background-l));
           {% else %}
           background: {{ app_config.HERO_COLOR }};
           {% endif %}
