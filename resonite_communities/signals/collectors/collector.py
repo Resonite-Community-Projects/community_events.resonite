@@ -14,5 +14,9 @@ class Collector(Signal):
             async with async_request_session():
                 await self.collect()
 
-        self.scheduler.add_job(job_with_session, 'interval', minutes=self.config.REFRESH_INTERVAL)
+        job_id = f'{getattr(self, "collector_name", self.name)}_collect'
+        self.scheduler.add_job(
+            job_with_session, 'interval', minutes=self.config.REFRESH_INTERVAL,
+            id=job_id, replace_existing=True,
+        )
         await self.collect()

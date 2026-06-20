@@ -39,7 +39,7 @@ if not watchfiles:
 
 async def main():
     async with async_request_session() as session:
-        config = await config_manager.config()
+        config = await config_manager.config(session=session)
         # Clients initialization
         twitch_client = None
         discord_client = None
@@ -115,29 +115,29 @@ async def main():
         if not transmitters_count:
             logger.warning('No transmitters loaded!')
 
-        # Start scheduler
-        logger.info('Starting scheduler...')
-        scheduler.start()
+    # Start scheduler
+    logger.info('Starting scheduler...')
+    scheduler.start()
 
-        if not config.DISCORD_BOT_TOKEN and not config.AD_DISCORD_BOT_TOKEN:
-            logger.warning('No discord bot token configured at all!')
-            return
+    if not config.DISCORD_BOT_TOKEN and not config.AD_DISCORD_BOT_TOKEN:
+        logger.warning('No discord bot token configured at all!')
+        return
 
-        logger.info('Starting Discord bots...')
+    logger.info('Starting Discord bots...')
 
-        tasks = []
+    tasks = []
 
-        if config.DISCORD_BOT_TOKEN:
-            tasks.append(bot.start(config.DISCORD_BOT_TOKEN))
+    if config.DISCORD_BOT_TOKEN:
+        tasks.append(bot.start(config.DISCORD_BOT_TOKEN))
 
-        if config.DISCORD_BOT_TOKEN and config.AD_DISCORD_BOT_TOKEN:
-            tasks.append(ad_bot.start(config.AD_DISCORD_BOT_TOKEN))
+    if config.DISCORD_BOT_TOKEN and config.AD_DISCORD_BOT_TOKEN:
+        tasks.append(ad_bot.start(config.AD_DISCORD_BOT_TOKEN))
 
-        if tasks:
-            await asyncio.gather(*tasks)
+    if tasks:
+        await asyncio.gather(*tasks)
 
-        # End process
-        logger.info('Stopping...')
+    # End process
+    logger.info('Stopping...')
 
 def run_without_reload():
     asyncio.run(main())
