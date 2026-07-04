@@ -42,6 +42,9 @@ class CommunityEventsCollector(EventsCollector):
                     self.logger.error(f"Invalid config for community '{community.name}': {community.config}")
                     continue
                 community_configurator = (await Community.find(id=community.config.community_configurator))[0]
+                if not community_configurator.config.get('events_url'):
+                    self.logger.error(f"Invalid config for configurator '{community_configurator.name}': missing events_url")
+                    continue
 
                 response = requests.get(f"{community_configurator.config.events_url}/v2/events")
 

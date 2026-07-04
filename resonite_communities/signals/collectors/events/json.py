@@ -33,6 +33,9 @@ class JSONEventsCollector(EventsCollector):
         self.logger.info('Update events collector from external source')
         await self.update_communities()
         for community in self.communities:
+            if not community.config.get('events_url'):
+                self.logger.warning(f"Skipping {community.name}: no events_url in config")
+                continue
             try:
                 self.logger.info(f"Processing events for {community.name} from {community.config.events_url}")
 
