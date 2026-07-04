@@ -15,4 +15,3 @@ class CommunityRequest(BaseModel):
     community_configurator: str | None = None
     events_url: str | None = None
     selected_community_external_ids: dict | None = None
-    resetDescription: dict | None = None
