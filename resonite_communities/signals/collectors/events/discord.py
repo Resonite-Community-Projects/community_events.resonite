@@ -58,9 +58,9 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
                 if self.ad_bot and not community.ad_bot_configured:
                         ad_bot_configured = True
                 # FIXME: Remove this test when removing AD_DISCORD_BOT_TOKEN
-                if self.ad_bot and 'private' not in community.tags.split(','):
+                if self.ad_bot and 'private' not in (community.tags or '').split(','):
                     continue
-                elif not self.ad_bot and 'private' in community.tags.split(','):
+                elif not self.ad_bot and 'private' in (community.tags or '').split(','):
                     continue
 
                 community.ad_bot_configured = ad_bot_configured
