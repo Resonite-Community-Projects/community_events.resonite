@@ -144,7 +144,7 @@
         <div class="columns is-multiline">
             <template x-for="community in communities" :key="community.id">
                 <div class="column is-one-fifth">
-                    <div class="card">
+                    <div class="card" :style="community.enabled ? '' : 'background-color: grey;'">
                         <div class="card-image has-text-centered pt-4">
                             <template x-if="community.logo">
                                 <figure class="image is-3by3 is-inline-block">
@@ -223,10 +223,13 @@
                         </div>
                         <div class="card-footer">
                             <div class="buttons is-centered">
-                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'event')">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community, 'event')">
                                     <span class="icon"><i class="fas fa-pen"></i></span>
                                 </button>
-                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'event')">
+                                <button class="button is-small" @click="handleCommunityAction('toggle_enabled', community, 'event')" :class="community.enabled ? 'is-success' : 'is-danger'">
+                                    <span class="icon"><i class="fas" :class="community.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community, 'event')">
                                     <span class="icon"><i class="fas fa-trash"></i></span>
                                 </button>
                                 <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">
@@ -245,7 +248,7 @@
         <div class="columns is-multiline">
             <template x-for="community in communities" :key="community.id">
                 <div class="column is-one-fifth">
-                    <div class="card">
+                    <div class="card" :style="community.enabled ? '' : 'background-color: grey;'">
                         <div class="card-image has-text-centered pt-4">
                             <template x-if="community.logo">
                                 <figure class="image is-3by3 is-inline-block">
@@ -303,10 +306,13 @@
                         </div>
                         <div class="card-footer">
                             <div class="buttons is-centered">
-                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community.id, 'stream')">
+                                <button class="button is-warning is-small" @click="handleCommunityAction('edit', community, 'stream')">
                                     <span class="icon"><i class="fas fa-pen"></i></span>
                                 </button>
-                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community.id, 'stream')">
+                                <button class="button is-small" @click="handleCommunityAction('toggle_enabled', community, 'stream')" :class="community.enabled ? 'is-success' : 'is-danger'">
+                                    <span class="icon"><i class="fas" :class="community.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i></span>
+                                </button>
+                                <button class="button is-danger is-small" @click="handleCommunityAction('delete', community, 'stream')">
                                     <span class="icon"><i class="fas fa-trash"></i></span>
                                 </button>
                                 <a class="button is-link is-small" x-bind:href="community.url || '#'" target="_blank" :title="!community.url ? 'disabled' : ''" :disabled="!community.url">

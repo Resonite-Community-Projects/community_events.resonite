@@ -35,6 +35,7 @@ class Community(BaseModel, table=True):
     custom_description: str | None = Field()
     monitored: bool = Field()
     configured: bool | None = Field(default=False)
+    enabled: bool | None = Field(default=False)
     ad_bot_configured: bool | None = Field(default=False)
     url: str | None = Field()
     members_count: int | None = Field(default=0)

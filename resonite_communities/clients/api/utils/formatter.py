@@ -128,10 +128,13 @@ async def get_filtered_events(
         # Cache miss - execute the actual query
         signals = []
 
-        communities_filter = True
+        communities_filter = Event.community.has(Community.enabled == True)
         if communities:
             communities = [community for community in communities.split(",")]
-            communities_filter = Event.community.has(Community.name.in_(communities))
+            communities_filter = and_(
+                Event.community.has(Community.name.in_(communities)),
+                Event.community.has(Community.enabled == True)
+            )
 
         if isinstance(config_manager.infrastructure_config.PUBLIC_DOMAIN, str):
             public_domains = [config_manager.infrastructure_config.PUBLIC_DOMAIN]

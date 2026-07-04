@@ -90,7 +90,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         from resonite_communities.models.community import Community, CommunityPlatform
 
         communities = {community.external_id:community.id for community in await Community.find()}
-        configured_guilds = await Community.find(platform__in=[CommunityPlatform.DISCORD], configured__eq=True)
+        configured_guilds = await Community.find(platform__in=[CommunityPlatform.DISCORD], configured__eq=True, enabled__eq=True)
 
         private_events_access_communities = {'guilds': [], 'retry_after': 0}
         for guild in guilds:

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 class CommunityRequest(BaseModel):
     name: str
     external_id: str
+    enabled: bool | None = None
     platform: str
     tags: str | None = None
     languages: str | None = None

@@ -6,7 +6,8 @@ from fastapi import Depends
 @router_v2.get("/communities")
 async def get_communities(
     platform: str = "events",
-    configured_only: bool = False,
+    configured: bool = False,
+    enabled: bool = False,
     public_only: bool = False,
     user_communities_only: bool = False,
     include_all: bool = False,
@@ -23,8 +24,11 @@ async def get_communities(
         else:
             filters['platform__in'] = events_platforms
 
-    if configured_only:
+    if configured:
         filters['configured__eq'] = True
+
+    if enabled:
+        filters['enabled__eq'] = True
 
     if user_communities_only and user_auth:
         filters['id__in'] = user_auth.discord_account.user_communities
@@ -49,6 +53,7 @@ async def get_communities(
             "platform": community.platform,
             "public": True if 'public' in (community.tags or []) else False,
             "configured": community.configured,
+            "enabled": community.enabled,
         })
     return communities_formatted
 
@@ -74,4 +79,5 @@ async def get_community(community_id: str):
         "platform": community.platform,
         "public": True if 'public' in community.tags else False,
         "configured": community.configured,
+        "enabled": community.enabled,
     }

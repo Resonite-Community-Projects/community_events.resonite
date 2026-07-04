@@ -126,6 +126,7 @@ async def get_admin_communities_list(
             "events_url": community.config.get("events_url", None),
             "platform_on_remote": community.platform_on_remote,
             "event_count": event_counts.get(str(community.id), 0),
+            "enabled": community.enabled,
         })
 
     return communities_formatted
@@ -167,6 +168,7 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
             url=data.url,
             monitored=False,
             configured=True,
+            enabled=True,
             tags=data.tags,
             languages=data.languages,
             custom_description=data.description,
@@ -218,6 +220,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                         external_id=response_data['external_id'],
                         monitored=False,
                         configured=True,
+                        enabled=True,
                         logo=response_data['icon'],
                         default_description=response_data['description'],
                         tags=response_data['tags'],
@@ -261,6 +264,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
             languages=data.languages,
             custom_description=data.description if not data.resetDescription else None,
             config=config,
+            enabled=data.enabled,
         )
     except SQLAlchemyError as e:
         logger.error(f"Database error updating community {community_id}: {str(e)}")
@@ -305,6 +309,7 @@ async def discord_community_setup_import(community_id: UUID, data: DiscordImport
         updated = await Community.update(
             filters=(Community.id == community_id),
             configured=True,
+            enabled=True,
             tags="private" if data.visibility == "PRIVATE" else "public"
         )
     except SQLAlchemyError as e:

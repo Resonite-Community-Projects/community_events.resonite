@@ -42,7 +42,8 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async handleCommunityAction(action, communityId, communityType) {
+        async handleCommunityAction(action, community, communityType) {
+            let toggle_enabled_action = ''
             let title = '';
             let actionButton = '';
             let content = null;
@@ -93,7 +94,7 @@ document.addEventListener('alpine:init', () => {
 
             const performBackendAction = async (method, body = null) => {
                 try {
-                    const response = await fetch(`/v2/admin/communities/${communityId || ''}`, {
+                    const response = await fetch(`/v2/admin/communities/${community.id || ''}`, {
                         method,
                         credentials: 'include',
                         headers: {
@@ -192,7 +193,7 @@ document.addEventListener('alpine:init', () => {
                 case 'edit':
                     title = `Edit ${communityType} Community`;
                     actionButton = 'Save';
-                    content = await getCommunityForm('edit', communityId, communityType);
+                    content = await getCommunityForm('edit', community.id, communityType);
                     saveFunc = async () => {
                         if (!validateRequiredFields()) {
                             return;
@@ -208,7 +209,7 @@ document.addEventListener('alpine:init', () => {
                 case 'info':
                     title = `Community ${communityType} Info`;
                     actionButton = 'Close';
-                    content = await getCommunityInfo(communityId, communityType);
+                    content = await getCommunityInfo(community.id, communityType);
                     saveFunc = () => this.closeModal();
                     break;
 
@@ -218,6 +219,31 @@ document.addEventListener('alpine:init', () => {
                     content = `<p>Are you sure you want to delete this community?</p>`;
                     saveFunc = async () => {
                         await performBackendAction('DELETE');
+                        this.closeModal();
+                    };
+                    break;
+
+                case 'toggle_enabled':
+                    toggle_enabled_action = `${community.enabled ? "Disable" : "Enable"}`
+                    title = `${toggle_enabled_action} ${communityType} community`;
+                    actionButton = toggle_enabled_action;
+                    content = `
+                    <p>Are you sure you want to ${toggle_enabled_action.toLowerCase()} this community?</p>
+                    <input type="hidden" name="name" value="${community.name}">
+                    <input type="hidden" name="external_id" value="${community.external_id}">
+                    <input type="hidden" name="platform" value="${community.platform}">
+                    <input type="hidden" name="languages" value="${community.languages}">
+                    <input type="hidden" name="enabled" value="${!community.enabled}">
+                    <input type="hidden" name="tags" value="${community.tags}">
+                    `;
+                    saveFunc = async () => {
+                        if (!validateRequiredFields()) {
+                            return;
+                        }
+
+                        const body = serializeFormData();
+                        if (!body) return;
+                        await performBackendAction('PATCH', body);
                         this.closeModal();
                     };
                     break;
@@ -434,7 +460,7 @@ async function getCommunityForm(action, communityId = null, communityType = null
                             <p class="help">Select from this list all communities you want to follow.</p>
                             <div class="community-list">
                             ${remote_communities
-                                .filter(c => c.configured === true && c.public === true && (c.platform == 'DISCORD' || c.platform == 'JSON'))
+                                .filter(c => c.configured === true && c.enabled === true && c.public === true && (c.platform == 'DISCORD' || c.platform == 'JSON'))
                                 .map(c => {
                                     const alreadyLocal = local_communities.some(lc => lc.external_id === c.external_id && lc.configured === true); // TODO: Update this code to match on external_id + platform instead
                                     return `
