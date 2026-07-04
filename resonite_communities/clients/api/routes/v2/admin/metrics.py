@@ -1,5 +1,5 @@
 import calendar
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime, time
 
 from sqlalchemy import and_, or_, select, func, extract
 from sqlalchemy.exc import SQLAlchemyError
@@ -33,7 +33,7 @@ async def get_admin_metrics_users_average(user_auth: UserAuthModel = Depends(req
             func.count(func.distinct(Metrics.hashed_ip)).label('count')
         ).where(
             and_(
-                func.date(Metrics.timestamp) >= past_week,
+                Metrics.timestamp >= datetime.combine(past_week, time.min),
                 or_(
                     Metrics.client.is_(None),
                     Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
@@ -77,7 +77,7 @@ async def get_admin_metrics_daily_users(user_auth: UserAuthModel = Depends(requi
             func.count(func.distinct(Metrics.hashed_ip)).label('count')
         ).where(
             and_(
-                func.date(Metrics.timestamp) >= past_week,
+                Metrics.timestamp >= datetime.combine(past_week, time.min),
                 or_(
                     Metrics.client.is_(None),
                     Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
@@ -114,7 +114,7 @@ async def get_admin_metrics_client_versions(user_auth: UserAuthModel = Depends(r
         versions_result = (
             await session.execute(
             select(Metrics.version, func.count())
-            .where(func.date(Metrics.timestamp) >= past_month)
+            .where(Metrics.timestamp >= datetime.combine(past_month, time.min))
             .group_by(Metrics.version)
             )
         ).all()
@@ -147,7 +147,8 @@ async def get_admin_metrics_google_map(user_auth: UserAuthModel = Depends(requir
             func.count(func.distinct(Metrics.hashed_ip)).label('count')
         ).where(
             and_(
-                func.date(Metrics.timestamp) == yesterday,
+                Metrics.timestamp >= datetime.combine(yesterday, time.min),
+                Metrics.timestamp < datetime.combine(today, time.min),
                 or_(
                     Metrics.client.is_(None),
                     Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
@@ -188,7 +189,7 @@ async def get_admin_metrics_heatmap(user_auth: UserAuthModel = Depends(require_a
             func.count(func.distinct(Metrics.hashed_ip)).label('users')
         ).where(
             and_(
-                func.date(Metrics.timestamp) >= past_month,
+                Metrics.timestamp >= datetime.combine(past_month, time.min),
                 or_(
                     Metrics.client.is_(None),
                     Metrics.client.notin_([ClientType.BOT, ClientType.TOOL])
@@ -233,7 +234,7 @@ async def get_admin_metrics_client_types(user_auth: UserAuthModel = Depends(requ
         client_types_result = (
             await session.execute(
             select(Metrics.client, func.count())
-            .where(func.date(Metrics.timestamp) >= past_month)
+            .where(Metrics.timestamp >= datetime.combine(past_month, time.min))
             .group_by(Metrics.client)
             )
         ).all()
@@ -262,7 +263,7 @@ async def get_admin_metrics_domains(user_auth: UserAuthModel = Depends(require_a
             select(
                 Metrics.domain, Metrics.endpoint, func.count()
             ).where(
-                func.date(Metrics.timestamp) >= past_month
+                Metrics.timestamp >= datetime.combine(past_month, time.min)
             ).group_by(
                 Metrics.domain, Metrics.endpoint
             )
