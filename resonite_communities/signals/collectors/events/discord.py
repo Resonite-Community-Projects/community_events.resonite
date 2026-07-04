@@ -289,7 +289,7 @@ class DiscordEventsCollector(EventsCollector, commands.Cog):
         """
         for event in events:
 
-            tags = {tag for tag in community.tags.split(',') if tag != 'public' and tag != 'private'}
+            tags = {tag for tag in (community.tags or '').split(',') if tag != 'public' and tag != 'private'}
 
             #if 'resonite' not in tags and 'vrchat' not in tags:
             # Filter and tag any event with the word `resonite` in either of this 3:
