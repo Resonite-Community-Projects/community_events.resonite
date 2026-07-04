@@ -152,16 +152,16 @@ async def create_community(data: CommunityRequest, user_auth: UserAuthModel = De
     try:
 
         config = {}
-        if getattr(data, "events_url"):
+        if data.events_url:
             config["events_url"] = data.events_url
-        if getattr(data, "community_configurator"):
+        if data.community_configurator:
             config["community_configurator"] = data.community_configurator
-        if getattr(data, "private_channel_id"):
+        if data.private_channel_id:
             config["private_channel_id"] = data.private_channel_id
-        if getattr(data, "private_role_id"):
+        if data.private_role_id:
             config["private_role_id"] = data.private_role_id
 
-        new_community = await Community().add(
+        new_community = await Community.add(
             name=data.name,
             external_id=data.external_id,
             platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
@@ -200,6 +200,18 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
     if errors:
         raise HTTPException(status_code=422, detail="".join(errors))
 
+    try:
+        existing_communities = await Community.find(id=community_id)
+    except SQLAlchemyError as e:
+        logger.error(f"Database error fetching community {community_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
+
+    if not existing_communities:
+        logger.warning(f"Community {community_id} not found for update")
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    existing = existing_communities[0]
+
     if data.platform == 'JSON Community Event' and data.selected_community_external_ids:
         for selected_community_id, selected_community_to_add in data.selected_community_external_ids.items():
             if selected_community_to_add:
@@ -211,6 +223,12 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                     response.raise_for_status()
                     logger.info(f"Successfully fetched community {selected_community_id} from remote server")
                     response_data = response.json()
+                    existing_remote = await Community.find(
+                        external_id=response_data['external_id'],
+                        platform=CommunityPlatform.DISCORD,
+                    )
+                    remote_config = dict(existing_remote[0].config) if existing_remote else {}
+                    remote_config['community_configurator'] = str(community_id)
                     await Community.upsert(
                         _filter_field=['external_id', 'platform'],
                         _filter_value=[response_data['external_id'], CommunityPlatform.DISCORD],
@@ -225,9 +243,7 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                         default_description=response_data['description'],
                         tags=response_data['tags'],
                         languages=response_data['languages'],
-                        config={
-                            "community_configurator": str(community_id)
-                        }
+                        config=remote_config,
                     )
                 except RequestException as e:
                     logger.error(f"Failed to fetch community {selected_community_id}: {str(e)}")
@@ -243,28 +259,36 @@ async def update_community(community_id: UUID, data: CommunityRequest, user_auth
                     )
 
     try:
+        config = dict(existing.config) if existing.config else {}
+        if data.events_url is not None:
+            config['events_url'] = data.events_url
+        if data.community_configurator is not None:
+            config['community_configurator'] = data.community_configurator
+        if data.private_channel_id is not None:
+            config['private_channel_id'] = data.private_channel_id
+        if data.private_role_id is not None:
+            config['private_role_id'] = data.private_role_id
 
-        config = {}
-        if getattr(data, "events_url"):
-            config["events_url"] = data.events_url
-        if getattr(data, "community_configurator"):
-            config["community_configurator"] = data.community_configurator
-        if getattr(data, "private_channel_id"):
-            config["private_channel_id"] = data.private_channel_id
-        if getattr(data, "private_role_id"):
-            config["private_role_id"] = data.private_role_id
-
-        updated = await Community.update(
-            filters=(Community.id == community_id),
+        update_fields = dict(
             name=data.name,
             external_id=data.external_id,
             platform=CommunityPlatform(data.platform.upper().replace(' ', '_')),
-            url=data.url,
-            tags=data.tags,
-            languages=data.languages,
-            custom_description=data.description if not data.resetDescription else None,
             config=config,
-            enabled=data.enabled,
+        )
+        if data.url is not None:
+            update_fields['url'] = data.url
+        if data.tags is not None:
+            update_fields['tags'] = data.tags
+        if data.languages is not None:
+            update_fields['languages'] = data.languages
+        if data.enabled is not None:
+            update_fields['enabled'] = data.enabled
+        if data.description is not None or data.resetDescription:
+            update_fields['custom_description'] = data.description if not data.resetDescription else None
+
+        updated = await Community.update(
+            filters=(Community.id == community_id),
+            **update_fields,
         )
     except SQLAlchemyError as e:
         logger.error(f"Database error updating community {community_id}: {str(e)}")
@@ -296,7 +320,7 @@ async def delete_community(community_id: UUID, user_auth: UserAuthModel = Depend
 @router_v2.get("/admin/setup/communities/discord/")
 async def discord_communities_setup(user_auth: UserAuthModel = Depends(require_moderator_access)):
     try:
-        discord_communities = await Community().find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
+        discord_communities = await Community.find(platform__in=[CommunityPlatform.DISCORD], configured__eq=False)
     except SQLAlchemyError as e:
         logger.error(f"Database error fetching Discord communities: {str(e)}")
         raise HTTPException(status_code=500, detail="Database error occurred")

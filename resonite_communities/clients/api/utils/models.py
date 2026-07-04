@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 class CommunityRequest(BaseModel):
     name: str
@@ -15,3 +15,17 @@ class CommunityRequest(BaseModel):
     community_configurator: str | None = None
     events_url: str | None = None
     selected_community_external_ids: dict | None = None
+
+    @field_validator('enabled', mode='before')
+    @classmethod
+    def validate_enabled(cls, data):
+        if isinstance(data, str):
+            return data.lower() not in ('false', '0', 'no', 'off', '')
+        return data
+
+    @field_validator('resetDescription', mode='before')
+    @classmethod
+    def validate_reset_description(cls, data):
+        if isinstance(data, dict):
+            return any(data.values())
+        return data
