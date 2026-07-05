@@ -1,12 +1,11 @@
+import json
 from typing import List, Optional
 
-
-
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from resonite_communities.clients.utils.auth import UserAuthModel
+from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
 from resonite_communities.clients.api.routes.routers import router_v2
 from resonite_communities.utils.db import get_current_async_session
 from resonite_communities.utils.logger import get_logger
@@ -133,4 +132,69 @@ async def update_admin_configuration(
         raise HTTPException(status_code=500, detail="Configuration update failed")
 
     logger.info(f"System configuration updated successfully")
+    return {"message": "Configuration updated successfully"}
+
+@router_v2.post("/admin/update/configuration")
+async def update_configuration(request: Request, user_auth: UserAuthModel = Depends(get_user_auth)):
+
+    if not user_auth or not user_auth.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authenticated or not a superuser.")
+
+    session = await get_current_async_session()
+    form_data = await request.form()
+    config_manager = ConfigManager()
+
+    # Process AppConfig
+    app_config_data = {}
+    for key, value in form_data.items():
+        if key.startswith("app_config_"):
+            field_name = key.replace("app_config_", "")
+            if field_name in ["public_domain", "private_domain"]:
+                app_config_data[field_name] = json.dumps([item.strip() for item in value.split(',')])
+            else:
+                app_config_data[field_name] = value
+    if app_config_data:
+        await config_manager.update_app_config(session=session, **app_config_data)
+
+    # Process MonitoredDomain
+    existing_domains = await config_manager.load(MonitoredDomain, session=session)
+    existing_domain_ids = {domain.id for domain in existing_domains}
+    submitted_domain_ids = set()
+    monitored_domains_data = {}
+
+    for key, value in form_data.items():
+        if key.startswith("monitored_config_"):
+            # Expecting monitored_config_{id}_field or monitored_config_new-{index}_field
+            parts = key.split('_')
+            if parts[2].startswith("new-"): # Expecting new-0, new-1
+                domain_key = parts[2]
+            else: # Expecting 1, 2, 3 (existing IDs)
+                domain_key = int(parts[2])
+                submitted_domain_ids.add(domain_key)
+
+            field_name = "_".join(parts[3:])
+            if domain_key not in monitored_domains_data:
+                monitored_domains_data[domain_key] = {}
+            monitored_domains_data[domain_key][field_name] = value
+
+    # Update existing domains and add new ones
+    for domain_key, data in monitored_domains_data.items():
+        if isinstance(domain_key, int): # Existing domain
+            await config_manager.update_monitored_domain(session=session, domain_id=domain_key, **data)
+        else: # New domain
+            await config_manager.add_monitored_domain(session=session, url=data.get('url'), status=data.get('status'))
+
+    # Delete removed domains
+    domains_to_delete = existing_domain_ids - submitted_domain_ids
+    for domain_id in domains_to_delete:
+        await config_manager.delete_monitored_domain(session=session, domain_id=domain_id)
+
+    # Process TwitchConfig
+    twitch_config_data = {}
+    for key, value in form_data.items():
+        if key.startswith("twitch_config_"):
+            twitch_config_data[key.replace("twitch_config_", "")] = value
+    if twitch_config_data:
+        await config_manager.update_twitch_config(session=session, **twitch_config_data)
+
     return {"message": "Configuration updated successfully"}

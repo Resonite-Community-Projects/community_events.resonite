@@ -41,6 +41,7 @@ geoip2 = "^5.0.1"
 deprecated = "^1.2.18"
 paramiko = "^3.5.1"
 apachelogs = "^0.6.1"
+fastapi-versionizer = "^4.0.2"
 
 [tool.poetry.scripts]
 web_client = "resonite_communities.clients.web.app:run"

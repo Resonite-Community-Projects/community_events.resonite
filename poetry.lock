@@ -1235,6 +1235,21 @@ fastapi-users = ">=10.0.0"
 sqlalchemy = {version = ">=2.0.0,<2.1.0", extras = ["asyncio"]}
 
 [[package]]
+name = "fastapi-versionizer"
+version = "4.0.2"
+description = "API versionizer for FastAPI web applications"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "fastapi_versionizer-4.0.2.tar.gz", hash = "sha256:0f3bd1a17d8be7bb9d830d19396e8235478bbe1f872ea314a8969868f5750ba4"},
+]
+
+[package.dependencies]
+fastapi = ">=0.86.0"
+natsort = "==8.*"
+
+[[package]]
 name = "fenkeysmanagement"
 version = "1.0.1"
 description = "Simple key management. Generate tokens for any usage."
@@ -2406,6 +2421,22 @@ files = [
     {file = "multidict-6.1.0-py3-none-any.whl", hash = "sha256:48e171e52d1c4d33888e529b999e5900356b9ae588c2f09a52dcefb158b27506"},
     {file = "multidict-6.1.0.tar.gz", hash = "sha256:22ae2ebf9b0c69d206c003e2f6a914ea33f0a932d4aa16f236afc049d9958f4a"},
 ]
+
+[[package]]
+name = "natsort"
+version = "8.4.0"
+description = "Simple yet flexible natural sorting in Python."
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "natsort-8.4.0-py3-none-any.whl", hash = "sha256:4732914fb471f56b5cce04d7bae6f164a592c7712e1c85f9ef585e197299521c"},
+    {file = "natsort-8.4.0.tar.gz", hash = "sha256:45312c4a0e5507593da193dedd04abb1469253b601ecaf63445ad80f0a1ea581"},
+]
+
+[package.extras]
+fast = ["fastnumbers (>=2.0.0)"]
+icu = ["PyICU (>=1.0.0)"]
 
 [[package]]
 name = "oauth2client"
@@ -4558,4 +4589,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "096b5240ae93560ebd7978d3666d66cdc2170992420ceb16bdc815eb047d9ac2"
+content-hash = "e533a4d849c2ae2268b10063814de53464b09d75434b3f326c23c4d679a92030"

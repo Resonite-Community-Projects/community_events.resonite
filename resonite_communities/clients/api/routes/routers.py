@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from resonite_communities.clients.api.utils.versioning import VersionedAPIRouter
 
-router_v1 = APIRouter(prefix='/v1')
-router_v2 = APIRouter(prefix='/v2')
+router_v1 = VersionedAPIRouter(version="1.0")
+router_v2 = VersionedAPIRouter(version="2.0")
