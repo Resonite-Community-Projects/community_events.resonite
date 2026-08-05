@@ -1,6 +1,7 @@
 name: Deploy Dev
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Publish Dev Docker Image"]
     branches: [master]
@@ -11,7 +12,7 @@ jobs:
   community:
     runs-on: SANVM07
     environment: dev_community
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
@@ -73,7 +74,7 @@ jobs:
   official:
     runs-on: SANVM07
     environment: dev_official
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3

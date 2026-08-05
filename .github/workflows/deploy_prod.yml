@@ -1,6 +1,7 @@
 name: Deploy Prod
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Publish Prod Docker Image"]
     branches: [stable]
@@ -12,7 +13,7 @@ jobs:
   deploy:
     runs-on: SANVM07
     environment: prod
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
