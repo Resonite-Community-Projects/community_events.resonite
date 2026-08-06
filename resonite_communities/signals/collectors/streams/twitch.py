@@ -29,7 +29,7 @@ class TwitchStreamsCollector(StreamsCollector):
             try:
                 broadcaster['twitch'] = self.services.twitch.get_broadcaster_info(streamer)
             except ValueError as exc:
-                self.logger.error(exc)
+                self.logger.warning(exc)
                 continue
             if not 'followers' in broadcaster['twitch'] or not 'profile_image_url' in broadcaster['twitch']:
                 continue
