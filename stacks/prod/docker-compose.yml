@@ -218,6 +218,7 @@ services:
     build:
       context: ../..
       dockerfile: Dockerfile.mkdocs
+    restart: unless-stopped
     ports:
       - "9002:8000"
     profiles:
