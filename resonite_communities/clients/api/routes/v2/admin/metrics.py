@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi import Depends, HTTPException
 
 from resonite_communities.clients.utils.auth import UserAuthModel
-from resonite_communities.clients.models.metrics import Metrics, ClientType
+from resonite_communities.models.metrics import Metrics, ClientType
 from resonite_communities.clients.api.routes.routers import router_v2
 from resonite_communities.utils.db import get_current_async_session
 from resonite_communities.utils.logger import get_logger

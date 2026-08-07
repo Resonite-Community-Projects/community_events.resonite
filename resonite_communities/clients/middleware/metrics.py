@@ -8,9 +8,8 @@ from datetime import datetime
 import geoip2.database
 from apachelogs import LogParser
 
-from resonite_communities.clients.models.metrics import Metrics
+from resonite_communities.models.metrics import Metrics, ClientType
 from resonite_communities.utils.db import get_current_async_session
-from resonite_communities.clients.models.metrics import ClientType
 
 parser = LogParser("%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"")
 

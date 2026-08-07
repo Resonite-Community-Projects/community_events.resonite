@@ -10,12 +10,12 @@ import sentry_sdk
 from resonite_communities.auth.users import fastapi_users, auth_backend
 from resonite_communities.clients.web.auth import discord_oauth
 from resonite_communities.clients import StandaloneApplication
-from resonite_communities.clients.web.routers import (
+from resonite_communities.clients.web.routes import (
     main,
     login,
     logout,
 )
-from resonite_communities.clients.web.routers.admin import metrics, events, communities, users, configuration
+from resonite_communities.clients.web.routes.admin import metrics, events, communities, users, configuration
 from resonite_communities.clients.middleware.metrics import MetricsMiddleware
 from resonite_communities.clients.middleware.rate_limit import RateLimitMiddleware
 from resonite_communities.clients.utils.geoip import get_geoip_db_path

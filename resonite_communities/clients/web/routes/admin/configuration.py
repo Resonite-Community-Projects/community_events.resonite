@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse, RedirectResponse
 
 from resonite_communities.clients.web.utils.templates import templates
 from resonite_communities.clients.utils.auth import UserAuthModel, get_user_auth
-from resonite_communities.clients.web.routers.utils import logo_base64
+from resonite_communities.clients.web.routes.utils import logo_base64
 from resonite_communities.clients.web.utils.api_client import api_client
 
 from resonite_communities.utils.config import ConfigManager
