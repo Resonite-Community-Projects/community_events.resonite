@@ -63,3 +63,14 @@ jobs:
           push: true
           tags: ${{ steps.meta-docs.outputs.tags }}
           labels: ${{ steps.meta-docs.outputs.labels }}
+
+  trigger-deploy:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch Deploy Dev against master
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy_dev.yml --repo ${{ github.repository }} --ref master
