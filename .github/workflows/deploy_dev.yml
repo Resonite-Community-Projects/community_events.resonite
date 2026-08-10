@@ -10,7 +10,7 @@ on:
 jobs:
 
   community:
-    runs-on: SANVM07
+    runs-on: SANVH00-00
     environment: dev_community
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
@@ -72,7 +72,7 @@ jobs:
         run: docker compose -f stacks/dev/community.docker-compose.yml -p dev_community_eventsresonite --profile "*" up -d
 
   official:
-    runs-on: SANVM07
+    runs-on: SANVH00-00
     environment: dev_official
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
