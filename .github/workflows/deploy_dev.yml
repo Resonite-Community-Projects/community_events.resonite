@@ -2,20 +2,17 @@ name: Deploy Dev
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Publish Dev Docker Image"]
-    branches: [master]
-    types: [completed]
 
 jobs:
 
   community:
     runs-on: SANVH00-00
     environment: dev_community
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - name: Build app
         env:
@@ -74,10 +71,11 @@ jobs:
   official:
     runs-on: SANVH00-00
     environment: dev_official
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - name: Build app
         env:

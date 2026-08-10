@@ -1,19 +1,5 @@
 services:
 
-  traefik_community:
-    image: traefik:v3.3
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.dev_web_community.address=:80"
-      - "--accesslog=true"
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   database_community:
     image: postgres:16
     profiles:
@@ -125,8 +111,12 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.dev_api_client_community.loadbalancer.server.port=8000
 
       # CORS middleware
@@ -136,32 +126,38 @@ services:
 
       # Modern API route
       - traefik.http.routers.api_client_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.api_client_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_client_community.entrypoints=websecure
+      - traefik.http.routers.api_client_community.tls.certresolver=gandi
       - traefik.http.routers.api_client_community.middlewares=dev_cors_community
 
       # Private events legacy API v1 route
       - traefik.http.routers.api_v1_client_legacy_private_community.rule=Host(`adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_private_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_v1_client_legacy_private_community.entrypoints=websecure
+      - traefik.http.routers.api_v1_client_legacy_private_community.tls.certresolver=gandi
       - traefik.http.routers.api_v1_client_legacy_private_community.middlewares=dev_cors_community
 
       # Private events legacy API v1 route 2
       - traefik.http.routers.api_v1_client_legacy_private2_community.rule=Host(`3rd.adult.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_private2_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_v1_client_legacy_private2_community.entrypoints=websecure
+      - traefik.http.routers.api_v1_client_legacy_private2_community.tls.certresolver=gandi
       - traefik.http.routers.api_v1_client_legacy_private2_community.middlewares=dev_cors_community
 
       # Public events legacy API v1 route
       - traefik.http.routers.api_v1_client_legacy_public_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_v1_client_legacy_public_community.entrypoints=websecure
+      - traefik.http.routers.api_v1_client_legacy_public_community.tls.certresolver=gandi
       - traefik.http.routers.api_v1_client_legacy_public_community.middlewares=dev_cors_community
 
       # Public events legacy API v1 route 2
       - traefik.http.routers.api_v1_client_legacy_public2_community.rule=Host(`3rd.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.api_v1_client_legacy_public2_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_v1_client_legacy_public2_community.entrypoints=websecure
+      - traefik.http.routers.api_v1_client_legacy_public2_community.tls.certresolver=gandi
       - traefik.http.routers.api_v1_client_legacy_public2_community.middlewares=dev_cors_community
 
       # Public events legacy API v2 route
       - traefik.http.routers.api_v2_client_legacy_public_community.rule=Host(`dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=dev_web_community
+      - traefik.http.routers.api_v2_client_legacy_public_community.entrypoints=websecure
+      - traefik.http.routers.api_v2_client_legacy_public_community.tls.certresolver=gandi
       - traefik.http.routers.api_v2_client_legacy_public_community.middlewares=dev_cors_community
 
   web_client_community:
@@ -193,31 +189,40 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.dev_web_client_community.loadbalancer.server.port=8001
 
       - traefik.http.routers.web_client_community.rule=Host(`dev.resonite-communities.com`)
-      - traefik.http.routers.web_client_community.entrypoints=dev_web_community
+      - traefik.http.routers.web_client_community.entrypoints=websecure
+      - traefik.http.routers.web_client_community.tls.certresolver=gandi
 
       # Public events legacy API route
       - traefik.http.routers.web_client_legacy_public_community.rule=Host(`3rd.dev.resonite-communities.com`)
-      - traefik.http.routers.web_client_legacy_public_community.entrypoints=dev_web_community
+      - traefik.http.routers.web_client_legacy_public_community.entrypoints=websecure
+      - traefik.http.routers.web_client_legacy_public_community.tls.certresolver=gandi
 
   mkdocs_community:
-    build:
-      context: ../..
-      dockerfile: Dockerfile.mkdocs
+    image: ghcr.io/resonite-community-projects/community_events.resonite-docs:dev
     profiles:
       - doc
     stdin_open: true
     tty: true
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.dev_docs.loadbalancer.server.port=8000
 
       - traefik.http.routers.dev_docs.rule=Host(`docs.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_docs.entrypoints=dev_web_community
+      - traefik.http.routers.dev_docs.entrypoints=websecure
+      - traefik.http.routers.dev_docs.tls.certresolver=gandi
 
 secrets:
   postgres_password:
@@ -236,6 +241,10 @@ secrets:
     environment: SECRET_KEY
   sentry_dsn:
     environment: SENTRY_DSN
+
+networks:
+  proxy:
+    external: true
 
 volumes:
   postgres_data:

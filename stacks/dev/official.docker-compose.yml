@@ -1,19 +1,5 @@
 services:
 
-  traefik_official:
-    image: traefik:v3.3
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.dev_web_official.address=:80"
-      - "--accesslog=true"
-    ports:
-      - "82:80"
-      - "8082:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   database_official:
     image: postgres:16
     profiles:
@@ -126,8 +112,12 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.dev_api_client_official.loadbalancer.server.port=8000
 
       # CORS middleware
@@ -137,17 +127,20 @@ services:
 
       # Modern API route
       - traefik.http.routers.dev_api_client_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.dev_api_client_official.entrypoints=dev_web_official
+      - traefik.http.routers.dev_api_client_official.entrypoints=websecure
+      - traefik.http.routers.dev_api_client_official.tls.certresolver=gandi
       - traefik.http.routers.dev_api_client_official.middlewares=dev_cors_official
 
       # Public events legacy API v1 route
       - traefik.http.routers.dev_api_v1_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.dev_api_v1_client_legacy_public_official.entrypoints=dev_web_official
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.entrypoints=websecure
+      - traefik.http.routers.dev_api_v1_client_legacy_public_official.tls.certresolver=gandi
       - traefik.http.routers.dev_api_v1_client_legacy_public_official.middlewares=dev_cors_official
 
       # Public events legacy API V2 route
       - traefik.http.routers.api_v2_client_legacy_public_official.rule=Host(`official.dev.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=dev_web_official
+      - traefik.http.routers.api_v2_client_legacy_public_official.entrypoints=websecure
+      - traefik.http.routers.api_v2_client_legacy_public_official.tls.certresolver=gandi
       - traefik.http.routers.api_v2_client_legacy_public_official.middlewares=dev_cors_official
 
 
@@ -180,12 +173,17 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.dev_web_official_client_official.loadbalancer.server.port=8001
 
       - traefik.http.routers.dev_web_official_client_official.rule=Host(`official.dev.resonite-communities.com`)
-      - traefik.http.routers.dev_web_official_client_official.entrypoints=dev_web_official
+      - traefik.http.routers.dev_web_official_client_official.entrypoints=websecure
+      - traefik.http.routers.dev_web_official_client_official.tls.certresolver=gandi
 
 secrets:
   postgres_password:
@@ -204,6 +202,10 @@ secrets:
     environment: SECRET_KEY
   sentry_dsn:
     environment: SENTRY_DSN
+
+networks:
+  proxy:
+    external: true
 
 volumes:
   postgres_data:
