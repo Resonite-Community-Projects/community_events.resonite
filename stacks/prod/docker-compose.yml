@@ -1,21 +1,5 @@
 services:
 
-  traefik:
-    image: traefik:v3.3
-    restart: unless-stopped
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.prod_web.forwardedHeaders.insecure"
-      - "--entryPoints.prod_web.address=:80"
-      - "--accesslog=true"
-    ports:
-      - "81:80"
-      - "8081:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   database:
     image: postgres:16
     profiles:
@@ -127,8 +111,12 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.prod_api_client.loadbalancer.server.port=8000
 
       # CORS middleware
@@ -138,41 +126,45 @@ services:
 
       # Modern API route
       - traefik.http.routers.prod_api_client.rule=Host(`resonite-communities.com`) && PathPrefix(`/api`)
-      - traefik.http.routers.prod_api_client.entrypoints=prod_web
+      - traefik.http.routers.prod_api_client.entrypoints=websecure
+      - traefik.http.routers.prod_api_client.tls.certresolver=gandi
       - traefik.http.routers.prod_api_client.middlewares=prod_cors
 
       # Private events legacy API v1 route
       - traefik.http.routers.prod_api_v1_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_private.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v1_client_legacy_private.entrypoints=websecure
+      - traefik.http.routers.prod_api_v1_client_legacy_private.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v1_client_legacy_private.middlewares=prod_cors
 
       # Private events legacy API v2 route
       - traefik.http.routers.prod_api_v2_client_legacy_private.rule=Host(`adult.resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.prod_api_v2_client_legacy_private.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v2_client_legacy_private.entrypoints=websecure
+      - traefik.http.routers.prod_api_v2_client_legacy_private.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v2_client_legacy_private.middlewares=prod_cors
 
       # Private events legacy API v1 route 2
       - traefik.http.routers.prod_api_v1_client_legacy_private2.rule=Host(`adult-events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v1_client_legacy_private2.entrypoints=websecure
+      - traefik.http.routers.prod_api_v1_client_legacy_private2.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v1_client_legacy_private2.middlewares=prod_cors
 
       # Public events legacy API v1 route
       - traefik.http.routers.prod_api_v1_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_public.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v1_client_legacy_public.entrypoints=websecure
+      - traefik.http.routers.prod_api_v1_client_legacy_public.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v1_client_legacy_public.middlewares=prod_cors
 
       # Public events legacy API v1 route 2
       - traefik.http.routers.prod_api_v1_client_legacy_public2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v1_client_legacy_public2.entrypoints=websecure
+      - traefik.http.routers.prod_api_v1_client_legacy_public2.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v1_client_legacy_public2.middlewares=prod_cors
 
       # Public events legacy API v2 route
       - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
-      - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=prod_web
+      - traefik.http.routers.prod_api_v2_client_legacy_public.entrypoints=websecure
+      - traefik.http.routers.prod_api_v2_client_legacy_public.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v2_client_legacy_public.middlewares=prod_cors
-
-
-
 
   web_client:
     image: ghcr.io/resonite-community-projects/community_events.resonite:latest
@@ -203,30 +195,39 @@ services:
       - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
       - PRIVATE_DOMAIN=${PRIVATE_DOMAIN}
       - API_CLIENT_URL=${API_CLIENT_URL}
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.services.prod_web_client.loadbalancer.server.port=8001
 
       - traefik.http.routers.prod_web_client.rule=Host(`resonite-communities.com`)
-      - traefik.http.routers.prod_web_client.entrypoints=prod_web
+      - traefik.http.routers.prod_web_client.entrypoints=websecure
+      - traefik.http.routers.prod_web_client.tls.certresolver=gandi
 
       # Private events legacy API route 2
       - traefik.http.routers.web_client_legacy_public.rule=Host(`events.resonite.boltwolf.net`)
-      - traefik.http.routers.web_client_legacy_public.entrypoints=prod_web
+      - traefik.http.routers.web_client_legacy_public.entrypoints=websecure
+      - traefik.http.routers.web_client_legacy_public.tls.certresolver=gandi
 
   mkdocs:
     image: ghcr.io/resonite-community-projects/community_events.resonite-docs:latest
     restart: unless-stopped
-    ports:
-      - "9002:8000"
     profiles:
       - doc
     stdin_open: true
     tty: true
+    networks:
+      - default
+      - proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
       - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.com`)
-      - traefik.http.routers.docs.entrypoints=prod_web
+      - traefik.http.routers.docs.entrypoints=websecure
+      - traefik.http.routers.docs.tls.certresolver=gandi
 
   cache:
     image: redis:7.0-alpine
@@ -250,6 +251,10 @@ secrets:
     environment: SECRET_KEY
   sentry_dsn:
     environment: SENTRY_DSN
+
+networks:
+  proxy:
+    external: true
 
 volumes:
   postgres_data:
