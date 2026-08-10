@@ -11,7 +11,7 @@ on:
 jobs:
 
   deploy:
-    runs-on: SANVM07
+    runs-on: SANVH00-00
     environment: prod
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
