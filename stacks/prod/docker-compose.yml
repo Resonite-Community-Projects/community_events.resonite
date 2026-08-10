@@ -142,23 +142,11 @@ services:
       - traefik.http.routers.prod_api_v2_client_legacy_private.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v2_client_legacy_private.middlewares=prod_cors
 
-      # Private events legacy API v1 route 2
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.rule=Host(`adult-events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.entrypoints=websecure
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.tls.certresolver=gandi
-      - traefik.http.routers.prod_api_v1_client_legacy_private2.middlewares=prod_cors
-
       # Public events legacy API v1 route
       - traefik.http.routers.prod_api_v1_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v1`)
       - traefik.http.routers.prod_api_v1_client_legacy_public.entrypoints=websecure
       - traefik.http.routers.prod_api_v1_client_legacy_public.tls.certresolver=gandi
       - traefik.http.routers.prod_api_v1_client_legacy_public.middlewares=prod_cors
-
-      # Public events legacy API v1 route 2
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.rule=Host(`events.resonite.boltwolf.net`) && PathPrefix(`/v1`)
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.entrypoints=websecure
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.tls.certresolver=gandi
-      - traefik.http.routers.prod_api_v1_client_legacy_public2.middlewares=prod_cors
 
       # Public events legacy API v2 route
       - traefik.http.routers.prod_api_v2_client_legacy_public.rule=Host(`resonite-communities.com`) && PathPrefix(`/v2`)
@@ -207,11 +195,6 @@ services:
       - traefik.http.routers.prod_web_client.entrypoints=websecure
       - traefik.http.routers.prod_web_client.tls.certresolver=gandi
 
-      # Private events legacy API route 2
-      - traefik.http.routers.web_client_legacy_public.rule=Host(`events.resonite.boltwolf.net`)
-      - traefik.http.routers.web_client_legacy_public.entrypoints=websecure
-      - traefik.http.routers.web_client_legacy_public.tls.certresolver=gandi
-
   mkdocs:
     image: ghcr.io/resonite-community-projects/community_events.resonite-docs:latest
     restart: unless-stopped
@@ -225,9 +208,9 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
-      - traefik.http.routers.docs.rule=Host(`docs.resonite-communities.com`)
-      - traefik.http.routers.docs.entrypoints=websecure
-      - traefik.http.routers.docs.tls.certresolver=gandi
+      - traefik.http.routers.prod_docs.rule=Host(`docs.resonite-communities.com`)
+      - traefik.http.routers.prod_docs.entrypoints=websecure
+      - traefik.http.routers.prod_docs.tls.certresolver=gandi
 
   cache:
     image: redis:7.0-alpine
