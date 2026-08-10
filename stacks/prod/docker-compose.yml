@@ -215,9 +215,7 @@ services:
       - traefik.http.routers.web_client_legacy_public.entrypoints=prod_web
 
   mkdocs:
-    build:
-      context: ../..
-      dockerfile: Dockerfile.mkdocs
+    image: ghcr.io/resonite-community-projects/community_events.resonite-docs:latest
     restart: unless-stopped
     ports:
       - "9002:8000"

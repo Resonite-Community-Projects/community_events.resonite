@@ -44,3 +44,22 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Extract metadata (tags, labels) for the docs image
+        id: meta-docs
+        uses: docker/metadata-action@v6.2.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-docs
+          tags: |
+            type=sha,prefix=
+            type=raw,value=dev
+
+      - name: Build and push docs Docker image
+        id: push-docs
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: .
+          file: ./Dockerfile.mkdocs
+          push: true
+          tags: ${{ steps.meta-docs.outputs.tags }}
+          labels: ${{ steps.meta-docs.outputs.labels }}
