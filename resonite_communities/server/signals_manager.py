@@ -52,7 +52,7 @@ async def main():
             )
 
         discord_client = disnake.Client()
-        intents = disnake.Intents.all()
+        intents = disnake.Intents.default()
         bot = disnake.ext.commands.InteractionBot(intents=intents)
         ad_bot = disnake.ext.commands.InteractionBot(intents=intents)
 
